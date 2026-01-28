@@ -1,32 +1,47 @@
 import { Trophy, Zap, Target, BookOpen, Clock, ArrowUpRight, Flame } from 'lucide-react'
+import { prisma } from '@/lib/prisma'
+import Link from 'next/link'
+import { formatDistanceToNow } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
+import { ReactChild, ReactFragment, ReactPortal, Key } from 'react'
 
-// Mock Data
-const mockData = {
-  user: {
-    name: 'Estudante',
-    xp: 1250,
-    level: 5,
-    streak: 12
-  },
-  nextTopic: {
-    subject: 'Matemática Financeira',
-    topic: 'Juros Simples & Compostos',
-    duration: '25 min',
-    xp: 250
-  },
-  stats: {
-    time: '4h 30m',
-    sessions: 12,
-    xp: 2700
-  },
-  recent: [
-    { title: 'Regra de Três', subject: 'Matemática', time: '2h atrás', xp: 150 },
-    { title: 'Crase e Acentuação', subject: 'Português', time: '5h atrás', xp: 200 },
-    { title: 'Direito Constitucional', subject: 'Direito', time: '1d atrás', xp: 300 }
-  ]
-}
+export const dynamic = 'force-dynamic' // Ensure real-time data
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  // 1. Fetch User (MVP: First user - assumes seed ran)
+  const user = await prisma.user.findFirst({
+    include: {
+      studySessions: {
+        orderBy: { completedAt: 'desc' },
+        take: 5,
+        include: { topic: { include: { subject: true } } }
+      }
+    }
+  })
+
+  // If no user found, show simple empty state
+  if (!user) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#0c0c0e] text-zinc-400 gap-4">
+        <h1 className="text-xl text-white font-bold">Nenhum Usuário Encontrado</h1>
+        <p>Parece que o banco de dados está vazio.</p>
+        <code className="bg-zinc-900 px-4 py-2 rounded">npm run db:seed</code>
+      </div>
+    )
+  }
+
+  // 2. Fetch Next Topic Strategy (MVP: Random topic from first subject)
+  // In V2 this will be the "Smart Cycle Algo"
+  const randomTopic = await prisma.topic.findFirst({
+    include: { subject: true }
+  })
+
+  // Data processing
+  const recentSessions = user.studySessions
+
+  // Calculate Streak (Mock logic for MVP - real logic needs complex query)
+  const streak = 12 // Hardcoded for now until we add Streak Logic feature
+
   return (
     // Background #0c0c0e (Very Dark)
     <div className="min-h-screen bg-[#0c0c0e] text-zinc-100 selection:bg-indigo-500/30">
@@ -48,17 +63,17 @@ export default function DashboardPage() {
             {/* Streak Badge */}
             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#27272a] border border-orange-500/20 text-orange-400">
               <Flame className="w-3.5 h-3.5 fill-orange-500" />
-              <span className="text-xs font-bold">{mockData.user.streak} dias</span>
+              <span className="text-xs font-bold">{streak} dias</span>
             </div>
 
             {/* XP */}
             <div className="flex items-center gap-2 text-xs font-medium text-zinc-400">
-              <span className="text-indigo-400">Lvl {mockData.user.level}</span>
-              <span>{mockData.user.xp} XP</span>
+              <span className="text-indigo-400">Lvl {user.level}</span>
+              <span>{user.xp} XP</span>
             </div>
 
-            <div className="w-8 h-8 rounded-full bg-[#27272a] border border-white/10 flex items-center justify-center text-xs text-zinc-400 cursor-pointer hover:bg-zinc-700 transition-colors">
-              {mockData.user.name[0]}
+            <div className="w-8 h-8 rounded-full bg-[#27272a] border border-white/10 flex items-center justify-center text-xs text-zinc-400 cursor-pointer hover:bg-zinc-700 transition-colors uppercase font-bold">
+              {user.name?.[0] || 'U'}
             </div>
           </div>
         </div>
@@ -88,19 +103,27 @@ export default function DashboardPage() {
                 </div>
 
                 <h2 className="text-4xl md:text-5xl font-bold tracking-tighter text-white mb-2 group-hover:text-indigo-50 transition-colors">
-                  {mockData.nextTopic.subject}
+                  {randomTopic?.subject.name || 'Nova Matéria'}
                 </h2>
                 <p className="text-lg text-zinc-400 font-medium tracking-tight">
-                  {mockData.nextTopic.topic}
+                  {randomTopic?.name || 'Escolha um tópico para começar'}
                 </p>
               </div>
 
               <div className="flex items-center gap-4 mt-8">
-                {/* Primary Button */}
-                <button className="relative h-12 px-8 bg-gradient-to-r from-indigo-500 to-violet-600 text-white text-sm font-bold rounded-xl hover:brightness-110 transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2 active:scale-[0.98]">
-                  <Zap className="w-4 h-4 fill-white" />
-                  START SESSION
-                </button>
+                {/* Primary Button with Real Link */}
+                {randomTopic ? (
+                  <Link href={`/study/${randomTopic.id}`}>
+                    <button className="relative h-12 px-8 bg-gradient-to-r from-indigo-500 to-violet-600 text-white text-sm font-bold rounded-xl hover:brightness-110 transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2 active:scale-[0.98]">
+                      <Zap className="w-4 h-4 fill-white" />
+                      START SESSION
+                    </button>
+                  </Link>
+                ) : (
+                  <button disabled className="relative h-12 px-8 bg-zinc-700 text-zinc-400 text-sm font-bold rounded-xl cursor-not-allowed">
+                    Sem Matérias
+                  </button>
+                )}
 
                 <button className="h-12 px-6 text-zinc-400 text-sm font-medium hover:text-white transition-colors">
                   Skip Topic
@@ -125,7 +148,7 @@ export default function DashboardPage() {
               </div>
               <div className="relative z-10">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold tracking-tight text-white">{mockData.user.streak}</span>
+                  <span className="text-3xl font-bold tracking-tight text-white">{streak}</span>
                   <span className="text-sm text-zinc-500">days</span>
                 </div>
                 <div className="w-full bg-zinc-800/50 h-1.5 mt-4 rounded-full overflow-hidden">
@@ -147,7 +170,7 @@ export default function DashboardPage() {
                 <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 group-hover:text-yellow-400 transition-colors">Total XP</span>
               </div>
               <div className="relative z-10 flex items-baseline gap-2">
-                <span className="text-3xl font-bold tracking-tight text-white">{mockData.stats.xp}</span>
+                <span className="text-3xl font-bold tracking-tight text-white">{user.xp}</span>
                 <span className="text-sm text-zinc-500">points</span>
               </div>
             </div>
@@ -162,25 +185,33 @@ export default function DashboardPage() {
           </div>
 
           <div className="rounded-2xl border border-white/[0.08] bg-[#27272a] overflow-hidden">
-            {mockData.recent.map((item, i) => (
-              <div key={i} className="group flex items-center justify-between p-4 border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors cursor-pointer">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center border border-white/5">
-                    <BookOpen className="w-5 h-5 text-zinc-400 group-hover:text-indigo-400 transition-colors" />
+            {recentSessions.length > 0 ? (
+              recentSessions.map((session: { topic: { name: boolean | ReactChild | ReactFragment | ReactPortal | null | undefined; subject: { name: boolean | ReactChild | ReactFragment | ReactPortal | null | undefined } }; xpEarned: boolean | ReactChild | ReactFragment | ReactPortal | null | undefined; completedAt: string | number | Date }, i: Key | null | undefined) => (
+                <div key={i} className="group flex items-center justify-between p-4 border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors cursor-pointer">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center border border-white/5">
+                      <BookOpen className="w-5 h-5 text-zinc-400 group-hover:text-indigo-400 transition-colors" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-zinc-200 group-hover:text-white transition-colors">{session.topic.name}</div>
+                      <div className="text-xs text-zinc-500 font-medium">{session.topic.subject.name} (+{session.xpEarned} XP)</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-sm font-bold text-zinc-200 group-hover:text-white transition-colors">{item.title}</div>
-                    <div className="text-xs text-zinc-500 font-medium">{item.subject}</div>
+                  <div className="flex items-center gap-6">
+                    <div className="text-xs font-mono text-zinc-600 font-medium">
+                      {formatDistanceToNow(new Date(session.completedAt), { addSuffix: true, locale: ptBR })}
+                    </div>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 text-zinc-500 transition-colors">
+                      <ArrowUpRight className="w-4 h-4" />
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-6">
-                  <div className="text-xs font-mono text-zinc-600 font-medium">{item.time}</div>
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 text-zinc-500 transition-colors">
-                    <ArrowUpRight className="w-4 h-4" />
-                  </div>
-                </div>
+              ))
+            ) : (
+              <div className="p-8 text-center text-zinc-500">
+                Nenhuma atividade recente. Comece sua primeira sessão!
               </div>
-            ))}
+            )}
           </div>
         </div>
 
