@@ -1,0 +1,201 @@
+// Prisma Schema - StudyHub MVP
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// CORE DOMAIN
+// ============================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String   // bcrypt hash
+  
+  // Gamification
+  xp        Int      @default(0)
+  level     Int      @default(1)
+  
+  // ADHD Settings (JSON)
+  settings  Json     @default("{\"pomodoroDefault\": 25, \"breakDefault\": 5, \"dailyGoalMinutes\": 120}")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  contests       Contest[]
+  studyCycles    StudyCycle[]
+  studySessions  StudySession[]
+  achievements   UserAchievement[]
+  
+  @@map("users")
+}
+
+model Contest {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name        String   // "Banco do Brasil - Escriturário"
+  institution String   // "Banco do Brasil"
+  role        String   // "Escriturário"
+  examDate    DateTime? // Data da prova (se conhecida)
+  isPrimary   Boolean  @default(false) // Concurso principal vs futuro
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  subjects    Subject[]
+  
+  @@map("contests")
+}
+
+model Subject {
+  id          String   @id @default(cuid())
+  contestId   String
+  contest     Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  
+  name        String   // "Matemática Financeira"
+  weight      Int      @default(1) // Peso na prova (1-10)
+  userLevel   Int      @default(1) // Autoavaliação do usuário (1-5)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  topics      Topic[]
+  
+  @@map("subjects")
+}
+
+model Topic {
+  id          String   @id @default(cuid())
+  subjectId   String
+  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  
+  name        String   // "Juros Simples"
+  description String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  studySessions StudySession[]
+  reviewQueue   ReviewQueue[]
+  materials     Material[]
+  
+  @@map("topics")
+}
+
+// ============================================
+// STUDY CYCLE & SESSIONS
+// ============================================
+
+model StudyCycle {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name        String   // "Ciclo BB - Janeiro 2026"
+  isActive    Boolean  @default(true)
+  
+  // Cycle configuration (JSON)
+  // { "topicIds": ["id1", "id2"], "order": "manual", "weeklyHours": 14 }
+  config      Json
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("study_cycles")
+}
+
+model StudySession {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  topicId     String
+  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  
+  minutes     Int      // Duração da sessão
+  xpEarned    Int      // XP ganho nesta sessão
+  difficulty  Int?     // Rating de dificuldade (1-5)
+  
+  startedAt   DateTime @default(now())
+  completedAt DateTime @default(now())
+  
+  @@map("study_sessions")
+}
+
+model ReviewQueue {
+  id          String   @id @default(cuid())
+  topicId     String
+  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  
+  scheduledFor DateTime // Data agendada para revisão
+  completed    Boolean  @default(false)
+  
+  createdAt    DateTime @default(now())
+  
+  @@map("review_queue")
+}
+
+// ============================================
+// GAMIFICATION
+// ============================================
+
+model Achievement {
+  id          String   @id @default(cuid())
+  
+  slug        String   @unique // "first-session", "level-5", "7-day-streak"
+  name        String   // "Primeira Sessão"
+  description String   // "Complete sua primeira sessão de estudos"
+  icon        String   // "🎯"
+  xpReward    Int      @default(0)
+  
+  // Relations
+  users       UserAchievement[]
+  
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  
+  unlockedAt    DateTime @default(now())
+  
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+// ============================================
+// MATERIALS (V2 - opcional no MVP)
+// ============================================
+
+model Material {
+  id          String   @id @default(cuid())
+  topicId     String
+  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  
+  type        String   // "pdf", "video", "link", "note"
+  title       String
+  url         String?  // URL externa ou path no storage
+  content     String?  // Conteúdo de nota
+  
+  createdAt   DateTime @default(now())
+  
+  @@map("materials")
+}
