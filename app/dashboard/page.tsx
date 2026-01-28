@@ -174,6 +174,19 @@ export default async function DashboardPage() {
                 <span className="text-sm text-zinc-500">points</span>
               </div>
             </div>
+
+            {/* NEW: Explore Card */}
+            <Link href="/subjects" className="block">
+              <div className="p-5 rounded-2xl bg-[#27272a] border border-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] relative overflow-hidden group hover:border-indigo-500/30 transition-colors">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                    <BookOpen className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 group-hover:text-indigo-400 transition-colors">Explorar</span>
+                </div>
+                <div className="text-lg font-bold text-zinc-200 group-hover:text-white">Meus Conteúdos &rarr;</div>
+              </div>
+            </Link>
           </div>
         </div>
 
@@ -215,7 +228,7 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-      </main>
-    </div>
+      </main >
+    </div >
   )
 }
