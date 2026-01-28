@@ -5,13 +5,14 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { saveStudySession } from '../actions'
 
-export interface UsePomodoroOptions {
+export interface UseStudyTimerOptions {
     topicId: string
     initialMinutes?: number
     onComplete?: (result: { xpEarned: number; newLevel: number; leveledUp: boolean }) => void
 }
 
-export function usePomodoro({ topicId, initialMinutes = 25, onComplete }: UsePomodoroOptions) {
+export function useStudyTimer({ topicId, initialMinutes = 25, onComplete }: UseStudyTimerOptions) {
+    console.log('🔄 useStudyTimer hook initialized (fresh file)')
     const [timeLeft, setTimeLeft] = useState(initialMinutes * 60)
     const [isRunning, setIsRunning] = useState(false)
     const [hasCompleted, setHasCompleted] = useState(false)
@@ -68,6 +69,7 @@ export function usePomodoro({ topicId, initialMinutes = 25, onComplete }: UsePom
                 onComplete?.(result)
             }
         } catch (error) {
+            console.error('Save session error:', error)
             toast.error('Erro ao salvar sessão', {
                 description: 'Não foi possível registrar sua sessão de estudos'
             })

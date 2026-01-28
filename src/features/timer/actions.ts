@@ -20,7 +20,10 @@ export interface SaveStudySessionResult {
 
 export async function saveStudySession(data: SaveStudySessionInput): Promise<SaveStudySessionResult> {
     // TODO: Get userId from auth session
-    const userId = 'temp-user-id' // Replace with actual auth
+    // MVP Hack: Use the first user found (assumes seed was run)
+    const userExists = await prisma.user.findFirst()
+    if (!userExists) throw new Error('No user found via seed')
+    const userId = userExists.id
 
     const xpEarned = calculateXP(data.minutes)
 
