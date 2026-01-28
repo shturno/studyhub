@@ -1,73 +1,28 @@
-import { redirect } from "next/navigation"
-import { getCustomSession } from "@/lib/auth-helpers"
-import { mockDb } from "@/lib/mock-db"
-import { DashboardLayout } from "@/components/dashboard-layout"
-import { DashboardContent } from "@/components/dashboard-content"
-
-async function getDashboardData(userId: string) {
-  const tracks = mockDb.getTracksWithLessonsAndLogs(userId)
-
-  const allStudyLogs = mockDb.findStudyLogsByUserId(userId)
-  const recentLogs = allStudyLogs
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 10)
-
-  const totalMinutes = allStudyLogs.reduce((sum, log) => sum + log.minutes, 0)
-
-  const weekAgo = new Date()
-  weekAgo.setDate(weekAgo.getDate() - 7)
-  const weeklyMinutes = allStudyLogs
-    .filter((log) => new Date(log.createdAt) >= weekAgo)
-    .reduce((sum, log) => sum + log.minutes, 0)
-
-  const nextLessons = tracks
-    .flatMap((track) =>
-      track.lessons
-        .filter((lesson) => lesson.status !== "DONE")
-        .map((lesson) => ({
-          ...lesson,
-          trackName: track.name,
-          trackId: track.id,
-        })),
-    )
-    .slice(0, 5)
-
-  const trackTimeDistribution = tracks
-    .map((track) => {
-      const trackMinutes = track.lessons.reduce(
-        (sum, lesson) => sum + lesson.studyLogs.reduce((logSum, log) => logSum + log.minutes, 0),
-        0,
-      )
-      return {
-        name: track.name,
-        value: trackMinutes,
-        id: track.id,
-      }
-    })
-    .filter((track) => track.value > 0)
-
-  return {
-    tracks,
-    totalMinutes,
-    weeklyMinutes,
-    nextLessons,
-    recentLogs,
-    trackTimeDistribution,
-  }
-}
-
-export default async function DashboardPage() {
-  const session = await getCustomSession()
-
-  if (!session?.user?.id) {
-    redirect("/auth/signin")
-  }
-
-  const data = await getDashboardData(session.user.id)
-
+export default function DashboardPage() {
   return (
-    <DashboardLayout>
-      <DashboardContent data={data} />
-    </DashboardLayout>
+    <div className="min-h-screen p-8 bg-background">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <header className="flex items-center justify-between">
+          <h1 className="text-4xl font-bold">Dashboard</h1>
+          <div className="text-sm text-muted-foreground">
+            Em construção - Componentes criados, aguardando integração
+          </div>
+        </header>
+
+        <div className="grid gap-6">
+          <div className="p-8 border-2 border-dashed border-border rounded-lg text-center">
+            <h2 className="text-2xl font-semibold mb-4">Próximos Passos</h2>
+            <ul className="text-left max-w-2xl mx-auto space-y-2 text-muted-foreground">
+              <li>✅ Design System implementado (Neon Study Lab)</li>
+              <li>✅ Banco de dados configurado (Vercel Postgres)</li>
+              <li>✅ Componentes criados (Timer, Dashboard, Gamificação)</li>
+              <li>⏳ Integrar componentes nesta página</li>
+              <li>⏳ Implementar autenticação</li>
+              <li>⏳ Criar fluxo de onboarding</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
