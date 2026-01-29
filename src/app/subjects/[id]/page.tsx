@@ -6,14 +6,15 @@ import { TopicList } from '@/features/subjects/components/TopicList'
 import { Progress } from '@/components/ui/progress'
 
 interface SubjectDetailsPageProps {
-    params: {
+    params: Promise<{
         id: string
-    }
+    }>
 }
 
 export const dynamic = 'force-dynamic'
 
-export default async function SubjectDetailsPage({ params }: SubjectDetailsPageProps) {
+export default async function SubjectDetailsPage(props: SubjectDetailsPageProps) {
+    const params = await props.params;
     const data = await getSubjectDetails(params.id)
 
     if (!data) {

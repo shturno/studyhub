@@ -118,7 +118,7 @@ export function CreateLessonDialog({ children, trackId }: CreateLessonDialogProp
               type="url"
               value={externalUrl}
               onChange={(e) => setExternalUrl(e.target.value)}
-              placeholder="https:
+              placeholder="https://exemplo.com"
               disabled={isLoading}
             />
           </div>

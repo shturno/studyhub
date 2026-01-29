@@ -86,8 +86,8 @@ export function StatsCharts() {
               <XAxis dataKey="week" />
               <YAxis />
               <Tooltip
-                formatter={(value: number) => [`${value}h`, "Horas"]}
-                labelFormatter={(label) => `Semana ${label}`}
+                formatter={(value: any) => [`${value}h`, "Horas"]}
+                labelFormatter={(label: any) => `Semana ${label}`}
               />
               <Bar dataKey="hours" fill="#10b981" radius={[4, 4, 0, 0]} />
             </BarChart>
@@ -110,16 +110,21 @@ export function StatsCharts() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, hours }) => `${name}: ${hours}h`}
+                  label={({ name, hours }: any) => `${name}: ${hours}h`}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="hours"
                 >
-                  {stats.trackDistribution.map((entry, index) => (
+                  {stats.trackDistribution.map((_: TrackData, index: number) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value: number) => [`${value}h`, "Horas"]} />
+                <Tooltip
+                  formatter={(value: any) => [`${value}h`, "Horas"]}
+                  cursor={{ fill: 'hsl(var(--muted)/0.2)' }}
+                  contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}
+                  itemStyle={{ color: 'hsl(var(--foreground))' }}
+                />
               </PieChart>
             </ResponsiveContainer>
           ) : (
@@ -149,8 +154,8 @@ export function StatsCharts() {
                   </tr>
                 </thead>
                 <tbody>
-                  {stats.trackDistribution.map((track, index) => {
-                    const totalMinutes = stats.trackDistribution.reduce((sum, t) => sum + t.minutes, 0)
+                  {stats.trackDistribution.map((track: TrackData, index: number) => {
+                    const totalMinutes = stats.trackDistribution.reduce((sum: number, t: TrackData) => sum + t.minutes, 0)
                     const percentage = totalMinutes > 0 ? ((track.minutes / totalMinutes) * 100).toFixed(1) : "0"
 
                     return (

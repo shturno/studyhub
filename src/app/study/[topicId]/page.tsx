@@ -5,12 +5,13 @@ import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
 interface StudyPageProps {
-    params: {
+    params: Promise<{
         topicId: string
-    }
+    }>
 }
 
-export default async function StudyPage({ params }: StudyPageProps) {
+export default async function StudyPage(props: StudyPageProps) {
+    const params = await props.params;
     const topic = await prisma.topic.findUnique({
         where: { id: params.topicId },
         include: {

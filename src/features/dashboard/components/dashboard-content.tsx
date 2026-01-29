@@ -195,7 +195,11 @@ export function DashboardContent({ data }: DashboardContentProps) {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number) => [`${Math.floor(value / 60)}h ${value % 60}m`, "Tempo"]} />
+                  <Tooltip
+                    formatter={(value: any) => [`${Math.floor(value / 60)}h ${value % 60}m`, "Tempo"]}
+                    contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}
+                    itemStyle={{ color: 'hsl(var(--foreground))' }}
+                  />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
