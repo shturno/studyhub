@@ -23,6 +23,9 @@ export function DashboardView({ data }: DashboardViewProps) {
 
     return (
         <div className="min-h-screen bg-[#0c0c0e] text-zinc-100 selection:bg-indigo-500/30">
+            {/* Background Noise Texture */}
+            <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }} />
+
             {/* Header */}
             <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-[#0c0c0e]/80 backdrop-blur-md">
                 <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
@@ -82,6 +85,22 @@ export function DashboardView({ data }: DashboardViewProps) {
                         </div>
 
                         <div className="flex items-center gap-4 mt-8">
+                            {randomTopic ? (
+                                <Link href={`/study/${randomTopic.id}`}>
+                                    <button className="relative h-12 px-8 bg-gradient-to-r from-indigo-500 to-violet-600 text-white text-sm font-bold rounded-xl hover:brightness-110 transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2 active:scale-[0.98]">
+                                        <Zap className="w-4 h-4 fill-white" />
+                                        START SESSION
+                                    </button>
+                                </Link>
+                            ) : (
+                                <button disabled className="relative h-12 px-8 bg-zinc-700 text-zinc-400 text-sm font-bold rounded-xl cursor-not-allowed">
+                                    Sem Matérias
+                                </button>
+                            )}
+
+                            <button className="h-12 px-6 text-zinc-400 text-sm font-medium hover:text-white transition-colors">
+                                Skip Topic
+                            </button>
                         </div>
                     </div>
 
