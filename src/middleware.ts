@@ -1,4 +1,5 @@
-import { auth } from "@/lib/auth"
+import NextAuth from "next-auth"
+import { authConfig } from "@/lib/auth.config"
 import type { NextRequest } from "next/server"
 
 import { Session } from "next-auth"
@@ -7,7 +8,9 @@ interface NextAuthRequest extends NextRequest {
     auth: Session | null
 }
 
-export default auth((req: NextAuthRequest) => {
+const { auth } = NextAuth(authConfig)
+
+export default auth(async (req) => {
     const isLoggedIn = !!req.auth
     const isOnDashboard = req.nextUrl.pathname.startsWith('/dashboard')
 

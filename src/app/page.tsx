@@ -4,9 +4,9 @@ import { ArrowRight, CheckCircle2, Trophy, BrainCircuit } from "lucide-react"
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#0c0c0e] text-white selection:bg-brand-primary/30">
+    <div className="min-h-screen text-white selection:bg-brand-primary/30">
       {/* Navigation */}
-      <nav className="fixed w-full z-50 border-b border-white/[0.08] bg-[#0c0c0e]/80 backdrop-blur-md">
+      <nav className="fixed w-full z-50 border-b border-white/[0.08] bg-background/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-primary to-accent flex items-center justify-center">
@@ -93,7 +93,7 @@ export default function HomePage() {
 
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
   return (
-    <div className="p-8 rounded-2xl bg-[#131316] border border-white/[0.08] hover:border-brand-primary/50 transition-colors group">
+    <div className="p-8 rounded-2xl bg-card border border-white/[0.08] hover:border-brand-primary/50 transition-colors group">
       <div className="mb-6 p-4 rounded-xl bg-white/5 w-fit group-hover:scale-110 transition-transform duration-300">
         {icon}
       </div>

@@ -13,7 +13,7 @@ export function DashboardView({ data }: DashboardViewProps) {
 
     if (!user) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-[#0c0c0e] text-zinc-400 gap-4">
+            <div className="min-h-screen flex flex-col items-center justify-center text-zinc-400 gap-4">
                 <h1 className="text-xl text-white font-bold">Nenhum Usuário Encontrado</h1>
                 <p>Parece que o banco de dados está vazio.</p>
                 <code className="bg-zinc-900 px-4 py-2 rounded">npm run db:seed</code>
@@ -39,7 +39,7 @@ export function DashboardView({ data }: DashboardViewProps) {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#27272a] border border-orange-500/20 text-orange-400">
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-card border border-orange-500/20 text-orange-400">
                             <Flame className="w-3.5 h-3.5 fill-orange-500" />
                             <span className="text-xs font-bold">{streak} dias</span>
                         </div>
@@ -50,7 +50,7 @@ export function DashboardView({ data }: DashboardViewProps) {
                         </div>
 
                         <Link href="/profile">
-                            <div className="w-8 h-8 rounded-full bg-[#27272a] border border-white/10 flex items-center justify-center text-xs text-zinc-400 cursor-pointer hover:bg-zinc-700 transition-colors uppercase font-bold">
+                            <div className="w-8 h-8 rounded-full bg-card border border-white/10 flex items-center justify-center text-xs text-zinc-400 cursor-pointer hover:bg-zinc-700 transition-colors uppercase font-bold">
                                 {user.name?.[0] || 'U'}
                             </div>
                         </Link>
@@ -147,7 +147,7 @@ export function DashboardView({ data }: DashboardViewProps) {
 
                     {/* Explore Subjects Card */}
                     <Link href="/subjects" className="block">
-                        <div className="p-5 rounded-2xl bg-[#27272a] border border-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] relative overflow-hidden group hover:border-indigo-500/30 transition-colors">
+                        <div className="p-5 rounded-2xl bg-card border border-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] relative overflow-hidden group hover:border-indigo-500/30 transition-colors">
                             <div className="flex items-center gap-3 mb-2">
                                 <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
                                     <BookOpen className="w-4 h-4" />
@@ -166,7 +166,7 @@ export function DashboardView({ data }: DashboardViewProps) {
                         <button className="text-xs text-zinc-500 hover:text-white transition-colors">View All</button>
                     </div>
 
-                    <div className="rounded-2xl border border-white/[0.08] bg-[#27272a] overflow-hidden">
+                    <div className="rounded-2xl border border-white/[0.08] bg-card overflow-hidden">
                         {recentSessions.length > 0 ? (
                             recentSessions.map((session, i) => (
                                 <div key={session.id} className="group flex items-center justify-between p-4 border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors cursor-pointer">

@@ -10,7 +10,7 @@ export function TopicList({ topics }: { topics: TopicWithStatus[] }) {
             {topics.map(topic => (
                 <div
                     key={topic.id}
-                    className="group flex items-center justify-between p-4 rounded-xl bg-[#18181b] border border-white/[0.05] hover:border-indigo-500/30 hover:bg-[#18181b]/90 transition-all duration-300"
+                    className="group flex items-center justify-between p-4 rounded-xl bg-card border border-white/[0.05] hover:border-indigo-500/30 hover:bg-card/90 transition-all duration-300"
                 >
                     <div className="flex items-center gap-4">
                         {/* Status Icon */}
