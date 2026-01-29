@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { CheckCircle, Circle, Play, Clock, ExternalLink, Timer, BookOpen } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { LessonPanel } from "@/components/lesson-panel"
+import { LessonPanel } from "@/features/study-cycle/components/LessonPanel"
 
 interface Lesson {
   id: string
@@ -74,7 +74,7 @@ export function LessonChecklist({ lessons, trackId }: LessonChecklistProps) {
     }
   }
 
-  // Added function to open lesson panel
+
   const openLessonPanel = (lessonId: string) => {
     setSelectedLessonId(lessonId)
     setPanelOpen(true)
@@ -178,7 +178,7 @@ export function LessonChecklist({ lessons, trackId }: LessonChecklistProps) {
                       </div>
 
                       <div className="flex items-center space-x-2">
-                        {/* Updated buttons to open lesson panel instead of navigating */}
+                        { }
                         <Button size="sm" variant="outline" onClick={() => openLessonPanel(lesson.id)}>
                           <Timer className="h-4 w-4 mr-1" />
                           Timer
@@ -196,7 +196,7 @@ export function LessonChecklist({ lessons, trackId }: LessonChecklistProps) {
         })}
       </div>
 
-      {/* Added LessonPanel component */}
+      { }
       <LessonPanel lessonId={selectedLessonId} trackId={trackId} open={panelOpen} onOpenChange={setPanelOpen} />
     </>
   )

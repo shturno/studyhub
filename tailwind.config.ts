@@ -1,14 +1,11 @@
 import type { Config } from "tailwindcss";
 
-// all in fixtures is set to tailwind v3 as interims solutions
-
 const config: Config = {
 	darkMode: ["class"],
 	content: [
-		"./pages/**/*.{js,ts,jsx,tsx,mdx}",
-		"./components/**/*.{js,ts,jsx,tsx,mdx}",
-		"./app/**/*.{js,ts,jsx,tsx,mdx}",
-		"*.{js,ts,jsx,tsx,mdx}"
+		"./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+		"./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+		"./src/features/**/*.{js,ts,jsx,tsx,mdx}",
 	],
 	theme: {
 		extend: {
@@ -63,25 +60,25 @@ const config: Config = {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// ADHD-Focused Semantic Colors
+
 				brand: {
-					primary: 'hsl(262, 83%, 58%)',      // Roxo vibrante (foco, energia)
-					secondary: 'hsl(217, 91%, 60%)',    // Azul (calma, confiança)
+					primary: 'hsl(262, 83%, 58%)',
+					secondary: 'hsl(217, 91%, 60%)',
 				},
 				state: {
-					success: 'hsl(142, 76%, 36%)',      // Verde (conquista)
-					warning: 'hsl(38, 92%, 50%)',       // Laranja (atenção)
-					error: 'hsl(0, 84%, 60%)',          // Vermelho (erro)
+					success: 'hsl(142, 76%, 36%)',
+					warning: 'hsl(38, 92%, 50%)',
+					error: 'hsl(0, 84%, 60%)',
 				},
 				xp: {
-					gold: 'hsl(45, 100%, 51%)',         // Dourado (XP, recompensa)
-					glow: 'hsl(45, 100%, 70%)',         // Brilho de XP
+					gold: 'hsl(45, 100%, 51%)',
+					glow: 'hsl(45, 100%, 70%)',
 				},
 				focus: {
-					mode: 'hsl(220, 13%, 13%)',         // Fundo escuro para modo foco
-					highlight: 'hsl(262, 83%, 58%)',    // Destaque no modo foco
+					mode: 'hsl(220, 13%, 13%)',
+					highlight: 'hsl(262, 83%, 58%)',
 				},
-				// Neon Study Lab - Extended Colors
+
 				'deep-space': '#0A0E27',
 				'elevated': '#141B3D',
 				'neon-purple': '#8B5CF6',

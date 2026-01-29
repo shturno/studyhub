@@ -6,10 +6,10 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { useSessionModal } from "@/lib/session-modal-context"
+import { useSessionModal } from "@/features/timer/context/SessionModalContext"
 import { useToast } from "@/hooks/use-toast"
-import { DraggableLesson } from "@/components/draggable-lesson"
-import { DroppableArea } from "@/components/droppable-area"
+import { DraggableLesson } from "@/features/study-cycle/components/DraggableLesson"
+import { DroppableArea } from "@/features/study-cycle/components/DroppableArea"
 import { Calendar, Clock, BookOpen, Plus, Target } from "lucide-react"
 
 interface Lesson {
@@ -66,7 +66,7 @@ export function PlannerContent({ data }: PlannerContentProps) {
     if (over.id === "planner-area") {
       const lesson = availableLessons.find((l) => l.id === active.id)
       if (lesson) {
-        // Create draft session as specified in patch
+
         const newSession: PlannedSession = {
           id: `session-${Date.now()}`,
           lessonId: lesson.id,
@@ -118,7 +118,7 @@ export function PlannerContent({ data }: PlannerContentProps) {
 
       <DndContext collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Available Lessons */}
+          { }
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -144,7 +144,7 @@ export function PlannerContent({ data }: PlannerContentProps) {
             </CardContent>
           </Card>
 
-          {/* Planner Area */}
+          { }
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">

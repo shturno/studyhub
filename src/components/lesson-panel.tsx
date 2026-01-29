@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"
-import { StudyTimer } from "@/components/study-timer"
+import { StudyTimer } from "@/features/timer/components/study-timer"
 import { ExternalLink, Clock, Calendar, Timer } from "lucide-react"
 
 interface StudyLog {
