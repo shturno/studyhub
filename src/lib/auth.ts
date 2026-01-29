@@ -61,7 +61,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             }
             return session
         },
-        async jwt({ token, user, trigger, session }) {
+        async jwt({ token, user }) {
             // Initial sign in
             if (user) {
                 token.id = user.id;
