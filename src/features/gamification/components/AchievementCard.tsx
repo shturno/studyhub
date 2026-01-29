@@ -18,7 +18,7 @@ export function AchievementCard({ achievement }: AchievementCardProps) {
         <div className={cn(
             "relative p-4 rounded-xl border transition-all duration-300 group overflow-hidden",
             achievement.isUnlocked
-                ? "bg-[#27272a] border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+                ? "bg-card border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]"
                 : "bg-zinc-900/50 border-white/5 opacity-60 grayscale hover:opacity-80"
         )}>
             {achievement.isUnlocked && (

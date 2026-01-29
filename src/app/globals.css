@@ -13,16 +13,17 @@
     /* Neon Study Lab - Dark First Theme */
 
     /* Backgrounds - Deep Space (TRUE BLACK) */
-    --background: 225 47% 7%;
+    --background: 240 7.7% 5.1%;
+    /* #0c0c0e */
     /* #0A0E1A very dark, almost black */
     --foreground: 0 0% 100%;
     /* white */
 
-    --card: 225 39% 10%;
-    /* #12162B dark elevated */
+    --card: 240 3.7% 15.9%;
+    /* #27272a Zinc 800 */
     --card-foreground: 0 0% 100%;
 
-    --popover: 225 39% 10%;
+    --popover: 240 3.7% 15.9%;
     --popover-foreground: 0 0% 100%;
 
     /* Brand Colors - Neon Purple */

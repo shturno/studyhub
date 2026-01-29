@@ -24,7 +24,7 @@ export default async function StudyPage(props: StudyPageProps) {
     }
 
     return (
-        <div className="min-h-screen bg-[#0c0c0e] text-zinc-100 flex flex-col">
+        <div className="min-h-screen text-zinc-100 flex flex-col">
             {/* Minimal Header */}
             <header className="p-6">
                 <Link

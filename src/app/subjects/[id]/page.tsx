@@ -26,9 +26,9 @@ export default async function SubjectDetailsPage(props: SubjectDetailsPageProps)
     const progress = Math.round((completedTopics / topics.length) * 100)
 
     return (
-        <div className="min-h-screen bg-[#0c0c0e] text-zinc-100">
+        <div className="min-h-screen text-zinc-100">
             {/* Header */}
-            <header className="border-b border-white/[0.08] bg-[#0c0c0e]/80 backdrop-blur-md sticky top-0 z-50">
+            <header className="border-b border-white/[0.08] bg-background/80 backdrop-blur-md sticky top-0 z-50">
                 <div className="max-w-4xl mx-auto px-6 h-16 flex items-center gap-4">
                     <Link href="/subjects" className="p-2 -ml-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-full transition-colors">
                         <ArrowLeft className="w-5 h-5" />
@@ -41,7 +41,7 @@ export default async function SubjectDetailsPage(props: SubjectDetailsPageProps)
 
                 {/* Stats Overview */}
                 <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="p-6 rounded-2xl bg-[#18181b] border border-white/[0.08] flexflex-col justify-between">
+                    <div className="p-6 rounded-2xl bg-card border border-white/[0.08] flex flex-col justify-between">
                         <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Progresso Geral</h3>
                         <div className="flex items-end gap-2 mb-4">
                             <span className="text-4xl font-bold text-white">{progress}%</span>
@@ -50,7 +50,7 @@ export default async function SubjectDetailsPage(props: SubjectDetailsPageProps)
                         <Progress value={progress} className="h-2" />
                     </div>
 
-                    <div className="p-6 rounded-2xl bg-[#18181b] border border-white/[0.08] flex flex-col justify-between">
+                    <div className="p-6 rounded-2xl bg-card border border-white/[0.08] flex flex-col justify-between">
                         <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Tópicos</h3>
                         <div className="flex items-end gap-2">
                             <span className="text-4xl font-bold text-white">{completedTopics}</span>
@@ -58,7 +58,7 @@ export default async function SubjectDetailsPage(props: SubjectDetailsPageProps)
                         </div>
                     </div>
 
-                    <div className="p-6 rounded-2xl bg-[#18181b] border border-white/[0.08] flex flex-col justify-between relative overflow-hidden">
+                    <div className="p-6 rounded-2xl bg-card border border-white/[0.08] flex flex-col justify-between relative overflow-hidden">
                         <div className="absolute right-0 top-0 p-4 opacity-5">
                             <PieChart className="w-20 h-20" />
                         </div>

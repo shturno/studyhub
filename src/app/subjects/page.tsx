@@ -9,9 +9,9 @@ export default async function SubjectsPage() {
     const subjects = await getUserSubjects()
 
     return (
-        <div className="min-h-screen bg-[#0c0c0e] text-zinc-100">
+        <div className="min-h-screen text-zinc-100">
             {/* Header */}
-            <header className="border-b border-white/[0.08] bg-[#0c0c0e]/80 backdrop-blur-md sticky top-0 z-50">
+            <header className="border-b border-white/[0.08] bg-background/80 backdrop-blur-md sticky top-0 z-50">
                 <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Link href="/dashboard" className="p-2 -ml-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-full transition-colors">
