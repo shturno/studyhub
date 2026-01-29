@@ -11,6 +11,12 @@ declare module "next-auth" {
             id: string
         } & DefaultSession["user"]
     }
+
+    interface User {
+        id: string
+        // Add other properties from your Prisma User model if needed locally
+        // email, name, image are included by default in User
+    }
 }
 
 declare module "next-auth/jwt" {
@@ -18,5 +24,6 @@ declare module "next-auth/jwt" {
     interface JWT {
         /** OpenID ID Token */
         id?: string
+        email?: string | null
     }
 }
