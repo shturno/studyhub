@@ -110,7 +110,7 @@ export function StatsCharts() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, hours }: any) => `${name}: ${hours}h`}
+                  label={({ name, value }: any) => `${name}: ${value}h`}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="hours"

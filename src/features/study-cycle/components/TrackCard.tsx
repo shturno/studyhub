@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import type { Track } from "@/lib/types"
+import type { Track } from "@/features/study-cycle/types"
 
 interface TrackCardProps {
   track: Track

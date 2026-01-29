@@ -1,6 +1,7 @@
 'use server'
 
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/lib/auth'
 import { calculateXP, calculateLevel, getXPForNextLevel } from '@/features/gamification/utils/xpCalculator'
 import { revalidatePath } from 'next/cache'
 
@@ -19,16 +20,16 @@ export interface SaveStudySessionResult {
 }
 
 export async function saveStudySession(data: SaveStudySessionInput): Promise<SaveStudySessionResult> {
-    // TODO: Get userId from auth session
-    // MVP Hack: Use the first user found (assumes seed was run)
-    const userExists = await prisma.user.findFirst()
-    if (!userExists) throw new Error('No user found via seed')
-    const userId = userExists.id
+    const session = await auth()
+    if (!session?.user?.id) {
+        throw new Error('Unauthorized')
+    }
+    const userId = session.user.id
 
     const xpEarned = calculateXP(data.minutes)
 
     // Create study session
-    const session = await prisma.studySession.create({
+    const newSession = await prisma.studySession.create({
         data: {
             userId,
             topicId: data.topicId,
@@ -64,7 +65,7 @@ export async function saveStudySession(data: SaveStudySessionInput): Promise<Sav
     revalidatePath('/dashboard')
 
     return {
-        sessionId: session.id,
+        sessionId: newSession.id,
         xpEarned,
         newLevel,
         leveledUp,
