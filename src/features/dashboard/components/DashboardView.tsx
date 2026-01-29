@@ -22,12 +22,12 @@ export function DashboardView({ data }: DashboardViewProps) {
     }
 
     return (
-        <div className="min-h-screen bg-[#0c0c0e] text-zinc-100 selection:bg-indigo-500/30">
+        <div className="min-h-screen bg-background text-foreground selection:bg-indigo-500/30">
             {/* Background Noise Texture */}
             <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }} />
 
             {/* Header */}
-            <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-[#0c0c0e]/80 backdrop-blur-md">
+            <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
                 <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-6 h-6 rounded flex items-center justify-center bg-white text-black font-bold text-xs shadow-[0_0_10px_rgba(255,255,255,0.2)]">
@@ -105,7 +105,7 @@ export function DashboardView({ data }: DashboardViewProps) {
                     </div>
 
                     {/* Streak Card */}
-                    <div className="p-5 rounded-2xl bg-[#27272a] border border-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] relative overflow-hidden group">
+                    <div className="p-5 rounded-2xl bg-card border border-border shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
                             <Flame className="w-16 h-16 text-orange-500" />
                         </div>
@@ -114,11 +114,11 @@ export function DashboardView({ data }: DashboardViewProps) {
                             <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400">
                                 <Flame className="w-4 h-4 fill-orange-500" />
                             </div>
-                            <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 group-hover:text-orange-400 transition-colors">Streak</span>
+                            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground group-hover:text-orange-400 transition-colors">Streak</span>
                         </div>
                         <div className="relative z-10">
                             <div className="flex items-baseline gap-2">
-                                <span className="text-3xl font-bold tracking-tight text-white">{streak}</span>
+                                <span className="text-3xl font-bold tracking-tight text-foreground">{streak}</span>
                                 <span className="text-sm text-zinc-500">days</span>
                             </div>
                             <div className="w-full bg-zinc-800/50 h-1.5 mt-4 rounded-full overflow-hidden">
@@ -128,7 +128,7 @@ export function DashboardView({ data }: DashboardViewProps) {
                     </div>
 
                     {/* XP Card */}
-                    <div className="p-5 rounded-2xl bg-[#27272a] border border-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] relative overflow-hidden group">
+                    <div className="p-5 rounded-2xl bg-card border border-border shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
                             <Trophy className="w-16 h-16 text-yellow-500" />
                         </div>
@@ -137,10 +137,10 @@ export function DashboardView({ data }: DashboardViewProps) {
                             <div className="w-8 h-8 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-400">
                                 <Trophy className="w-4 h-4 fill-yellow-500" />
                             </div>
-                            <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 group-hover:text-yellow-400 transition-colors">Total XP</span>
+                            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground group-hover:text-yellow-400 transition-colors">Total XP</span>
                         </div>
                         <div className="relative z-10 flex items-baseline gap-2">
-                            <span className="text-3xl font-bold tracking-tight text-white">{user.xp}</span>
+                            <span className="text-3xl font-bold tracking-tight text-foreground">{user.xp}</span>
                             <span className="text-sm text-zinc-500">points</span>
                         </div>
                     </div>

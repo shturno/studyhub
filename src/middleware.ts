@@ -1,14 +1,21 @@
-// Middleware simplificado - sem NextAuth middleware
-export default function middleware() {
-    return null
+import { auth } from "@/lib/auth"
+import type { NextRequest } from "next/server"
+
+import { Session } from "next-auth"
+
+interface NextAuthRequest extends NextRequest {
+    auth: Session | null
 }
 
+export default auth((req: NextAuthRequest) => {
+    const isLoggedIn = !!req.auth
+    const isOnDashboard = req.nextUrl.pathname.startsWith('/dashboard')
+
+    if (isOnDashboard && !isLoggedIn) {
+        return Response.redirect(new URL('/login', req.nextUrl))
+    }
+})
+
 export const config = {
-    matcher: [
-        "/dashboard/:path*",
-        "/study/:path*",
-        "/subjects/:path*",
-        "/profile/:path*",
-        "/contests/:path*"
-    ]
+    matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 }

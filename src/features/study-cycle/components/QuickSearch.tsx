@@ -11,7 +11,7 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { BookOpen, FileText } from "lucide-react"
-import type { Track, Lesson } from "@/lib/types"
+import type { Track, Lesson } from "@/features/study-cycle/types"
 
 interface QuickSearchProps {
   open: boolean
@@ -29,7 +29,7 @@ export function QuickSearch({ open, onOpenChange, tracks, lessons }: QuickSearch
   const filteredLessons = lessons.filter(
     (lesson) =>
       lesson.title.toLowerCase().includes(search.toLowerCase()) ||
-      lesson.note?.toLowerCase().includes(search.toLowerCase()),
+      lesson.title.toLowerCase().includes(search.toLowerCase()),
   )
 
   const handleSelect = (type: "track" | "lesson", id: string, trackId?: string) => {
@@ -85,7 +85,7 @@ export function QuickSearch({ open, onOpenChange, tracks, lessons }: QuickSearch
                     <div className="font-medium">{lesson.title}</div>
                     {track && <div className="text-xs text-muted-foreground">{track.name}</div>}
                   </div>
-                  {lesson.done && <div className="text-xs text-emerald-600 dark:text-emerald-400">✓</div>}
+                  {lesson.status === 'DONE' && <div className="text-xs text-emerald-600 dark:text-emerald-400">✓</div>}
                 </CommandItem>
               )
             })}
