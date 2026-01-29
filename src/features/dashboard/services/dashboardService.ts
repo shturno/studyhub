@@ -4,9 +4,9 @@ export interface DashboardData {
     user: {
         id: string
         name: string | null
-        email: string | null
-        level: number
+        email: string
         xp: number
+        level: number
     } | null
     randomTopic: {
         id: string
@@ -31,17 +31,17 @@ export interface DashboardData {
 }
 
 /**
- * Service para buscar dados do dashboard
+ * Busca todos os dados necessários para o dashboard
  */
 export async function getDashboardData(): Promise<DashboardData> {
-    // Buscar usuário com sessões recentes
+    // 1. Buscar primeiro usuário (MVP)
     const user = await prisma.user.findFirst({
         select: {
             id: true,
             name: true,
             email: true,
-            level: true,
             xp: true,
+            level: true,
             studySessions: {
                 orderBy: { completedAt: 'desc' },
                 take: 5,
@@ -64,18 +64,8 @@ export async function getDashboardData(): Promise<DashboardData> {
         }
     })
 
-    if (!user) {
-        return {
-            user: null,
-            randomTopic: null,
-            recentSessions: [],
-            streak: 0
-        }
-    }
-
-    // Buscar tópico aleatório
+    // 2. Buscar próximo tópico (MVP: aleatório)
     const randomTopic = await prisma.topic.findFirst({
-        where: { subject: { contest: { userId: user.id } } },
         select: {
             id: true,
             name: true,
@@ -88,29 +78,29 @@ export async function getDashboardData(): Promise<DashboardData> {
         }
     })
 
-    // Calcular streak (TODO: implementar lógica real)
-    const streak = await calculateStreak(user.id)
+    // 3. Calcular streak (hardcoded por enquanto)
+    const streak = calculateStreak(user?.studySessions || [])
 
     return {
-        user: {
+        user: user ? {
             id: user.id,
             name: user.name,
             email: user.email,
-            level: user.level,
-            xp: user.xp
-        },
+            xp: user.xp,
+            level: user.level
+        } : null,
         randomTopic,
-        recentSessions: user.studySessions,
+        recentSessions: user?.studySessions || [],
         streak
     }
 }
 
 /**
- * Calcula o streak de dias consecutivos de estudo
- * TODO: Implementar lógica real baseada em studySessions
+ * Calcula dias consecutivos de estudo
+ * TODO: Implementar lógica real baseada em datas
  */
-async function calculateStreak(userId: string): Promise<number> {
-    // Por enquanto retorna valor fixo
-    // TODO: Implementar lógica real que conta dias consecutivos
+function calculateStreak(sessions: Array<{ completedAt: Date }>): number {
+    // MVP: retorna valor fixo
+    // V2: implementar lógica real verificando datas consecutivas
     return 12
 }
