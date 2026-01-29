@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Key } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -58,7 +58,7 @@ export function LessonPanel({ lessonId, trackId, open, onOpenChange }: LessonPan
     return null
   }
 
-  const totalStudyTime = lesson?.studyLogs.reduce((sum, log) => sum + log.minutes, 0) || 0
+  const totalStudyTime = lesson?.studyLogs.reduce((sum: any, log: { minutes: any }) => sum + log.minutes, 0) || 0
   const studySessionsCount = lesson?.studyLogs.length || 0
 
   return (
@@ -167,7 +167,7 @@ export function LessonPanel({ lessonId, trackId, open, onOpenChange }: LessonPan
                         {studySessionsCount} sessões • {Math.floor(totalStudyTime / 60)}h {totalStudyTime % 60}m total
                       </div>
                       <div className="space-y-2 max-h-48 overflow-y-auto">
-                        {lesson.studyLogs.map((log) => (
+                        {lesson.studyLogs.map((log: { id: Key | null | undefined; createdAt: string | number | Date; minutes: unknown }) => (
                           <div
                             key={log.id}
                             className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded"
