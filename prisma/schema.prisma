@@ -142,6 +142,11 @@ model Topic {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
+  // Hierarchy
+  parentId    String?
+  parent      Topic?   @relation("TopicHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children    Topic[]  @relation("TopicHierarchy")
+
   // Relations
   studySessions StudySession[]
   reviewQueue   ReviewQueue[]

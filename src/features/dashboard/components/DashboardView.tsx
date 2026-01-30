@@ -2,14 +2,27 @@ import { Trophy, Zap, Target, BookOpen, Clock, ArrowUpRight, Flame } from 'lucid
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { useRouter } from 'next/navigation'
 import type { DashboardData } from '../services/dashboardService'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface DashboardViewProps {
     data: DashboardData
+    contests: any[]
+    activeContestId?: string
 }
 
-export function DashboardView({ data }: DashboardViewProps) {
+export function DashboardView({ data, contests, activeContestId }: DashboardViewProps) {
+    const router = useRouter()
     const { user, randomTopic, recentSessions, streak } = data
+
+    const handleContestChange = (value: string) => {
+        if (value === 'all') {
+            router.push('/dashboard')
+        } else {
+            router.push(`/dashboard?contestId=${value}`)
+        }
+    }
 
     if (!user) {
         return (
@@ -33,9 +46,23 @@ export function DashboardView({ data }: DashboardViewProps) {
                         <div className="w-6 h-6 rounded flex items-center justify-center bg-white text-black font-bold text-xs shadow-[0_0_10px_rgba(255,255,255,0.2)]">
                             S
                         </div>
-                        <Link href="/contests" className="font-medium text-sm text-zinc-200 hover:text-white transition-colors cursor-pointer hover:underline underline-offset-4">
+                        <Link href="/contests" className="font-medium text-sm text-zinc-200 hover:text-white transition-colors cursor-pointer hover:underline underline-offset-4 mr-2">
                             Meus Concursos
                         </Link>
+
+                        <Select value={activeContestId || 'all'} onValueChange={handleContestChange}>
+                            <SelectTrigger className="w-[180px] h-8 bg-zinc-900/50 border-white/10 text-xs text-white">
+                                <SelectValue placeholder="Filtrar Concurso" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                                <SelectItem value="all">Todos os Concursos</SelectItem>
+                                {contests.map((contest) => (
+                                    <SelectItem key={contest.id} value={contest.id}>
+                                        {contest.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     <div className="flex items-center gap-4">

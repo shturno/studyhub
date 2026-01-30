@@ -13,4 +13,5 @@ export interface TopicWithStatus {
     status: 'pending' | 'studied' | 'mastered'
     lastStudiedAt?: Date
     xpEarned: number
+    parentId: string | null
 }
