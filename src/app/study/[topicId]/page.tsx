@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { TimerDisplay } from '@/features/timer/components/TimerDisplay'
+import { MaterialManager } from '@/features/materials/components/MaterialManager'
 import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
@@ -37,12 +38,18 @@ export default async function StudyPage(props: StudyPageProps) {
             </header>
 
             {/* Main Content - Centered */}
-            <main className="flex-1 flex flex-col items-center justify-center p-6">
-                <TimerDisplay
-                    topicId={topic.id}
-                    topicName={topic.name}
-                    subjectName={topic.subject.name}
-                />
+            <main className="flex-1 max-w-5xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 flex flex-col items-center justify-center min-h-[400px]">
+                    <TimerDisplay
+                        topicId={topic.id}
+                        topicName={topic.name}
+                        subjectName={topic.subject.name}
+                    />
+                </div>
+
+                <div className="space-y-6">
+                    <MaterialManager topicId={topic.id} />
+                </div>
             </main>
         </div>
     )

@@ -33,9 +33,9 @@ export interface DashboardData {
 /**
  * Busca todos os dados necessários para o dashboard
  */
-export async function getDashboardData(): Promise<DashboardData> {
-    // 1. Buscar primeiro usuário (MVP)
-    const user = await prisma.user.findFirst({
+export async function getDashboardData(userId: string, contestId?: string): Promise<DashboardData> {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
         select: {
             id: true,
             name: true,
@@ -45,6 +45,13 @@ export async function getDashboardData(): Promise<DashboardData> {
             studySessions: {
                 orderBy: { completedAt: 'desc' },
                 take: 5,
+                where: contestId ? {
+                    topic: {
+                        subject: {
+                            contestId
+                        }
+                    }
+                } : undefined,
                 select: {
                     id: true,
                     xpEarned: true,
@@ -64,8 +71,13 @@ export async function getDashboardData(): Promise<DashboardData> {
         }
     })
 
-    // 2. Buscar próximo tópico (MVP: aleatório)
+    // Filter random topic by contest
     const randomTopic = await prisma.topic.findFirst({
+        where: contestId ? {
+            subject: {
+                contestId
+            }
+        } : undefined,
         select: {
             id: true,
             name: true,
@@ -78,7 +90,6 @@ export async function getDashboardData(): Promise<DashboardData> {
         }
     })
 
-    // 3. Calcular streak (hardcoded por enquanto)
     const streak = calculateStreak(user?.studySessions || [])
 
     return {
