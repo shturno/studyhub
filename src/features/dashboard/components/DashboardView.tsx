@@ -1,3 +1,5 @@
+'use client'
+
 import { Trophy, Zap, Target, BookOpen, Clock, ArrowUpRight, Flame } from 'lucide-react'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
