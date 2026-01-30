@@ -36,8 +36,8 @@ export function LoginForm() {
                 })
             } else {
                 toast.success('Login realizado com sucesso!')
-                router.push('/dashboard')
                 router.refresh()
+                router.push('/dashboard')
             }
         } catch (error) {
             toast.error('Erro ao fazer login')
