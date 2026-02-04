@@ -4,7 +4,7 @@
 
 StudyHub is a modern, gamified study planner designed specifically for users with ADHD. It combines radical minimalism with powerful gamification to reduce cognitive load and dopamine-driven engagement. Instead of selling courses, it helps you master your own study routine.
 
-![StudyHub Dashboard Mockup](https://via.placeholder.com/1200x600?text=StudyHub+Dashboard+Preview)
+![StudyHub Dashboard Mockup](https://study-hub-liart.vercel.app/)
 
 ## ✨ Key Philosophy
 
@@ -108,14 +108,6 @@ Uses `@dnd-kit` for a physics-based interaction.
 - **Rate Limiting**: Middleware protects auth routes (10 req/min).
 - **Security Headers**: HSTS, X-Frame-Options configured in Middleware.
 - **Input Validation**: Critical mutations validated with Zod schemas.
-
-## 🤝 Contributing
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 ---
 
