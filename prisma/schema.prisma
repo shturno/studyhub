@@ -39,6 +39,7 @@ model User {
   contests       Contest[]
   studyCycles    StudyCycle[]
   studySessions  StudySession[]
+  plannedSessions PlannedSession[]
   achievements   UserAchievement[]
   
   @@map("users")
@@ -153,6 +154,7 @@ model Topic {
 
   // Relations
   studySessions StudySession[]
+  plannedSessions PlannedSession[]
   reviewQueue   ReviewQueue[]
   materials     Material[]
   
@@ -216,6 +218,25 @@ model ReviewQueue {
   
   @@index([topicId])
   @@map("review_queue")
+}
+
+model PlannedSession {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  topicId         String
+  topic           Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  
+  scheduledDate   DateTime
+  durationMinutes Int
+  completed       Boolean  @default(false)
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([userId])
+  @@index([scheduledDate])
+  @@map("planned_sessions")
 }
 
 // ============================================

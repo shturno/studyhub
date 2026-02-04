@@ -19,23 +19,27 @@ export interface SaveStudySessionResult {
     xpToNextLevel: number
 }
 
+import { studySessionSchema } from '@/lib/schemas'
+
 export async function saveStudySession(data: SaveStudySessionInput): Promise<SaveStudySessionResult> {
     const session = await auth()
     if (!session?.user?.id) {
         throw new Error('Unauthorized')
     }
+
+    const parsed = studySessionSchema.parse(data)
     const userId = session.user.id
 
-    const xpEarned = calculateXP(data.minutes)
+    const xpEarned = calculateXP(parsed.minutes)
 
     // Create study session
     const newSession = await prisma.studySession.create({
         data: {
             userId,
-            topicId: data.topicId,
-            minutes: data.minutes,
+            topicId: parsed.topicId,
+            minutes: parsed.minutes,
             xpEarned,
-            difficulty: data.difficulty
+            difficulty: parsed.difficulty
         }
     })
 
