@@ -3,8 +3,9 @@
 import { prisma } from '@/lib/prisma'
 import { getXPForNextLevel } from './utils/xpCalculator'
 
-export async function getUserProfile() {
-    const user = await prisma.user.findFirst({
+export async function getUserProfile(userId: string) {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
         include: {
             achievements: {
                 include: { achievement: true }
