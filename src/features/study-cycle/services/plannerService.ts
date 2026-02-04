@@ -50,6 +50,19 @@ export async function getPlannerData(): Promise<PlannerData> {
         }
     })
 
+    const [plannedSessionsDb, studySessions] = await Promise.all([
+        prisma.plannedSession.findMany({
+            where: { userId },
+            include: { topic: { include: { subject: true } } }
+        }),
+        prisma.studySession.findMany({
+            where: { userId },
+            select: { topicId: true }
+        })
+    ])
+
+    const completedTopicIds = new Set(studySessions.map(s => s.topicId))
+
     const tracks = []
     const availableLessons = []
 
@@ -60,7 +73,7 @@ export async function getPlannerData(): Promise<PlannerData> {
                 title: topic.name,
                 trackName: subject.name,
                 trackId: subject.id,
-                status: "NOT_STARTED" as const, // TODO: Check study sessions to determine status
+                status: completedTopicIds.has(topic.id) ? "DONE" as const : "NOT_STARTED" as const,
                 estimated: 30 // Default estimate
             }))
 
@@ -74,8 +87,15 @@ export async function getPlannerData(): Promise<PlannerData> {
         }
     }
 
-    // TODO: Implement PlannedSessions persistence
-    const plannedSessions: any[] = []
+    const plannedSessions = plannedSessionsDb.map(session => ({
+        id: session.id,
+        lessonId: session.topicId,
+        lessonTitle: session.topic.name,
+        trackName: session.topic.subject.name,
+        duration: session.durationMinutes,
+        scheduledDate: session.scheduledDate.toISOString().split('T')[0],
+        draft: false
+    }))
 
     return {
         tracks,

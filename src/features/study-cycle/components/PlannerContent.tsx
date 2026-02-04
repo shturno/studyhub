@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast"
 import { DraggableLesson } from "@/features/study-cycle/components/DraggableLesson"
 import { DroppableArea } from "@/features/study-cycle/components/DroppableArea"
 import { Calendar, Clock, BookOpen, Plus, Target } from "lucide-react"
+import { savePlannedSession, removePlannedSession } from "@/features/study-cycle/actions"
 
 interface Lesson {
   id: string
@@ -57,7 +58,11 @@ export function PlannerContent({ data }: PlannerContentProps) {
     setActiveLesson(lesson || null)
   }
 
-  const handleDragEnd = (event: DragEndEvent) => {
+
+
+  // ... inside component
+
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
     setActiveLesson(null)
 
@@ -67,8 +72,10 @@ export function PlannerContent({ data }: PlannerContentProps) {
       const lesson = availableLessons.find((l) => l.id === active.id)
       if (lesson) {
 
+        // Optimistic Update
+        const tempId = `temp-${Date.now()}`
         const newSession: PlannedSession = {
-          id: `session-${Date.now()}`,
+          id: tempId,
           lessonId: lesson.id,
           lessonTitle: lesson.title,
           trackName: lesson.trackName,
@@ -76,23 +83,52 @@ export function PlannerContent({ data }: PlannerContentProps) {
           scheduledDate: new Date().toISOString().split("T")[0],
           draft: true,
         }
-
         setPlannedSessions((prev) => [...prev, newSession])
 
-        toast({
-          title: "Sessão adicionada!",
-          description: `${lesson.title} foi adicionada ao seu planner como rascunho`,
-        })
+        try {
+          await savePlannedSession({
+            lessonId: lesson.id,
+            date: newSession.scheduledDate,
+            duration: newSession.duration
+          })
+
+          toast({
+            title: "Sessão agendada!",
+            description: `${lesson.title} foi salvo no seu planner`,
+          })
+        } catch (error) {
+          // Rollback
+          setPlannedSessions((prev) => prev.filter(s => s.id !== tempId))
+          toast({
+            title: "Erro ao salvar",
+            description: "Não foi possível agendar a sessão",
+            variant: "destructive"
+          })
+        }
       }
     }
   }
 
-  const handleRemoveSession = (sessionId: string) => {
+  const handleRemoveSession = async (sessionId: string) => {
+    // Optimistic Update
+    const previousSessions = [...plannedSessions]
     setPlannedSessions((prev) => prev.filter((s) => s.id !== sessionId))
-    toast({
-      title: "Sessão removida",
-      description: "A sessão foi removida do seu planner",
-    })
+
+    try {
+      await removePlannedSession(sessionId)
+      toast({
+        title: "Sessão removida",
+        description: "A sessão foi removida do seu planner",
+      })
+    } catch (error) {
+      // Rollback
+      setPlannedSessions(previousSessions)
+      toast({
+        title: "Erro ao remover",
+        description: "Não foi possível remover a sessão",
+        variant: "destructive"
+      })
+    }
   }
 
   const handleEditSession = (session: PlannedSession) => {
