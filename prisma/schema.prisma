@@ -65,6 +65,7 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
   @@map("accounts")
 }
 
@@ -76,6 +77,7 @@ model Session {
   
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   
+  @@index([userId])
   @@map("sessions")
 }
 
@@ -110,6 +112,7 @@ model Contest {
   // Relations
   subjects    Subject[]
   
+  @@index([userId])
   @@map("contests")
 }
 
@@ -128,6 +131,7 @@ model Subject {
   // Relations
   topics      Topic[]
   
+  @@index([contestId])
   @@map("subjects")
 }
 
@@ -152,6 +156,8 @@ model Topic {
   reviewQueue   ReviewQueue[]
   materials     Material[]
   
+  @@index([subjectId])
+  @@index([parentId])
   @@map("topics")
 }
 
@@ -174,6 +180,7 @@ model StudyCycle {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
+  @@index([userId])
   @@map("study_cycles")
 }
 
@@ -192,6 +199,8 @@ model StudySession {
   startedAt   DateTime @default(now())
   completedAt DateTime @default(now())
   
+  @@index([userId])
+  @@index([topicId])
   @@map("study_sessions")
 }
 
@@ -205,6 +214,7 @@ model ReviewQueue {
   
   createdAt    DateTime @default(now())
   
+  @@index([topicId])
   @@map("review_queue")
 }
 
