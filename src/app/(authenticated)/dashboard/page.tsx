@@ -21,7 +21,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   const contestId = searchParams.contestId
   const [dashboardData, contests] = await Promise.all([
-    getDashboardData(session.user.id, contestId),
+    getDashboardData(contestId),
     getContests()
   ])
 

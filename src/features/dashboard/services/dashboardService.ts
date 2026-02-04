@@ -33,7 +33,16 @@ export interface DashboardData {
 /**
  * Busca todos os dados necessários para o dashboard
  */
-export async function getDashboardData(userId: string, contestId?: string): Promise<DashboardData> {
+import { auth } from '@/lib/auth'
+
+/**
+ * Busca todos os dados necessários para o dashboard
+ */
+export async function getDashboardData(contestId?: string): Promise<DashboardData> {
+    const session = await auth()
+    if (!session?.user?.id) throw new Error("Unauthorized")
+    const userId = session.user.id
+
     const user = await prisma.user.findUnique({
         where: { id: userId },
         select: {

@@ -3,7 +3,13 @@
 import { prisma } from '@/lib/prisma'
 import { getXPForNextLevel } from './utils/xpCalculator'
 
-export async function getUserProfile(userId: string) {
+import { auth } from '@/lib/auth'
+
+export async function getUserProfile() {
+    const session = await auth()
+    if (!session?.user?.id) return null
+    const userId = session.user.id
+
     const user = await prisma.user.findUnique({
         where: { id: userId },
         include: {

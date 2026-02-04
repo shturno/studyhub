@@ -12,7 +12,7 @@ export default async function PlannerPage() {
         redirect("/login")
     }
 
-    const plannerData = await getPlannerData(session.user.id)
+    const plannerData = await getPlannerData()
 
     return <PlannerContent data={plannerData} />
 }
