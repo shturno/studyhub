@@ -32,7 +32,13 @@ export interface PlannerData {
     }>
 }
 
-export async function getPlannerData(userId: string): Promise<PlannerData> {
+import { auth } from "@/lib/auth"
+
+export async function getPlannerData(): Promise<PlannerData> {
+    const session = await auth()
+    if (!session?.user?.id) throw new Error("Unauthorized")
+    const userId = session.user.id
+
     const contests = await prisma.contest.findMany({
         where: { userId },
         include: {

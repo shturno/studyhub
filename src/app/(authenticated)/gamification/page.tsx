@@ -14,7 +14,7 @@ export default async function GamificationPage() {
         redirect("/login")
     }
 
-    const profile = await getUserProfile(session.user.id)
+    const profile = await getUserProfile()
 
     if (!profile) {
         return <div className="p-8 text-white">Perfil não encontrado.</div>
