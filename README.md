@@ -4,8 +4,6 @@
 
 StudyHub is a modern, gamified study planner designed specifically for users with ADHD. It combines radical minimalism with powerful gamification to reduce cognitive load and dopamine-driven engagement. Instead of selling courses, it helps you master your own study routine.
 
-![StudyHub Dashboard Mockup](https://study-hub-liart.vercel.app/)
-
 ## ✨ Key Philosophy
 
 - **Radical Minimalism**: Interface designed to prevent overwhelm. Constant feedback loops (toasts, sounds) without visual clutter.
