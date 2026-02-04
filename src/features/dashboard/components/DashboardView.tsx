@@ -7,6 +7,7 @@ import { ptBR } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
 import type { DashboardData } from '../services/dashboardService'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { GlassCard } from "@/components/ui/glass-card"
 
 interface DashboardViewProps {
     data: DashboardData
@@ -42,50 +43,7 @@ export function DashboardView({ data, contests, activeContestId }: DashboardView
             <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }} />
 
             {/* Header */}
-            <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
-                <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 rounded flex items-center justify-center bg-white text-black font-bold text-xs shadow-[0_0_10px_rgba(255,255,255,0.2)]">
-                            S
-                        </div>
-                        <Link href="/contests" className="font-medium text-sm text-zinc-200 hover:text-white transition-colors cursor-pointer hover:underline underline-offset-4 mr-2">
-                            Meus Concursos
-                        </Link>
-
-                        <Select value={activeContestId || 'all'} onValueChange={handleContestChange}>
-                            <SelectTrigger className="w-[180px] h-8 bg-zinc-900/50 border-white/10 text-xs text-white">
-                                <SelectValue placeholder="Filtrar Concurso" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
-                                <SelectItem value="all">Todos os Concursos</SelectItem>
-                                {contests.map((contest) => (
-                                    <SelectItem key={contest.id} value={contest.id}>
-                                        {contest.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-card border border-orange-500/20 text-orange-400">
-                            <Flame className="w-3.5 h-3.5 fill-orange-500" />
-                            <span className="text-xs font-bold">{streak} dias</span>
-                        </div>
-
-                        <div className="flex items-center gap-2 text-xs font-medium text-zinc-400">
-                            <span className="text-indigo-400">Lvl {user.level}</span>
-                            <span>{user.xp} XP</span>
-                        </div>
-
-                        <Link href="/profile">
-                            <div className="w-8 h-8 rounded-full bg-card border border-white/10 flex items-center justify-center text-xs text-zinc-400 cursor-pointer hover:bg-zinc-700 transition-colors uppercase font-bold">
-                                {user.name?.[0] || 'U'}
-                            </div>
-                        </Link>
-                    </div>
-                </div>
-            </header>
+            {/* Header Removed - Handled by Layout */}
 
             {/* Main Content */}
             <main className="relative max-w-6xl mx-auto px-6 py-8 space-y-8">
@@ -134,7 +92,7 @@ export function DashboardView({ data, contests, activeContestId }: DashboardView
                     </div>
 
                     {/* Streak Card */}
-                    <div className="p-5 rounded-2xl bg-card border border-border shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] relative overflow-hidden group">
+                    <GlassCard className="relative overflow-hidden group" hoverEffect>
                         <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
                             <Flame className="w-16 h-16 text-orange-500" />
                         </div>
@@ -154,10 +112,10 @@ export function DashboardView({ data, contests, activeContestId }: DashboardView
                                 <div className="bg-orange-500 h-full w-[80%] shadow-[0_0_8px_rgba(249,115,22,0.4)]" />
                             </div>
                         </div>
-                    </div>
+                    </GlassCard>
 
                     {/* XP Card */}
-                    <div className="p-5 rounded-2xl bg-card border border-border shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] relative overflow-hidden group">
+                    <GlassCard className="relative overflow-hidden group" hoverEffect>
                         <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
                             <Trophy className="w-16 h-16 text-yellow-500" />
                         </div>
@@ -172,11 +130,11 @@ export function DashboardView({ data, contests, activeContestId }: DashboardView
                             <span className="text-3xl font-bold tracking-tight text-foreground">{user.xp}</span>
                             <span className="text-sm text-zinc-500">points</span>
                         </div>
-                    </div>
+                    </GlassCard>
 
                     {/* Explore Subjects Card */}
                     <Link href="/subjects" className="block">
-                        <div className="p-5 rounded-2xl bg-card border border-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] relative overflow-hidden group hover:border-indigo-500/30 transition-colors">
+                        <GlassCard className="relative overflow-hidden group hover:border-brand-primary/50" hoverEffect>
                             <div className="flex items-center gap-3 mb-2">
                                 <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
                                     <BookOpen className="w-4 h-4" />
@@ -184,7 +142,7 @@ export function DashboardView({ data, contests, activeContestId }: DashboardView
                                 <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 group-hover:text-indigo-400 transition-colors">Explorar</span>
                             </div>
                             <div className="text-lg font-bold text-zinc-200 group-hover:text-white">Meus Conteúdos &rarr;</div>
-                        </div>
+                        </GlassCard>
                     </Link>
                 </div>
 
