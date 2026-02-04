@@ -19,8 +19,10 @@ export function DroppableArea({ id, children }: DroppableAreaProps) {
     <div
       ref={setNodeRef}
       className={cn(
-        "transition-colors duration-200",
-        isOver && "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-600",
+        "transition-all duration-300 rounded-xl",
+        isOver
+          ? "bg-indigo-500/5 border-2 border-dashed border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.1)] scale-[1.01]"
+          : "border-2 border-transparent"
       )}
     >
       {children}

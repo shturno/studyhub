@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Play, Pause, RotateCcw, Trophy, ArrowLeft } from 'lucide-react'
 import { useStudyTimer } from '@/features/timer/hooks/useStudyTimer'
 import { cn } from '@/lib/utils'
+import confetti from 'canvas-confetti'
+import { useEffect, useRef } from 'react'
 
 interface TimerDisplayProps {
     topicId: string
@@ -38,6 +40,33 @@ export function TimerDisplay({ topicId, topicName, subjectName, onComplete }: Ti
     const circumference = 2 * Math.PI * radius
     const strokeDashoffset = circumference - (progress / 100) * circumference
 
+    // Effect to trigger confetti on completion
+    useEffect(() => {
+        if (hasCompleted && !isSaving) {
+            const duration = 3 * 1000
+            const animationEnd = Date.now() + duration
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 }
+
+            const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min
+
+            const interval: any = setInterval(function () {
+                const timeLeft = animationEnd - Date.now()
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval)
+                }
+
+                const particleCount = 50 * (timeLeft / duration)
+
+                // Since particles fall down, start a bit higher than random
+                confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } })
+                confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } })
+            }, 250)
+
+            return () => clearInterval(interval)
+        }
+    }, [hasCompleted, isSaving])
+
     return (
         <div className="flex flex-col items-center w-full max-w-md mx-auto">
 
@@ -51,10 +80,10 @@ export function TimerDisplay({ topicId, topicName, subjectName, onComplete }: Ti
 
             {/* Main Timer UI */}
             <div className="relative mb-12 group">
-                {/* Glow Effect */}
+                {/* Glow Effect - Breathing */}
                 <div className={cn(
-                    "absolute inset-0 bg-indigo-500/20 blur-[100px] rounded-full transition-opacity duration-1000",
-                    isRunning ? "opacity-100 animate-pulse" : "opacity-20"
+                    "absolute inset-0 bg-indigo-500/20 blur-[100px] rounded-full transition-all duration-[4000ms]",
+                    isRunning ? "opacity-100 scale-110 animate-pulse" : "opacity-20 scale-100"
                 )} />
 
                 {/* Circular Progress SVG */}
@@ -69,7 +98,7 @@ export function TimerDisplay({ topicId, topicName, subjectName, onComplete }: Ti
                             strokeWidth="8"
                             fill="transparent"
                         />
-                        {/* Progress Circle */}
+                        {/* Progress Circle - Dynamic Color */}
                         <circle
                             cx="160"
                             cy="160"
@@ -89,13 +118,13 @@ export function TimerDisplay({ topicId, topicName, subjectName, onComplete }: Ti
                     {/* Time Display centered */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                         <span className={cn(
-                            "text-6xl md:text-7xl font-mono font-bold tracking-tighter tabular-nums transition-colors duration-300",
-                            isRunning ? "text-white scale-110" : "text-zinc-400"
+                            "text-6xl md:text-7xl font-mono font-bold tracking-tighter tabular-nums transition-all duration-300",
+                            isRunning ? "text-white scale-110 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]" : "text-zinc-400"
                         )}>
                             {formattedTime}
                         </span>
                         <span className="text-sm text-zinc-600 mt-2 font-medium tracking-widest uppercase">
-                            {isRunning ? 'Focando' : 'Pausado'}
+                            {isRunning ? 'Focando ...' : 'Pausado'}
                         </span>
                     </div>
                 </div>
@@ -177,6 +206,7 @@ export function TimerDisplay({ topicId, topicName, subjectName, onComplete }: Ti
                         </div>
                     )}
                 </div>
+
             </div>
         </div>
     )
