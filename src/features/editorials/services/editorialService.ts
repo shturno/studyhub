@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/auth'
+import { auth } from '@/lib/auth'
 
 export interface EditorialItemInput {
   contestId: string
@@ -11,12 +11,12 @@ export interface EditorialItemInput {
 export interface EditorialItemWithMappings {
   id: string
   title: string
-  description?: string
-  url?: string
+  description?: string | null
+  url?: string | null
   uploadedAt: Date
   contentMappings: Array<{
     topicId: string
-    contentSummary?: string
+    contentSummary?: string | null
     relevance: number
     topic: {
       id: string

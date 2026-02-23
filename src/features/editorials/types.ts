@@ -3,8 +3,8 @@ export interface EditorialItem {
   userId: string
   contestId: string
   title: string
-  description?: string
-  url?: string
+  description?: string | null
+  url?: string | null
   uploadedAt: Date
   contentMappings?: ContentMapping[]
 }
@@ -13,7 +13,7 @@ export interface ContentMapping {
   id: string
   editorialItemId: string
   topicId: string
-  contentSummary?: string
+  contentSummary?: string | null
   relevance: number
   createdAt: Date
 }

@@ -1,6 +1,6 @@
 'use server'
 
-import { auth } from '@/lib/auth.config'
+import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { EditorialItem, ContentMapping, EditorialWithMappings } from './types'
 
@@ -177,4 +177,35 @@ export async function getContentCrossings(contestId: string): Promise<{
   }))
 
   return result.sort((a, b) => b.relevanceScore - a.relevanceScore)
+}
+
+export async function mapContentAction(
+  editorialItemId: string,
+  mappings: Array<{ topicId: string; contentSummary?: string; relevance: number }>
+): Promise<void> {
+  const session = await auth()
+  if (!session?.user?.id) throw new Error('Unauthorized')
+
+  const editorial = await prisma.editorialItem.findUnique({
+    where: { id: editorialItemId },
+  })
+
+  if (!editorial || editorial.userId !== session.user.id) {
+    throw new Error('Unauthorized')
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.contentMapping.deleteMany({
+      where: { editorialItemId },
+    })
+
+    await tx.contentMapping.createMany({
+      data: mappings.map((mapping) => ({
+        editorialItemId,
+        topicId: mapping.topicId,
+        contentSummary: mapping.contentSummary,
+        relevance: Math.max(0, Math.min(100, mapping.relevance)),
+      })),
+    })
+  })
 }

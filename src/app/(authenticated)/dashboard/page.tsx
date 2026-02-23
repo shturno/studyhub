@@ -7,9 +7,9 @@ import { getContests } from '@/features/contests/actions'
 export const dynamic = 'force-dynamic'
 
 interface DashboardPageProps {
-  searchParams: {
+  searchParams: Promise<{
     contestId?: string
-  }
+  }>
 }
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
@@ -19,7 +19,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     redirect('/login')
   }
 
-  const contestId = searchParams.contestId
+  const { contestId } = await searchParams
   const [dashboardData, contests] = await Promise.all([
     getDashboardData(contestId),
     getContests()
