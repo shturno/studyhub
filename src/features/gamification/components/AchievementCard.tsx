@@ -30,7 +30,7 @@ export function AchievementCard({ achievement }: AchievementCardProps) {
                     : '4px 4px 0px #111',
             }}>
 
-            {/* Corner accent on unlocked */}
+            
             {achievement.isUnlocked && (
                 <div className="absolute top-0 right-0 w-0 h-0"
                     style={{
@@ -40,7 +40,7 @@ export function AchievementCard({ achievement }: AchievementCardProps) {
             )}
 
             <div className="flex items-start gap-3">
-                {/* Icon — big pixel emoji or lock */}
+                
                 <div className={cn(
                     "w-12 h-12 flex items-center justify-center text-2xl flex-shrink-0",
                     achievement.isUnlocked ? "" : "bg-[#0d001a]"
@@ -63,7 +63,7 @@ export function AchievementCard({ achievement }: AchievementCardProps) {
                         {achievement.description}
                     </div>
 
-                    {/* Status badge */}
+                    
                     {achievement.isUnlocked ? (
                         <div className="flex items-center gap-2">
                             <span className="font-pixel text-[6px] text-[#00ff41] px-2 py-0.5"

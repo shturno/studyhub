@@ -28,7 +28,6 @@ export function useHotkeys(hotkeys: HotkeyConfig[]) {
   }, [hotkeys])
 }
 
-// Convenience hook for common hotkeys
 export function useCommonHotkeys(callbacks: {
   onSearch?: () => void
   onNewLesson?: () => void

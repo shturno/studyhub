@@ -10,7 +10,7 @@ export default async function SubjectsPage() {
 
     return (
         <div className="min-h-screen bg-[#080010] text-[#e0e0ff]">
-            {/* Page header */}
+            
             <div className="px-4 md:px-8 pt-6 pb-4 max-w-5xl mx-auto">
                 <div className="flex items-center gap-4 mb-2">
                     <Link href="/dashboard"

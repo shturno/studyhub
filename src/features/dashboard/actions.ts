@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { startOfWeek, endOfWeek } from 'date-fns'
 
 export async function getDashboardData(userId: string) {
-    // Get user with XP and level
+
     const user = await prisma.user.findUnique({
         where: { id: userId },
         select: {
@@ -19,7 +19,6 @@ export async function getDashboardData(userId: string) {
         throw new Error('User not found')
     }
 
-    // Get active study cycle
     const activeCycle = await prisma.studyCycle.findFirst({
         where: {
             userId,
@@ -27,14 +26,13 @@ export async function getDashboardData(userId: string) {
         }
     })
 
-    // Get next topic from cycle
     let nextTopic = null
     if (activeCycle) {
         const config = activeCycle.config as { topicIds: string[] }
         const topicIds = config.topicIds || []
 
         if (topicIds.length > 0) {
-            // Get first topic (in a real implementation, track progress)
+
             const topic = await prisma.topic.findUnique({
                 where: { id: topicIds[0] },
                 include: {
@@ -51,13 +49,12 @@ export async function getDashboardData(userId: string) {
                     id: topic.id,
                     name: topic.name,
                     subjectName: topic.subject.name,
-                    estimatedMinutes: 25 // Default Pomodoro
+                    estimatedMinutes: 25
                 }
             }
         }
     }
 
-    // Get weekly stats
     const weekStart = startOfWeek(new Date())
     const weekEnd = endOfWeek(new Date())
 
@@ -77,7 +74,6 @@ export async function getDashboardData(userId: string) {
         xpEarned: weeklySessions.reduce((sum: number, s) => sum + s.xpEarned, 0)
     }
 
-    // Get recent sessions
     const recentSessions = await prisma.studySession.findMany({
         where: { userId },
         take: 5,

@@ -45,6 +45,5 @@ export async function deleteMaterial(id: string) {
         where: { id }
     })
 
-    // We don't know exact path here easily without referrer, but typically:
     revalidatePath('/study/[id]')
 }

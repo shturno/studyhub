@@ -119,7 +119,7 @@ export function PlannerContent({ data, contestId }: PlannerContentProps) {
   return (
     <div className="min-h-screen bg-[#080010] p-4 md:p-6">
 
-      {/* Header */}
+      
       <div className="flex items-center justify-between mb-6 pb-4"
         style={{ borderBottom: '2px solid rgba(0,255,65,0.2)' }}>
         <div>
@@ -152,7 +152,7 @@ export function PlannerContent({ data, contestId }: PlannerContentProps) {
       <DndContext collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-          {/* Available Lessons */}
+          
           <div style={{ border: '2px solid rgba(0,255,65,0.4)', background: '#04000a' }}>
             <div className="flex items-center gap-2 px-5 py-3" style={{ borderBottom: '1px solid rgba(0,255,65,0.15)' }}>
               <BookOpen className="h-4 w-4 text-[#00ff41]" />
@@ -177,7 +177,7 @@ export function PlannerContent({ data, contestId }: PlannerContentProps) {
             </div>
           </div>
 
-          {/* Planned Sessions */}
+          
           <div style={{ border: '2px solid rgba(0,255,65,0.4)', background: '#04000a' }}>
             <div className="flex items-center gap-2 px-5 py-3" style={{ borderBottom: '1px solid rgba(0,255,65,0.15)' }}>
               <Calendar className="h-4 w-4 text-[#00ff41]" />
@@ -248,7 +248,7 @@ export function PlannerContent({ data, contestId }: PlannerContentProps) {
           </div>
         </div>
 
-        {/* Drag Overlay */}
+        
         <DragOverlay>
           {activeLesson ? (
             <div className="p-3" style={{ border: '2px solid #00ff41', background: '#04000a', boxShadow: '4px 4px 0 #006b1a' }}>

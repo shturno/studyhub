@@ -28,7 +28,7 @@ export function AppSidebar({ className, user }: AppSidebarProps) {
         <div className={cn("pb-12 min-h-screen bg-[#04000a] flex flex-col", className)}
             style={{ borderRight: '2px solid #00ff41', boxShadow: '4px 0 20px rgba(0,255,65,0.15)' }}>
 
-            {/* Logo */}
+            
             <div className="px-4 py-6 border-b-2 border-[#00ff41]">
                 <Link href="/dashboard" className="block text-center">
                     <div className="text-[#00ff41] font-pixel text-sm leading-loose"
@@ -45,7 +45,7 @@ export function AppSidebar({ className, user }: AppSidebarProps) {
                 </Link>
             </div>
 
-            {/* Nav Items */}
+            
             <nav className="flex-1 px-2 py-4 space-y-1">
                 {navItems.map((item) => {
                     const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
@@ -67,9 +67,9 @@ export function AppSidebar({ className, user }: AppSidebarProps) {
                 })}
             </nav>
 
-            {/* User Panel */}
+            
             <div className="mx-2 mb-4 p-3" style={{ border: '2px solid #00ff41', background: '#04000a' }}>
-                {/* Player avatar */}
+                
                 <div className="flex items-center gap-3 mb-3 pb-3 border-b border-[#00ff41]/30">
                     <div className="w-10 h-10 flex items-center justify-center bg-[#00ff41] text-black font-pixel text-sm">
                         {user?.name?.[0]?.toUpperCase() || 'P'}
@@ -84,7 +84,7 @@ export function AppSidebar({ className, user }: AppSidebarProps) {
                     </div>
                 </div>
 
-                {/* Actions */}
+                
                 <div className="space-y-1">
                     <Link href="/settings" className="block">
                         <div className="text-[#7f7f9f] hover:text-[#00ff41] font-pixel text-[7px] px-2 py-2 hover:bg-[#00ff41]/5 transition-colors">

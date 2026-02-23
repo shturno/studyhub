@@ -21,7 +21,7 @@ export function XPBadge({ currentXP, currentLevel, className }: XPBadgeProps) {
                 <TooltipTrigger asChild>
                     <div className={`flex items-center gap-4 ${className ?? ''}`}>
 
-                        {/* Level chip */}
+                        
                         <div className="flex items-center gap-2 px-3 py-1.5"
                             style={{ border: '2px solid #ffbe0b', background: 'rgba(255,190,11,0.1)' }}>
                             <span className="font-pixel text-[8px] text-[#ffbe0b]">LVL</span>
@@ -31,7 +31,7 @@ export function XPBadge({ currentXP, currentLevel, className }: XPBadgeProps) {
                             </span>
                         </div>
 
-                        {/* XP progress */}
+                        
                         <div className="flex-1 min-w-[120px] space-y-1">
                             <div className="flex items-center justify-between">
                                 <span className="font-pixel text-[6px] text-[#7f7f9f]">{currentXP} XP</span>

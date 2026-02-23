@@ -32,7 +32,6 @@ export async function saveStudySession(data: SaveStudySessionInput): Promise<Sav
 
     const xpEarned = calculateXP(parsed.minutes)
 
-    // Create study session
     const newSession = await prisma.studySession.create({
         data: {
             userId,
@@ -43,7 +42,6 @@ export async function saveStudySession(data: SaveStudySessionInput): Promise<Sav
         }
     })
 
-    // Update user XP
     const user = await prisma.user.update({
         where: { id: userId },
         data: {
@@ -51,11 +49,9 @@ export async function saveStudySession(data: SaveStudySessionInput): Promise<Sav
         }
     })
 
-    // Calculate new level
     const newLevel = calculateLevel(user.xp)
     const leveledUp = newLevel > user.level
 
-    // Update level if leveled up
     if (leveledUp) {
         await prisma.user.update({
             where: { id: userId },
@@ -65,7 +61,6 @@ export async function saveStudySession(data: SaveStudySessionInput): Promise<Sav
 
     const xpToNextLevel = getXPForNextLevel(user.xp, newLevel)
 
-    // Revalidate dashboard
     revalidatePath('/dashboard')
 
     return {

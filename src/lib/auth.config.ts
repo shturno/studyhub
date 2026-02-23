@@ -12,7 +12,7 @@ export const authConfig = {
             return session
         },
         async jwt({ token, user }) {
-            // Initial sign in
+
             if (user) {
                 token.id = user.id;
                 token.email = user.email;
@@ -25,12 +25,12 @@ export const authConfig = {
 
             if (isOnDashboard) {
                 if (isLoggedIn) return true;
-                return false; // Redirect to login
+                return false;
             }
 
             return true;
         }
     },
     session: { strategy: "jwt" },
-    providers: [], // Providers allocated in the main auth file
+    providers: [],
 } satisfies NextAuthConfig

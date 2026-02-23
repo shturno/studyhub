@@ -57,7 +57,7 @@ export function useStudyTimer({ topicId, initialMinutes = 25, onComplete }: UseS
                 const result = await saveStudySession({
                     topicId,
                     minutes: studiedMinutes,
-                    difficulty: null // Will be asked in modal
+                    difficulty: null
                 })
 
                 toast.success(`🎉 Sessão concluída! +${result.xpEarned} XP`, {

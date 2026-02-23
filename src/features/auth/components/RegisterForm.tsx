@@ -53,7 +53,7 @@ export function RegisterForm() {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Name */}
+            
             <div className="space-y-2">
                 <label htmlFor="name" className="font-pixel text-[7px] text-[#ff006e] block">NOME</label>
                 <Input id="name" type="text" placeholder="Seu nome" value={formData.name}
@@ -65,7 +65,7 @@ export function RegisterForm() {
                 />
             </div>
 
-            {/* Email */}
+            
             <div className="space-y-2">
                 <label htmlFor="email" className="font-pixel text-[7px] text-[#ff006e] block">EMAIL</label>
                 <Input id="email" type="email" placeholder="seu@email.com" value={formData.email}
@@ -77,7 +77,7 @@ export function RegisterForm() {
                 />
             </div>
 
-            {/* Password */}
+            
             <div className="space-y-2">
                 <label htmlFor="password" className="font-pixel text-[7px] text-[#ff006e] block">SENHA</label>
                 <div className="relative">
@@ -96,7 +96,7 @@ export function RegisterForm() {
                 </div>
             </div>
 
-            {/* Confirm Password */}
+            
             <div className="space-y-2">
                 <label htmlFor="confirmPassword" className="font-pixel text-[7px] text-[#ff006e] block">CONFIRMAR SENHA</label>
                 <div className="relative">
@@ -115,7 +115,7 @@ export function RegisterForm() {
                 </div>
             </div>
 
-            {/* Submit */}
+            
             <button type="submit" disabled={isLoading}
                 className="w-full font-pixel text-[10px] text-black bg-[#ff006e] h-12 flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ boxShadow: '4px 4px 0px #6b0030, 0 0 15px rgba(255,0,110,0.3)' }}>

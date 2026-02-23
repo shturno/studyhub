@@ -42,8 +42,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 const passwordsMatch = await bcrypt.compare(password, user.password)
 
                 if (passwordsMatch) {
-                    // Return user object without sensitive data if needed, 
-                    // though NextAuth default handles this reasonably well.
+
                     return user
                 }
 

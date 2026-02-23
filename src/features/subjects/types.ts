@@ -3,7 +3,7 @@ export interface SubjectStats {
     name: string
     topicsCount: number
     completedTopics: number
-    progress: number // 0-100
+    progress: number
     totalMinutesStudied: number
 }
 

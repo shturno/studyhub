@@ -29,13 +29,12 @@ export function ContentCrossingView({ editorials }: ContentCrossingViewProps) {
       return
     }
 
-    // Get contest ID from first editorial
     const contestId = editorials[0].contestId
 
     async function loadCrossings() {
       try {
         const data = await getContentCrossings(contestId)
-        // Filter to only show topics that appear in multiple editorials
+
         const multipleCrossings = data.filter((c) => c.editorialCount > 1)
         setCrossings(multipleCrossings)
       } catch (error) {

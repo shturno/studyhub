@@ -1,12 +1,16 @@
 'use server'
 
+import { auth } from '@/lib/auth'
+
 import { prisma } from '@/lib/prisma'
 import { SubjectStats, TopicWithStatus } from './types'
 
 export async function getUserSubjects(): Promise<SubjectStats[]> {
-    // MVP: Get first contest found (assuming user has one)
-    // V2: Filter by active contest
+    const session = await auth()
+    if (!session?.user?.id) return []
+
     const contest = await prisma.contest.findFirst({
+        where: { userId: session.user.id },
         include: {
             subjects: {
                 include: {
@@ -25,7 +29,6 @@ export async function getUserSubjects(): Promise<SubjectStats[]> {
     return contest.subjects.map(subject => {
         const totalTopics = subject.topics.length
 
-        // Count topics that have at least one study session
         const completedTopics = subject.topics.filter(t => t.studySessions.length > 0).length
 
         const totalMinutes = subject.topics.reduce((acc, t) => {
@@ -64,7 +67,7 @@ export async function getSubjectDetails(subjectId: string): Promise<{ subjectNam
 
     const topics: TopicWithStatus[] = subject.topics.map(topic => {
         const hasStudied = topic.studySessions.length > 0
-        // Simple logic for mastery: > 60 mins studied (refine later)
+
         const totalMinutes = topic.studySessions.reduce((acc, s) => acc + s.minutes, 0)
         const isMastered = totalMinutes > 60
 

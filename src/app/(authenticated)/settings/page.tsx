@@ -16,7 +16,7 @@ export default async function SettingsPage() {
     return (
         <div className="min-h-screen bg-[#080010] p-4 md:p-8 max-w-3xl mx-auto space-y-6">
 
-            {/* Page header */}
+            
             <div className="pb-4" style={{ borderBottom: '2px solid rgba(0,255,65,0.3)' }}>
                 <div className="font-pixel text-[#00ff41] text-sm mb-1"
                     style={{ textShadow: '0 0 10px rgba(0,255,65,0.6)' }}>
@@ -25,7 +25,7 @@ export default async function SettingsPage() {
                 <div className="font-mono text-xl text-[#7f7f9f]">Gerencie sua conta e preferências.</div>
             </div>
 
-            {/* Profile Section */}
+            
             <div className="p-5 space-y-5" style={{ border: '2px solid rgba(0,255,65,0.4)', background: '#04000a' }}>
                 <div className="flex items-center gap-3 pb-3" style={{ borderBottom: '1px solid rgba(0,255,65,0.15)' }}>
                     <div className="w-8 h-8 flex items-center justify-center text-[#00ff41]"
@@ -47,7 +47,7 @@ export default async function SettingsPage() {
                 </div>
             </div>
 
-            {/* Study Preferences */}
+            
             <div className="p-5 space-y-5" style={{ border: '2px solid rgba(0,255,65,0.4)', background: '#04000a' }}>
                 <div className="flex items-center gap-3 pb-3" style={{ borderBottom: '1px solid rgba(0,255,65,0.15)' }}>
                     <div className="w-8 h-8 flex items-center justify-center text-[#00ff41]"
@@ -78,7 +78,7 @@ export default async function SettingsPage() {
                 </div>
             </div>
 
-            {/* Notifications — coming soon */}
+            
             <div className="p-5 opacity-40" style={{ border: '2px solid #333', background: '#04000a' }}>
                 <div className="flex items-center gap-3">
                     <Bell className="w-4 h-4 text-[#555]" />

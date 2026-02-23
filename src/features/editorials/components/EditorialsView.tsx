@@ -19,7 +19,6 @@ interface EditorialsViewProps {
 export function EditorialsView({ contestId, editorials, subjects }: EditorialsViewProps) {
   const [selectedEditorial, setSelectedEditorial] = useState<EditorialWithMappings | null>(null)
 
-
   return (
     <div className="space-y-6">
       <Tabs defaultValue="editorials" className="w-full">

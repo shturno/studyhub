@@ -14,10 +14,10 @@ const STARS = Array.from({ length: 80 }, (_, i) => ({
 }))
 
 const SCORE_ENTRIES = [
-  { rank: "1ST", label: "HORAS DE FOCO",       value: "999:59",  color: "#ffbe0b" },
-  { rank: "2ND", label: "QUESTÕES RESOLVIDAS",  value: "88.888",  color: "#00ff41" },
-  { rank: "3RD", label: "DIAS DE SEQUÊNCIA",    value: "365",     color: "#ff006e" },
-  { rank: "4TH", label: "MATÉRIAS DOMINADAS",   value: "42",      color: "#00e5ff" },
+  { rank: "1ST", label: "HORAS DE FOCO",       value: "---",  color: "#ffbe0b" },
+  { rank: "2ND", label: "QUESTÕES RESOLVIDAS",  value: "---",  color: "#00ff41" },
+  { rank: "3RD", label: "DIAS DE SEQUÊNCIA",    value: "---",  color: "#ff006e" },
+  { rank: "4TH", label: "MATÉRIAS DOMINADAS",   value: "---",  color: "#00e5ff" },
 ]
 
 const FEATURES = [
@@ -58,22 +58,28 @@ export default function HomePage() {
       />
 
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        {STARS.map(s => (
-          <div
-            key={s.id}
-            className="absolute rounded-full"
-            style={{
-              left: s.left,
-              top: s.top,
-              width: s.size,
-              height: s.size,
-              background: s.id % 3 === 0 ? "#00ff41" : s.id % 3 === 1 ? "#ff006e" : "#e0e0ff",
-              opacity: s.opacity,
-              boxShadow: `0 0 ${s.size * 2}px currentColor`,
-              animation: `pulse ${s.duration} ${s.delay} ease-in-out infinite alternate`,
-            }}
-          />
-        ))}
+        {STARS.map(s => {
+          let starColor = "#e0e0ff";
+          if (s.id % 3 === 0) starColor = "#00ff41";
+          else if (s.id % 3 === 1) starColor = "#ff006e";
+          
+          return (
+            <div
+              key={s.id}
+              className="absolute rounded-full"
+              style={{
+                left: s.left,
+                top: s.top,
+                width: s.size,
+                height: s.size,
+                background: starColor,
+                opacity: s.opacity,
+                boxShadow: `0 0 ${s.size * 2}px currentColor`,
+                animation: `pulse ${s.duration} ${s.delay} ease-in-out infinite alternate`,
+              }}
+            />
+          )
+        })}
       </div>
 
       <div className="relative z-10 flex flex-col items-center min-h-screen px-4 py-8">
