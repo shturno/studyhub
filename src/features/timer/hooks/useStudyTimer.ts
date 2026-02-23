@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { toast } from 'sonner'
 import { saveStudySession } from '../actions'
 
@@ -20,38 +19,13 @@ export function useStudyTimer({ topicId, initialMinutes = 25, onComplete }: UseS
     const intervalRef = useRef<NodeJS.Timeout | null>(null)
     const totalTimeRef = useRef(initialMinutes * 60)
 
-    useEffect(() => {
-        if (isRunning && timeLeft > 0) {
-            intervalRef.current = setInterval(() => {
-                setTimeLeft(prev => {
-                    if (prev <= 1) {
-                        handleComplete()
-                        return 0
-                    }
-                    return prev - 1
-                })
-            }, 1000)
-        } else {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current)
-                intervalRef.current = null
-            }
-        }
-
-        return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current)
-            }
-        }
-    }, [isRunning, timeLeft])
-
-    const handleComplete = async () => {
+    const handleComplete = useCallback(async () => {
         setIsRunning(false)
         setHasCompleted(true)
         setIsSaving(true)
 
         try {
-            const studiedMinutes = Math.ceil((totalTimeRef.current - timeLeft) / 60)
+            const studiedMinutes = Math.ceil(totalTimeRef.current / 60)
 
             if (studiedMinutes > 0) {
                 const result = await saveStudySession({
@@ -66,7 +40,9 @@ export function useStudyTimer({ topicId, initialMinutes = 25, onComplete }: UseS
                         : `Faltam ${result.xpToNextLevel} XP para o próximo nível`
                 })
 
-                onComplete?.(result)
+                if (onComplete) {
+                    onComplete(result)
+                }
             }
         } catch (error) {
             console.error('Save session error:', error)
@@ -76,7 +52,30 @@ export function useStudyTimer({ topicId, initialMinutes = 25, onComplete }: UseS
         } finally {
             setIsSaving(false)
         }
-    }
+    }, [topicId, onComplete])
+
+    useEffect(() => {
+        if (isRunning && timeLeft > 0) {
+            intervalRef.current = setInterval(() => {
+                setTimeLeft(prev => {
+                    if (prev <= 1) {
+                        handleComplete()
+                        return 0
+                    }
+                    return prev - 1
+                })
+            }, 1000)
+        } else if (intervalRef.current) {
+            clearInterval(intervalRef.current)
+            intervalRef.current = null
+        }
+
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current)
+            }
+        }
+    }, [isRunning, timeLeft, handleComplete])
 
     const start = () => setIsRunning(true)
 
