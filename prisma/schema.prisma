@@ -157,6 +157,7 @@ model Topic {
   plannedSessions PlannedSession[]
   reviewQueue   ReviewQueue[]
   materials     Material[]
+  contentMappings ContentMapping[]
   
   @@index([subjectId])
   @@index([parentId])
@@ -290,3 +291,7 @@ model Material {
   
   @@map("materials")
 }
+
+
+
+
