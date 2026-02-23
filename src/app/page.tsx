@@ -1,127 +1,238 @@
+"use client"
+
 import Link from "next/link"
+import { useEffect, useState } from "react"
+
+const STARS = Array.from({ length: 80 }, (_, i) => ({
+  id: i,
+  left: `${(i * 37 + 13) % 100}%`,
+  top: `${(i * 53 + 7) % 100}%`,
+  size: i % 5 === 0 ? 2 : 1,
+  opacity: 0.3 + (i % 4) * 0.15,
+  delay: `${(i * 0.4) % 6}s`,
+  duration: `${3 + (i % 5)}s`,
+}))
+
+const SCORE_ENTRIES = [
+  { rank: "1ST", label: "HORAS DE FOCO",       value: "999:59",  color: "#ffbe0b" },
+  { rank: "2ND", label: "QUESTÕES RESOLVIDAS",  value: "88.888",  color: "#00ff41" },
+  { rank: "3RD", label: "DIAS DE SEQUÊNCIA",    value: "365",     color: "#ff006e" },
+  { rank: "4TH", label: "MATÉRIAS DOMINADAS",   value: "42",      color: "#00e5ff" },
+]
+
+const FEATURES = [
+  { icon: "🧠", title: "TDAH-FRIENDLY", desc: "Sessões curtas, metas claras, sem ruído",   color: "#00ff41" },
+  { icon: "🏆", title: "GAMIFICADO",    desc: "XP, nível, conquistas e ranking real",       color: "#ffbe0b" },
+  { icon: "⚡", title: "IA ADAPTATIVA", desc: "Ciclo de estudos montado por IA",            color: "#ff006e" },
+  { icon: "🗂️", title: "GABARITEIRO",  desc: "Edital, matérias e provas no mesmo lugar",   color: "#00e5ff" },
+]
 
 export default function HomePage() {
-  return (
-    <div className="min-h-screen bg-[#080010] text-[#e0e0ff] overflow-hidden">
+  const [blink, setBlink] = useState(true)
 
-      {/* Stars background */}
+  useEffect(() => {
+    const t = setInterval(() => setBlink(b => !b), 600)
+    return () => clearInterval(t)
+  }, [])
+
+  return (
+    <div
+      className="min-h-screen text-[#e0e0ff] overflow-x-hidden relative select-none"
+      style={{ background: "#05000d", fontFamily: "'Press Start 2P', monospace" }}
+    >
+      <div
+        className="fixed inset-0 pointer-events-none z-50"
+        style={{
+          background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.18) 2px, rgba(0,0,0,0.18) 4px)",
+          mixBlendMode: "multiply",
+        }}
+      />
+
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(0,255,65,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,65,0.04) 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
+        }}
+      />
+
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        {Array.from({ length: 50 }, (_, i) => i).map((step) => (
+        {STARS.map(s => (
           <div
-            key={`star-${step}`}
-            className="absolute w-px h-px bg-[#00ff41] opacity-60"
+            key={s.id}
+            className="absolute rounded-full"
             style={{
-              left: `${(step * 37 + 13) % 100}%`,
-              top: `${(step * 53 + 7) % 100}%`,
-              boxShadow: '0 0 2px #00ff41',
-              animationDelay: `${step * 0.3}s`,
+              left: s.left,
+              top: s.top,
+              width: s.size,
+              height: s.size,
+              background: s.id % 3 === 0 ? "#00ff41" : s.id % 3 === 1 ? "#ff006e" : "#e0e0ff",
+              opacity: s.opacity,
+              boxShadow: `0 0 ${s.size * 2}px currentColor`,
+              animation: `pulse ${s.duration} ${s.delay} ease-in-out infinite alternate`,
             }}
           />
         ))}
       </div>
 
-      {/* Nav */}
-      <nav className="fixed w-full z-50 h-14 flex items-center justify-between px-6"
-        style={{ background: '#04000a', borderBottom: '2px solid #00ff41', boxShadow: '0 2px 20px rgba(0,255,65,0.2)' }}>
-        <div className="flex items-center gap-1">
-          <span className="font-pixel text-[#00ff41] text-sm"
-            style={{ textShadow: '0 0 10px rgba(0,255,65,0.8)' }}>STUDY</span>
-          <span className="font-pixel text-[#ff006e] text-sm"
-            style={{ textShadow: '0 0 10px rgba(255,0,110,0.8)' }}>HUB</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link href="/login">
-            <button className="font-pixel text-[9px] text-[#00ff41] px-4 py-2 hover:bg-[#00ff41]/10 transition-colors"
-              style={{ border: '2px solid #00ff41' }}>
-              LOGIN
-            </button>
-          </Link>
-          <Link href="/register">
-            <button className="font-pixel text-[9px] text-black bg-[#00ff41] px-4 py-2 transition-all hover:-translate-y-0.5"
-              style={{ boxShadow: '4px 4px 0px #006b1a' }}>
-              PLAY
-            </button>
-          </Link>
-        </div>
-      </nav>
+      <div className="relative z-10 flex flex-col items-center min-h-screen px-4 py-8">
 
-      {/* Hero */}
-      <section className="flex flex-col items-center justify-center min-h-screen px-6 text-center pt-14">
+        <header className="w-full max-w-5xl flex items-center justify-between mb-10 px-2">
+          <div className="flex items-center gap-1">
+            <span style={{ fontSize: 13, color: "#00ff41", textShadow: "0 0 12px #00ff41, 0 0 24px rgba(0,255,65,0.5)", letterSpacing: 2 }}>
+              STUDY
+            </span>
+            <span style={{ fontSize: 13, color: "#ff006e", textShadow: "0 0 12px #ff006e, 0 0 24px rgba(255,0,110,0.5)", letterSpacing: 2 }}>
+              HUB
+            </span>
+          </div>
 
-        {/* Big pixel title */}
-        <div className="mb-4">
-          <div className="font-pixel text-[#00ff41] text-2xl md:text-4xl lg:text-5xl leading-relaxed mb-2"
-            style={{ textShadow: '0 0 20px rgba(0,255,65,0.8), 0 0 40px rgba(0,255,65,0.4)' }}>
+          <div className="flex items-center gap-3">
+            <Link href="/login">
+              <button
+                className="transition-all hover:bg-[#00ff41]/10 active:scale-95"
+                style={{ fontSize: 8, color: "#00ff41", border: "2px solid #00ff41", padding: "8px 16px", letterSpacing: 1, boxShadow: "0 0 8px rgba(0,255,65,0.3)" }}
+              >
+                LOGIN
+              </button>
+            </Link>
+            <Link href="/register">
+              <button
+                className="transition-all hover:-translate-y-0.5 active:translate-y-0.5 active:scale-95"
+                style={{ fontSize: 8, color: "#000", background: "#00ff41", padding: "8px 16px", letterSpacing: 1, boxShadow: "4px 4px 0 #006b1a, 0 0 16px rgba(0,255,65,0.4)" }}
+              >
+                PLAY
+              </button>
+            </Link>
+          </div>
+        </header>
+
+        <section className="flex flex-col items-center text-center w-full max-w-3xl">
+
+          <div
+            className="w-full mb-6"
+            style={{ height: 2, background: "linear-gradient(90deg, transparent, #00ff41 30%, #00ff41 70%, transparent)", boxShadow: "0 0 12px #00ff41" }}
+          />
+
+          <h1
+            className="mb-3 leading-relaxed"
+            style={{ fontSize: "clamp(28px, 6vw, 56px)", color: "#00ff41", textShadow: "0 0 20px #00ff41, 0 0 50px rgba(0,255,65,0.4), 4px 4px 0 #003d10", letterSpacing: "0.08em" }}
+          >
             STUDY HUB
-          </div>
-          <div className="font-pixel text-[#ff006e] text-sm md:text-lg"
-            style={{ textShadow: '0 0 15px rgba(255,0,110,0.8)' }}>
+          </h1>
+
+          <p
+            className="mb-2"
+            style={{ fontSize: "clamp(9px, 2vw, 13px)", color: "#ff006e", textShadow: "0 0 14px #ff006e, 2px 2px 0 #5c0028", letterSpacing: "0.15em" }}
+          >
             PREPARE. LEVEL UP. CONQUER.
+          </p>
+
+          <div
+            className="mt-6 mb-10"
+            style={{ fontSize: 9, color: "#ffbe0b", textShadow: "0 0 12px #ffbe0b", letterSpacing: "0.12em", opacity: blink ? 1 : 0, transition: "opacity 0.1s" }}
+          >
+            ► INSERT COIN TO START ◄
           </div>
-        </div>
 
-        {/* Insert coin blinking */}
-        <div className="font-pixel text-[#ffbe0b] text-xs mt-8 mb-12 animate-blink"
-          style={{ textShadow: '0 0 10px rgba(255,190,11,0.8)' }}>
-          ► INSERT COIN TO START ◄
-        </div>
+          <div
+            className="w-full max-w-lg mb-10"
+            style={{ border: "2px solid #00ff41", background: "rgba(0,255,65,0.03)", boxShadow: "0 0 24px rgba(0,255,65,0.25), inset 0 0 40px rgba(0,255,65,0.04)", padding: "20px 24px" }}
+          >
+            <div className="flex items-center justify-center gap-3 mb-5">
+              <div style={{ flex: 1, height: 1, background: "rgba(0,255,65,0.4)" }} />
+              <span style={{ fontSize: 8, color: "#00ff41", letterSpacing: 2, whiteSpace: "nowrap" }}>
+                ★ HALL OF CHAMPIONS ★
+              </span>
+              <div style={{ flex: 1, height: 1, background: "rgba(0,255,65,0.4)" }} />
+            </div>
 
-        {/* Stats bar like arcade high scores */}
-        <div className="mb-12 w-full max-w-lg"
-          style={{ border: '2px solid #00ff41', background: '#04000a', padding: '16px' }}>
-          <div className="font-pixel text-[8px] text-[#00ff41] mb-4 text-center">— HIGH SCORES —</div>
-          <div className="space-y-2">
-            {[
-              { rank: '1ST', name: 'CONCURSO PUBLICO', xp: '99999' },
-              { rank: '2ND', name: 'APROVACAO', xp: '88888' },
-              { rank: '3RD', name: 'CONQUISTAS', xp: '77777' },
-            ].map((row) => (
-              <div key={row.rank} className="flex justify-between font-mono text-xl px-2">
-                <span className="text-[#ff006e]">{row.rank}</span>
-                <span className="text-[#e0e0ff]">{row.name}</span>
-                <span className="text-[#ffbe0b]">{row.xp}</span>
+            <div className="space-y-3">
+              {SCORE_ENTRIES.map((entry, idx) => (
+                <div
+                  key={entry.rank}
+                  className="flex items-center justify-between gap-4"
+                  style={{ borderLeft: `3px solid ${entry.color}`, paddingLeft: 10, opacity: 1 - idx * 0.08 }}
+                >
+                  <span style={{ fontSize: 8, color: entry.color, minWidth: 28, textShadow: `0 0 8px ${entry.color}` }}>
+                    {entry.rank}
+                  </span>
+                  <span style={{ fontSize: 7, color: "#a0a0c0", flex: 1, letterSpacing: 1 }}>
+                    {entry.label}
+                  </span>
+                  <span style={{ fontSize: 9, color: entry.color, textShadow: `0 0 10px ${entry.color}`, fontVariantNumeric: "tabular-nums" }}>
+                    {entry.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 pt-3 text-center" style={{ borderTop: "1px solid rgba(0,255,65,0.2)" }}>
+              <span style={{ fontSize: 7, color: "#505060", letterSpacing: 1 }}>
+                ALCANCE ESSES RESULTADOS ESTUDANDO COM A GENTE
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-4 mb-16">
+            <Link href="/register">
+              <button
+                className="transition-all hover:-translate-y-1 active:translate-y-0.5"
+                style={{ fontSize: 10, color: "#000", background: "#00ff41", padding: "14px 32px", letterSpacing: "0.1em", boxShadow: "6px 6px 0 #006b1a, 0 0 24px rgba(0,255,65,0.5)" }}
+              >
+                ▶ NOVO JOGO
+              </button>
+            </Link>
+            <Link href="/login">
+              <button
+                className="transition-all hover:bg-[#00ff41]/10 active:scale-95"
+                style={{ fontSize: 10, color: "#00ff41", border: "2px solid #00ff41", padding: "14px 32px", letterSpacing: "0.1em", boxShadow: "0 0 12px rgba(0,255,65,0.2)" }}
+              >
+                ↺ CONTINUAR
+              </button>
+            </Link>
+          </div>
+
+          <div
+            className="w-full mb-10"
+            style={{ height: 2, background: "linear-gradient(90deg, transparent, rgba(0,255,65,0.5) 30%, rgba(0,255,65,0.5) 70%, transparent)", boxShadow: "0 0 8px rgba(0,255,65,0.3)" }}
+          />
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full max-w-4xl">
+            {FEATURES.map((f) => (
+              <div
+                key={f.title}
+                className="flex flex-col items-center text-center p-4 cursor-default transition-all hover:-translate-y-1"
+                style={{ border: `2px solid ${f.color}40`, background: `${f.color}06`, boxShadow: `0 0 16px ${f.color}15` }}
+              >
+                <div style={{ fontSize: 28, marginBottom: 10, filter: "drop-shadow(0 0 6px rgba(255,255,255,0.4))" }}>
+                  {f.icon}
+                </div>
+                <div style={{ fontSize: 7, color: f.color, letterSpacing: 1, marginBottom: 8, textShadow: `0 0 8px ${f.color}` }}>
+                  {f.title}
+                </div>
+                <div style={{ fontSize: 7, color: "#7070a0", lineHeight: 1.7 }}>
+                  {f.desc}
+                </div>
               </div>
             ))}
           </div>
-        </div>
 
-        {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <Link href="/register">
-            <button className="font-pixel text-[10px] text-black bg-[#00ff41] px-8 py-4 transition-all hover:-translate-y-1 active:translate-y-1"
-              style={{ boxShadow: '6px 6px 0px #006b1a, 0 0 20px rgba(0,255,65,0.4)' }}>
-              ▶ NOVO JOGO
-            </button>
-          </Link>
-          <Link href="/login">
-            <button className="font-pixel text-[10px] text-[#00ff41] px-8 py-4 hover:bg-[#00ff41]/10 transition-colors"
-              style={{ border: '2px solid #00ff41' }}>
-              ↺ CONTINUAR
-            </button>
-          </Link>
-        </div>
+          <div className="mt-14 mb-6" style={{ fontSize: 7, color: "#404050", letterSpacing: 1 }}>
+            © 2026 STUDYHUB CORP · VER 1.0.0 · BUILD 001 · ALL RIGHTS RESERVED
+          </div>
 
-        {/* Features row */}
-        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-3xl">
-          {[
-            { emoji: '🧠', title: 'TDAH-FRIENDLY', desc: 'Interface clean, sem distrações' },
-            { emoji: '🏆', title: 'GAMIFICADO', desc: 'XP, níveis e conquistas reais' },
-            { emoji: '⚡', title: 'SMART CYCLE', desc: 'Cronograma adaptativo com IA' },
-          ].map((card) => (
-            <div key={card.title} className="p-4 text-center hover:bg-[#00ff41]/5 transition-colors cursor-default"
-              style={{ border: '2px solid rgba(0,255,65,0.4)' }}>
-              <div className="text-3xl mb-3">{card.emoji}</div>
-              <div className="font-pixel text-[8px] text-[#00ff41] mb-2">{card.title}</div>
-              <div className="font-mono text-base text-[#7f7f9f]">{card.desc}</div>
-            </div>
-          ))}
-        </div>
+        </section>
+      </div>
 
-        {/* Version tag */}
-        <div className="mt-16 font-pixel text-[7px] text-[#7f7f9f]">
-          © 2026 STUDYHUB CORP. · VER 1.0.0 · BUILD 001
-        </div>
-      </section>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        @keyframes pulse {
+          from { opacity: 0.2; }
+          to   { opacity: 0.9; }
+        }
+      `}</style>
     </div>
   )
 }
