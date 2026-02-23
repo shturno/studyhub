@@ -15,7 +15,6 @@ export interface ContentMapping {
   topicId: string
   contentSummary?: string | null
   relevance: number
-  createdAt: Date
 }
 
 export interface EditorialWithMappings extends EditorialItem {

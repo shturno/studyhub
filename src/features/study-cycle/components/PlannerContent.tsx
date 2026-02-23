@@ -37,7 +37,7 @@ interface PlannerData {
   tracks: Array<{
     id: string
     name: string
-    lessons: Array<any>
+    lessons: Lesson[]
   }>
   availableLessons: Lesson[]
   plannedSessions: PlannedSession[]
@@ -49,7 +49,7 @@ interface PlannerContentProps {
 }
 
 export function PlannerContent({ data, contestId }: PlannerContentProps) {
-  const [availableLessons, setAvailableLessons] = useState(data.availableLessons)
+  const [availableLessons] = useState(data.availableLessons)
   const [plannedSessions, setPlannedSessions] = useState(data.plannedSessions)
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null)
   const [isScheduleGeneratorOpen, setIsScheduleGeneratorOpen] = useState(false)
@@ -99,7 +99,7 @@ export function PlannerContent({ data, contestId }: PlannerContentProps) {
             title: "Sessão agendada!",
             description: `${lesson.title} foi salvo no seu planner`,
           })
-        } catch (error) {
+        } catch (_error) {
           // Rollback
           setPlannedSessions((prev) => prev.filter(s => s.id !== tempId))
           toast({
@@ -123,7 +123,7 @@ export function PlannerContent({ data, contestId }: PlannerContentProps) {
         title: "Sessão removida",
         description: "A sessão foi removida do seu planner",
       })
-    } catch (error) {
+    } catch (_error) {
       // Rollback
       setPlannedSessions(previousSessions)
       toast({
@@ -251,7 +251,7 @@ export function PlannerContent({ data, contestId }: PlannerContentProps) {
                     <div className="text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
                       <Calendar className="h-12 w-12 mx-auto mb-2 opacity-50" />
                       <p className="mb-2">Arraste lições aqui para planejar seus estudos</p>
-                      <p className="text-sm">Ou clique em "Nova Sessão" para criar manualmente</p>
+                       <p className="text-sm">Ou clique em &ldquo;Nova Sessão&rdquo; para criar manualmente</p>
                     </div>
                   )}
                 </div>

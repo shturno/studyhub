@@ -2,13 +2,13 @@
 
 import { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+
 import { CreateEditorialDialog } from './CreateEditorialDialog'
 import { EditorialList } from './EditorialList'
 import { ContentMapper } from './ContentMapper'
 import { ContentCrossingView } from './ContentCrossingView'
 import type { EditorialWithMappings } from '../types'
-import type { Subject, Topic } from '@/features/contests/types'
+import type { Subject, Topic } from '@prisma/client'
 
 interface EditorialsViewProps {
   contestId: string
@@ -18,7 +18,7 @@ interface EditorialsViewProps {
 
 export function EditorialsView({ contestId, editorials, subjects }: EditorialsViewProps) {
   const [selectedEditorial, setSelectedEditorial] = useState<EditorialWithMappings | null>(null)
-  const [showMapper, setShowMapper] = useState(false)
+
 
   return (
     <div className="space-y-6">

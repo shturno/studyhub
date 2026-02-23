@@ -115,7 +115,7 @@ export async function deleteEditorialItem(editorialItemId: string): Promise<void
 
 export async function mapContentToTopics(
   editorialItemId: string,
-  mappings: Array<{ topicId: string; contentSummary?: string; relevance: number }>
+  mappings: Array<{ topicId: string; contentSummary?: string | null; relevance: number }>
 ): Promise<void> {
   const session = await auth()
   if (!session?.user?.id) throw new Error('Unauthorized')

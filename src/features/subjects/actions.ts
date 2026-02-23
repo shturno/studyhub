@@ -78,7 +78,7 @@ export async function getSubjectDetails(subjectId: string): Promise<{ subjectNam
             status,
             lastStudiedAt: topic.studySessions[0]?.completedAt,
             xpEarned: topic.studySessions.reduce((acc, s) => acc + s.xpEarned, 0),
-            parentId: (topic as any).parentId
+            parentId: topic.parentId
         }
     })
 

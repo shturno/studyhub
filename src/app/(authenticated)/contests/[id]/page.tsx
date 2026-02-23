@@ -9,7 +9,7 @@ import { ArrowLeft, Building2, Calendar, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import { EditorialManager } from '@/features/editorials/components/EditorialManager'
 import { ContentCrossingView } from '@/features/editorials/components/ContentCrossingView'
-import type { EditorialWithMappings } from '@/features/editorials/types'
+
 
 export const metadata: Metadata = {
   title: 'Detalhes do Concurso | StudyHub',
@@ -20,15 +20,15 @@ interface ContestDetailPageProps {
   params: Promise<{ id: string }>
 }
 
-export default async function ContestDetailPage({ params }: ContestDetailPageProps) {
-  const { id } = await params
+export default async function ContestDetailPage(props: ContestDetailPageProps) {
+  const params = await props.params
   const session = await auth()
   if (!session?.user?.id) {
     return notFound()
   }
 
   const contest = await prisma.contest.findUnique({
-    where: { id },
+    where: { id: params.id },
     include: {
       subjects: {
         include: {
@@ -38,12 +38,6 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
       editorialItems: {
         include: {
           contentMappings: true,
-          contest: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
         },
       },
     },
@@ -147,7 +141,8 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
                 <BookOpen className="w-6 h-6 text-indigo-400" />
                 Análise de Conteúdo
               </h2>
-              <ContentCrossingView editorials={contest.editorialItems} />
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              <ContentCrossingView editorials={contest.editorialItems as any} />
             </Card>
           </div>
         </div>
@@ -164,7 +159,7 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
                 >
                   <h3 className="font-semibold text-white mb-2">{subject.name}</h3>
                   <p className="text-sm text-zinc-400">
-                    {subject.topics.length} tópico{subject.topics.length !== 1 ? 's' : ''}
+                    {subject.topics.length} tópico{subject.topics.length === 1 ? '' : 's'}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {subject.topics.slice(0, 3).map((topic) => (

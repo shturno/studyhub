@@ -4,28 +4,18 @@ import { Trophy, Zap, Target, BookOpen, Clock, ArrowUpRight, Flame } from 'lucid
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { useRouter } from 'next/navigation'
+
 import type { DashboardData } from '../services/dashboardService'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+
 import { GlassCard } from "@/components/ui/glass-card"
 
 interface DashboardViewProps {
     data: DashboardData
-    contests: any[]
-    activeContestId?: string
+    contests?: { id: string; name: string }[]
 }
 
-export function DashboardView({ data, contests, activeContestId }: DashboardViewProps) {
-    const router = useRouter()
+export function DashboardView({ data, contests = [] }: DashboardViewProps) {
     const { user, randomTopic, recentSessions, streak } = data
-
-    const handleContestChange = (value: string) => {
-        if (value === 'all') {
-            router.push('/dashboard')
-        } else {
-            router.push(`/dashboard?contestId=${value}`)
-        }
-    }
 
     if (!user) {
         return (
@@ -187,7 +177,7 @@ export function DashboardView({ data, contests, activeContestId }: DashboardView
 
                     <div className="rounded-2xl border border-white/[0.08] bg-card overflow-hidden">
                         {recentSessions.length > 0 ? (
-                            recentSessions.map((session, i) => (
+                            recentSessions.map((session) => (
                                 <div key={session.id} className="group flex items-center justify-between p-4 border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors cursor-pointer">
                                     <div className="flex items-center gap-4">
                                         <div className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center border border-white/5">
