@@ -2,12 +2,13 @@
 
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Trash2, Calendar, Award, Building2 } from 'lucide-react'
+import { Trash2, Calendar, Award, Building2, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { deleteContest } from '../actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 interface ContestCardProps {
     contest: {
@@ -66,7 +67,7 @@ export function ContestCard({ contest }: ContestCardProps) {
                 </Button>
             </div>
 
-            <div className="flex items-center gap-3 pt-4 border-t border-white/[0.08]">
+            <div className="flex items-center justify-between pt-4 border-t border-white/[0.08]">
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-xs font-medium text-zinc-300">
                     <Calendar className="w-3.5 h-3.5 text-zinc-500" />
                     {contest.examDate ? (
@@ -76,7 +77,16 @@ export function ContestCard({ contest }: ContestCardProps) {
                     )}
                 </div>
 
-                {/* Future: Add Subjects Count */}
+                <Link href={`/contests/${contest.id}`}>
+                    <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="gap-2 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10"
+                    >
+                        Detalhes
+                        <ChevronRight className="w-4 h-4" />
+                    </Button>
+                </Link>
             </div>
         </div>
     )

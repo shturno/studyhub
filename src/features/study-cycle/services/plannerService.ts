@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 
 export interface PlannerData {
+    primaryContestId?: string
     tracks: Array<{
         id: string
         name: string
@@ -97,7 +98,11 @@ export async function getPlannerData(): Promise<PlannerData> {
         draft: false
     }))
 
+    // Get primary contest for AI features
+    const primaryContest = contests.find(c => c.isPrimary) || contests[0]
+
     return {
+        primaryContestId: primaryContest?.id,
         tracks,
         availableLessons,
         plannedSessions

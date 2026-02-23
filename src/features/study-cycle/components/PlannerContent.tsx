@@ -10,7 +10,8 @@ import { useSessionModal } from "@/features/timer/context/SessionModalContext"
 import { useToast } from "@/hooks/use-toast"
 import { DraggableLesson } from "@/features/study-cycle/components/DraggableLesson"
 import { DroppableArea } from "@/features/study-cycle/components/DroppableArea"
-import { Calendar, Clock, BookOpen, Plus, Target } from "lucide-react"
+import { SmartScheduleGenerator } from "@/features/study-cycle/components/SmartScheduleGenerator"
+import { Calendar, Clock, BookOpen, Plus, Target, Brain } from "lucide-react"
 import { savePlannedSession, removePlannedSession } from "@/features/study-cycle/actions"
 
 interface Lesson {
@@ -44,12 +45,14 @@ interface PlannerData {
 
 interface PlannerContentProps {
   data: PlannerData
+  contestId?: string
 }
 
-export function PlannerContent({ data }: PlannerContentProps) {
+export function PlannerContent({ data, contestId }: PlannerContentProps) {
   const [availableLessons, setAvailableLessons] = useState(data.availableLessons)
   const [plannedSessions, setPlannedSessions] = useState(data.plannedSessions)
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null)
+  const [isScheduleGeneratorOpen, setIsScheduleGeneratorOpen] = useState(false)
   const { openModal } = useSessionModal()
   const { toast } = useToast()
 
@@ -145,10 +148,21 @@ export function PlannerContent({ data }: PlannerContentProps) {
               Arraste lições para o planner para organizar seus estudos
             </p>
           </div>
-          <Button onClick={() => openModal()}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Sessão
-          </Button>
+          <div className="flex gap-2">
+            {contestId && (
+              <Button 
+                onClick={() => setIsScheduleGeneratorOpen(true)}
+                className="gap-2 bg-indigo-600 hover:bg-indigo-700"
+              >
+                <Brain className="h-4 w-4" />
+                IA Cronograma
+              </Button>
+            )}
+            <Button onClick={() => openModal()}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Sessão
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -255,6 +269,14 @@ export function PlannerContent({ data }: PlannerContentProps) {
           ) : null}
         </DragOverlay>
       </DndContext>
+
+      {contestId && (
+        <SmartScheduleGenerator
+          contestId={contestId}
+          isOpen={isScheduleGeneratorOpen}
+          onOpenChange={setIsScheduleGeneratorOpen}
+        />
+      )}
     </div>
   )
 }
