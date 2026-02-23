@@ -3,154 +3,127 @@
 import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { AlertCircle, TrendingUp, Zap } from 'lucide-react'
-import {
-  analyzeContentCrossings,
-  identifyContentGaps,
-  calculateCoveragePercentage,
-} from '../services/contentCrossingService'
+import { AlertCircle, Zap } from 'lucide-react'
+import { getContentCrossings } from '../actions'
+import type { EditorialWithMappings } from '../types'
 
 interface ContentCrossingViewProps {
-  contestId: string
-  userId: string
+  editorials: EditorialWithMappings[]
 }
 
-export function ContentCrossingView({ contestId, userId }: ContentCrossingViewProps) {
-  const [crossings, setCrossings] = useState<any[]>([])
-  const [gaps, setGaps] = useState<any[]>([])
-  const [coverage, setCoverage] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
+interface Crossing {
+  topicId: string
+  topicName: string
+  mappingCount: number
+  editorialCount: number
+  relevanceScore: number
+}
+
+export function ContentCrossingView({ editorials }: ContentCrossingViewProps) {
+  const [crossings, setCrossings] = useState<Crossing[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadData()
-  }, [contestId, userId])
-
-  async function loadData() {
-    try {
-      setIsLoading(true)
-      const [crossingsData, gapsData, coverageData] = await Promise.all([
-        analyzeContentCrossings(contestId, userId),
-        identifyContentGaps(contestId, userId),
-        calculateCoveragePercentage(contestId, userId),
-      ])
-
-      setCrossings(crossingsData)
-      setGaps(gapsData)
-      setCoverage(coverageData)
-    } catch (error) {
-      console.error('Error loading crossing data:', error)
-    } finally {
-      setIsLoading(false)
+    if (editorials.length === 0) {
+      setLoading(false)
+      return
     }
+
+    // Get contest ID from first editorial
+    const contestId = editorials[0].contestId
+
+    async function loadCrossings() {
+      try {
+        const data = await getContentCrossings(contestId)
+        // Filter to only show topics that appear in multiple editorials
+        const multipleCrossings = data.filter((c) => c.editorialCount > 1)
+        setCrossings(multipleCrossings)
+      } catch (error) {
+        console.error('Error loading crossings:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadCrossings()
+  }, [editorials])
+
+  if (editorials.length < 2) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 px-4">
+        <AlertCircle className="w-12 h-12 text-zinc-500 mb-4" />
+        <h3 className="text-lg font-semibold text-zinc-200 mb-2">Nenhum cruzamento</h3>
+        <p className="text-zinc-400 text-sm text-center">
+          Adicione pelo menos 2 editais e mapeie seu conteúdo para identificar cruzamentos
+        </p>
+      </div>
+    )
   }
 
-  if (isLoading) {
-    return <div className="text-zinc-400">Carregando análise...</div>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="w-8 h-8 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin mx-auto mb-3" />
+          <p className="text-zinc-400">Carregando cruzamentos...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (crossings.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 px-4">
+        <AlertCircle className="w-12 h-12 text-zinc-500 mb-4" />
+        <h3 className="text-lg font-semibold text-zinc-200 mb-2">Nenhum cruzamento encontrado</h3>
+        <p className="text-zinc-400 text-sm text-center">
+          Nenhum tópico foi mapeado em múltiplos editais ainda
+        </p>
+      </div>
+    )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Coverage Overview */}
-      <Card className="p-6 bg-white/5 border-white/10">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-indigo-400" />
-            Cobertura de Conteúdo
-          </h3>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-zinc-300">Tópicos Cobertos</span>
-              <span className="text-2xl font-bold text-indigo-400">
-                {coverage?.coverage}%
-              </span>
-            </div>
-            <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-indigo-500 to-violet-600 transition-all"
-                style={{ width: `${coverage?.coverage}%` }}
-              />
-            </div>
-            <p className="text-xs text-zinc-400 mt-2">
-              {coverage?.coveredTopics} de {coverage?.totalTopics} tópicos
-              {coverage?.gaps > 0 && (
-                <span className="text-yellow-400 ml-2">
-                  ({coverage?.gaps} lacunas)
-                </span>
-              )}
-            </p>
-          </div>
-        </div>
-      </Card>
-
-      {/* High Priority Topics (crossings) */}
-      {crossings.length > 0 && (
-        <Card className="p-6 bg-white/5 border-white/10">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Zap className="w-5 h-5 text-yellow-400" />
-            Tópicos de Alta Prioridade
-          </h3>
-
-          <div className="space-y-3">
-            {crossings.slice(0, 10).map((crossing) => (
-              <div
-                key={crossing.topicId}
-                className="p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-white/[0.08] transition-colors"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="font-medium text-white">{crossing.topicName}</p>
-                    <p className="text-xs text-zinc-400 mt-1">
-                      Presente em {crossing.editorialsCount} edital
-                      {crossing.editorialsCount > 1 ? 'is' : ''}
-                    </p>
-                  </div>
+    <div className="space-y-4">
+      <div className="grid gap-4">
+        {crossings.map((crossing) => (
+          <Card
+            key={crossing.topicId}
+            className="p-4 bg-card/50 border-white/10 hover:border-white/20 transition-colors"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <Zap className="w-4 h-4 text-yellow-400" />
+                  <h4 className="font-semibold text-white">{crossing.topicName}</h4>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="secondary" className="text-xs">
+                    {crossing.editorialCount} edital{crossing.editorialCount !== 1 ? 'is' : ''}
+                  </Badge>
                   <Badge
-                    variant="secondary"
-                    className="ml-2 bg-yellow-500/20 text-yellow-200 border-yellow-500/30"
+                    variant="outline"
+                    className="text-xs border-indigo-500/50 text-indigo-400"
                   >
-                    {crossing.averageRelevance}%
+                    {crossing.mappingCount} mapeamento{crossing.mappingCount !== 1 ? 's' : ''}
                   </Badge>
                 </div>
               </div>
-            ))}
-          </div>
-        </Card>
-      )}
-
-      {/* Content Gaps */}
-      {gaps.length > 0 && (
-        <Card className="p-6 bg-white/5 border-white/10">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-orange-400" />
-            Lacunas de Conteúdo ({gaps.length})
-          </h3>
-
-          <div className="space-y-2 max-h-64 overflow-y-auto">
-            {gaps.map((gap) => (
-              <div
-                key={gap.topicId}
-                className="p-2 rounded text-sm bg-white/5 hover:bg-white/[0.08] transition-colors"
-              >
-                <p className="text-white">{gap.topicName}</p>
-                <p className="text-xs text-zinc-500">{gap.subjectName}</p>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-indigo-400">{crossing.relevanceScore}%</div>
+                <p className="text-xs text-zinc-400">Relevância média</p>
               </div>
-            ))}
-          </div>
+            </div>
+          </Card>
+        ))}
+      </div>
 
-          <p className="text-xs text-zinc-400 mt-4 p-3 bg-orange-500/10 rounded border border-orange-500/20">
-            Dica: Mapeie esses tópicos para seus editais para melhorar a cobertura
-          </p>
-        </Card>
-      )}
-
-      {crossings.length === 0 && gaps.length === 0 && (
-        <div className="text-center py-8 text-zinc-400">
-          <p>Nenhuma análise disponível. Adicione editais e mapeie conteúdos primeiro.</p>
-        </div>
-      )}
+      <Card className="p-4 bg-indigo-600/20 border-indigo-500/50">
+        <p className="text-sm text-indigo-200">
+          <strong>{crossings.length}</strong> tópico{crossings.length !== 1 ? 's' : ''} aparecem em múltiplos
+          editais. Estes são ótimos pontos de foco para seus estudos!
+        </p>
+      </Card>
     </div>
   )
 }

@@ -12,9 +12,12 @@ export interface ContentOverlap {
 export interface StudyAreaPriority {
   topicId: string
   topicName: string
+  subjectId?: string
+  subjectName?: string
   priority: 'high' | 'medium' | 'low'
   reason: string
   recommendedHours: number
+  coveragePercent?: number
 }
 
 /**
@@ -95,41 +98,109 @@ export async function generateStudyPriorities(
   userId: string,
   weeklyHours: number = 40
 ): Promise<StudyAreaPriority[]> {
-  const crossings = await analyzeContentCrossings(contestId, userId)
+  // Get topics with their subject information
+  const contentMappings = await prisma.contentMapping.findMany({
+    where: {
+      editorialItem: {
+        contestId,
+        userId,
+      },
+    },
+    include: {
+      topic: {
+        include: {
+          subject: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+      editorialItem: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+    },
+  })
 
-  if (crossings.length === 0) {
+  if (contentMappings.length === 0) {
     return []
   }
 
-  const totalCrossings = crossings.reduce((sum, c) => sum + c.editorialsCount, 0)
-  const priorities: StudyAreaPriority[] = []
+  // Group by topic and calculate statistics
+  const topicMap = new Map<string, any>()
 
-  for (const crossing of crossings) {
+  for (const mapping of contentMappings) {
+    const key = mapping.topicId
+    if (!topicMap.has(key)) {
+      topicMap.set(key, {
+        topicId: mapping.topic.id,
+        topicName: mapping.topic.name,
+        subjectId: mapping.topic.subject.id,
+        subjectName: mapping.topic.subject.name,
+        editorials: new Set<string>(),
+        relevances: [],
+      })
+    }
+
+    const entry = topicMap.get(key)
+    entry.editorials.add(mapping.editorialItem.id)
+    entry.relevances.push(mapping.relevance)
+  }
+
+  // Convert to array and sort by editorial count and relevance
+  const sortedTopics = Array.from(topicMap.values())
+    .map((entry) => ({
+      ...entry,
+      editorialCount: entry.editorials.size,
+      averageRelevance: Math.round(
+        entry.relevances.reduce((a: number, b: number) => a + b, 0) / entry.relevances.length
+      ),
+    }))
+    .sort((a, b) => {
+      if (b.editorialCount !== a.editorialCount) return b.editorialCount - a.editorialCount
+      return b.averageRelevance - a.averageRelevance
+    })
+
+  // Assign priorities based on frequency and relevance
+  const priorities: StudyAreaPriority[] = []
+  const totalTopics = sortedTopics.length
+
+  for (let i = 0; i < sortedTopics.length; i++) {
+    const topic = sortedTopics[i]
+    const percentile = (i + 1) / totalTopics
+
     let priority: 'high' | 'medium' | 'low'
-    let reason: string
     let hoursMultiplier: number
 
-    if (crossing.editorialsCount >= Math.ceil(totalCrossings * 0.5)) {
-      // Appears in many editorials
+    if (percentile <= 0.25) {
       priority = 'high'
-      reason = `Presente em ${crossing.editorialsCount} editais (alta relevância)`
       hoursMultiplier = 0.4
-    } else if (crossing.editorialsCount >= 2) {
+    } else if (percentile <= 0.65) {
       priority = 'medium'
-      reason = `Presente em ${crossing.editorialsCount} editais`
       hoursMultiplier = 0.25
     } else {
       priority = 'low'
-      reason = 'Tópico específico de um edital'
       hoursMultiplier = 0.1
     }
 
+    const reason =
+      topic.editorialCount > 1
+        ? `Presente em ${topic.editorialCount} editais (${topic.averageRelevance}% relevância)`
+        : `Alta relevância (${topic.averageRelevance}% relevância)`
+
     priorities.push({
-      topicId: crossing.topicId,
-      topicName: crossing.topicName,
+      topicId: topic.topicId,
+      topicName: topic.topicName,
+      subjectId: topic.subjectId,
+      subjectName: topic.subjectName,
       priority,
       reason,
       recommendedHours: Math.round(weeklyHours * hoursMultiplier),
+      coveragePercent: topic.averageRelevance,
     })
   }
 
