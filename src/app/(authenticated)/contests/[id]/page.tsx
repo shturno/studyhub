@@ -9,6 +9,7 @@ import { ArrowLeft, Building2, Calendar, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import { EditorialManager } from '@/features/editorials/components/EditorialManager'
 import { ContentCrossingView } from '@/features/editorials/components/ContentCrossingView'
+import type { EditorialWithMappings } from '@/features/editorials/types'
 
 export const metadata: Metadata = {
   title: 'Detalhes do Concurso | StudyHub',
@@ -34,8 +35,8 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
         },
       },
       editorialItems: {
-        select: {
-          id: true,
+        include: {
+          contentMappings: true,
         },
       },
     },
@@ -139,10 +140,7 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
                 <BookOpen className="w-6 h-6 text-indigo-400" />
                 Análise de Conteúdo
               </h2>
-              <ContentCrossingView
-                contestId={contest.id}
-                userId={session.user.id}
-              />
+              <ContentCrossingView editorials={contest.editorialItems} />
             </Card>
           </div>
         </div>
