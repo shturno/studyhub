@@ -37,6 +37,38 @@ export function DashboardView({ data, contests, activeContestId }: DashboardView
         )
     }
 
+    // Show empty state if no contests
+    if (contests.length === 0) {
+        return (
+            <div className="min-h-screen bg-background text-foreground selection:bg-indigo-500/30">
+                <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }} />
+                
+                <main className="relative max-w-3xl mx-auto px-6 py-16 flex flex-col items-center justify-center min-h-screen">
+                    <div className="text-center space-y-6">
+                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500/20 to-violet-600/20 border border-indigo-500/30 flex items-center justify-center mx-auto">
+                            <Target className="w-10 h-10 text-indigo-400" />
+                        </div>
+                        <div>
+                            <h1 className="text-4xl font-bold text-white mb-3 tracking-tight">Bem-vindo ao StudyHub!</h1>
+                            <p className="text-lg text-zinc-400 mb-8 max-w-md mx-auto">
+                                Comece criando seu primeiro concurso para organizar seus estudos e acompanhar seu progresso.
+                            </p>
+                        </div>
+                        <Link href="/contests">
+                            <button className="relative h-12 px-8 bg-gradient-to-r from-indigo-500 to-violet-600 text-white text-sm font-bold rounded-xl hover:brightness-110 transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2 active:scale-[0.98] mx-auto">
+                                <Zap className="w-4 h-4 fill-white" />
+                                Criar Primeiro Concurso
+                            </button>
+                        </Link>
+                        <p className="text-sm text-zinc-500 pt-4">
+                            Você poderá adicionar múltiplos editais e criar um cronograma personalizado.
+                        </p>
+                    </div>
+                </main>
+            </div>
+        )
+    }
+
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-indigo-500/30">
             {/* Background Noise Texture */}

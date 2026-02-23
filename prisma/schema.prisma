@@ -41,6 +41,7 @@ model User {
   studySessions  StudySession[]
   plannedSessions PlannedSession[]
   achievements   UserAchievement[]
+  editorialItems EditorialItem[]
   
   @@map("users")
 }
@@ -112,6 +113,7 @@ model Contest {
   
   // Relations
   subjects    Subject[]
+  editorialItems EditorialItem[]
   
   @@index([userId])
   @@map("contests")
@@ -157,6 +159,7 @@ model Topic {
   plannedSessions PlannedSession[]
   reviewQueue   ReviewQueue[]
   materials     Material[]
+  contentMappings ContentMapping[]
   
   @@index([subjectId])
   @@index([parentId])
@@ -290,3 +293,49 @@ model Material {
   
   @@map("materials")
 }
+
+// ============================================
+// EDITORIAL MANAGEMENT (Phase 2)
+// ============================================
+
+model EditorialItem {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  contestId       String
+  contest         Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  
+  title           String   // "Edital Banco do Brasil 2026"
+  description     String?
+  url             String?  // Link para o edital
+  uploadedAt      DateTime @default(now())
+  
+  // Relations
+  contentMappings ContentMapping[]
+  
+  @@index([userId])
+  @@index([contestId])
+  @@map("editorial_items")
+}
+
+model ContentMapping {
+  id              String   @id @default(cuid())
+  editorialItemId String
+  editorialItem   EditorialItem @relation(fields: [editorialItemId], references: [id], onDelete: Cascade)
+  
+  topicId         String
+  topic           Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  
+  contentSummary  String?  // Resumo do conteúdo do edital que mapeia para este tópico
+  relevance       Int      @default(50) // 0-100: relevância do conteúdo
+  
+  createdAt       DateTime @default(now())
+  
+  @@unique([editorialItemId, topicId])
+  @@index([editorialItemId])
+  @@index([topicId])
+  @@map("content_mappings")
+}
+
+
