@@ -72,6 +72,7 @@ export async function getDashboardData(contestId?: string): Promise<DashboardDat
                             name: true,
                             subject: {
                                 select: {
+                                    id: true,
                                     name: true
                                 }
                             }
@@ -82,7 +83,7 @@ export async function getDashboardData(contestId?: string): Promise<DashboardDat
         }
     })
 
-    // Filter random topic by contest
+    // Filter random topic by contest - FIXED: added id selection to subject
     const randomTopic = await prisma.topic.findFirst({
         where: contestId ? {
             subject: {
