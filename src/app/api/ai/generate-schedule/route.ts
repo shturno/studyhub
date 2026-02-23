@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth.config'
+import { auth } from '@/lib/auth'
 import { generateScheduleWithGemini } from '@/features/ai/services/geminiScheduleService'
-import { generateStudyPriorities, analyzeCoveragePercentage } from '@/features/editorials/services/contentCrossingService'
+import { generateStudyPriorities, calculateCoveragePercentage } from '@/features/editorials/services/contentCrossingService'
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       weeklyHours
     )
 
-    const coverage = await analyzeCoveragePercentage(contestId, session.user.id)
+    const coverage = await calculateCoveragePercentage(contestId, session.user.id)
 
     if (priorities.length === 0) {
       return NextResponse.json(
