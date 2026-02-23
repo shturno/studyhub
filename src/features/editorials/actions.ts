@@ -194,16 +194,18 @@ export async function mapContentAction(
     throw new Error('Unauthorized')
   }
 
-  await prisma.contentMapping.deleteMany({
-    where: { editorialItemId },
-  })
+  await prisma.$transaction(async (tx) => {
+    await tx.contentMapping.deleteMany({
+      where: { editorialItemId },
+    })
 
-  await prisma.contentMapping.createMany({
-    data: mappings.map((mapping) => ({
-      editorialItemId,
-      topicId: mapping.topicId,
-      contentSummary: mapping.contentSummary,
-      relevance: Math.max(0, Math.min(100, mapping.relevance)),
-    })),
+    await tx.contentMapping.createMany({
+      data: mappings.map((mapping) => ({
+        editorialItemId,
+        topicId: mapping.topicId,
+        contentSummary: mapping.contentSummary,
+        relevance: Math.max(0, Math.min(100, mapping.relevance)),
+      })),
+    })
   })
 }
