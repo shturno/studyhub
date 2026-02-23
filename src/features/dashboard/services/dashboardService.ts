@@ -130,7 +130,7 @@ function calculateStreak(sessions: Array<{ completedAt: Date }>): number {
     const sortedSessions = [...sessions].sort((a, b) => b.completedAt.getTime() - a.completedAt.getTime())
 
     let streak = 0
-    let currentDay = new Date()
+    const currentDay = new Date()
 
     // Verificar se estudou hoje (senão o streak pode ser 0 ou manter o de ontem)
     // Se a última sessão foi hoje, começa a contar. Se foi ontem, também conta.
@@ -149,7 +149,7 @@ function calculateStreak(sessions: Array<{ completedAt: Date }>): number {
         uniqueDays.add(s.completedAt.toISOString().split('T')[0])
     })
 
-    const daysList = Array.from(uniqueDays).sort().reverse() // ['2023-10-05', '2023-10-04'...]
+    const daysList = Array.from(uniqueDays).sort((a, b) => b.localeCompare(a)) // ['2023-10-05', '2023-10-04'...]
 
     // Validar consecutividade a partir do dia mais recente
     // Se o dia mais recente não for hoje nem ontem, já retornamos 0 acima.

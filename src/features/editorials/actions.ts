@@ -59,7 +59,7 @@ export async function deleteEditorialItem(editorialId: string): Promise<void> {
     where: { id: editorialId },
   })
 
-  if (!editorial || editorial.userId !== session.user.id) {
+  if (!editorial?.userId || editorial.userId !== session.user.id) {
     throw new Error('Unauthorized or editorial not found')
   }
 
@@ -82,7 +82,7 @@ export async function createContentMapping(data: {
     where: { id: data.editorialItemId },
   })
 
-  if (!editorial || editorial.userId !== session.user.id) {
+  if (!editorial?.userId || editorial.userId !== session.user.id) {
     throw new Error('Unauthorized')
   }
 
@@ -109,7 +109,7 @@ export async function deleteContentMapping(mappingId: string): Promise<void> {
     },
   })
 
-  if (!mapping || mapping.editorialItem.userId !== session.user.id) {
+  if (!mapping?.editorialItem?.userId || mapping.editorialItem.userId !== session.user.id) {
     throw new Error('Unauthorized')
   }
 
@@ -147,7 +147,8 @@ export async function getContentCrossings(contestId: string): Promise<{
   })
 
   // Group by topic and calculate statistics
-  const topicMap = new Map<string, any>()
+  interface TopicEntry { topicId: string; topicName: string; mappingCount: number; editorialCount: Set<string>; totalRelevance: number }
+  const topicMap = new Map<string, TopicEntry>()
 
   for (const mapping of mappings) {
     const key = mapping.topicId
@@ -162,9 +163,11 @@ export async function getContentCrossings(contestId: string): Promise<{
     }
 
     const entry = topicMap.get(key)
-    entry.mappingCount++
-    entry.editorialCount.add(mapping.editorialItemId)
-    entry.totalRelevance += mapping.relevance
+    if (entry) {
+      entry.mappingCount++
+      entry.editorialCount.add(mapping.editorialItemId)
+      entry.totalRelevance += mapping.relevance
+    }
   }
 
   // Format the response
@@ -179,33 +182,11 @@ export async function getContentCrossings(contestId: string): Promise<{
   return result.sort((a, b) => b.relevanceScore - a.relevanceScore)
 }
 
+import { mapContentToTopics } from './services/editorialService'
+
 export async function mapContentAction(
   editorialItemId: string,
-  mappings: Array<{ topicId: string; contentSummary?: string; relevance: number }>
-): Promise<void> {
-  const session = await auth()
-  if (!session?.user?.id) throw new Error('Unauthorized')
-
-  const editorial = await prisma.editorialItem.findUnique({
-    where: { id: editorialItemId },
-  })
-
-  if (!editorial || editorial.userId !== session.user.id) {
-    throw new Error('Unauthorized')
-  }
-
-  await prisma.$transaction(async (tx) => {
-    await tx.contentMapping.deleteMany({
-      where: { editorialItemId },
-    })
-
-    await tx.contentMapping.createMany({
-      data: mappings.map((mapping) => ({
-        editorialItemId,
-        topicId: mapping.topicId,
-        contentSummary: mapping.contentSummary,
-        relevance: Math.max(0, Math.min(100, mapping.relevance)),
-      })),
-    })
-  })
+  mappings: Array<{ topicId: string; contentSummary?: string | null; relevance: number }>
+) {
+  return mapContentToTopics(editorialItemId, mappings)
 }

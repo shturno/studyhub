@@ -1,12 +1,12 @@
 'use client'
 
-import { Card, CardContent } from '@/components/ui/card'
+
 import { Button } from '@/components/ui/button'
 import { Play, Pause, RotateCcw, Trophy, ArrowLeft } from 'lucide-react'
 import { useStudyTimer } from '@/features/timer/hooks/useStudyTimer'
 import { cn } from '@/lib/utils'
 import confetti from 'canvas-confetti'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 
 interface TimerDisplayProps {
     topicId: string
@@ -26,7 +26,6 @@ export function TimerDisplay({ topicId, topicName, subjectName, onComplete }: Ti
         pause,
         reset,
         setDuration,
-        timeLeft
     } = useStudyTimer({
         topicId,
         initialMinutes: 25,
@@ -49,7 +48,7 @@ export function TimerDisplay({ topicId, topicName, subjectName, onComplete }: Ti
 
             const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min
 
-            const interval: any = setInterval(function () {
+            const interval: ReturnType<typeof setInterval> = setInterval(function () {
                 const timeLeft = animationEnd - Date.now()
 
                 if (timeLeft <= 0) {
@@ -142,9 +141,9 @@ export function TimerDisplay({ topicId, topicName, subjectName, onComplete }: Ti
                             disabled={isRunning}
                             className={cn(
                                 "px-4 py-2 rounded-full text-xs font-bold transition-all border",
-                                !isRunning
-                                    ? "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 hover:bg-zinc-800"
-                                    : "opacity-30 border-transparent text-zinc-700 cursor-not-allowed"
+                                isRunning
+                                    ? "opacity-30 border-transparent text-zinc-700 cursor-not-allowed"
+                                    : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 hover:bg-zinc-800"
                             )}
                         >
                             {duration}m
@@ -164,7 +163,15 @@ export function TimerDisplay({ topicId, topicName, subjectName, onComplete }: Ti
                         <RotateCcw className="h-5 w-5" />
                     </Button>
 
-                    {!isRunning ? (
+                    {isRunning ? (
+                        <Button
+                            onClick={pause}
+                            className="h-14 w-[280px] bg-zinc-800 text-white hover:bg-zinc-700 border border-white/10 rounded-2xl font-bold text-base shadow-[0_0_20px_rgba(0,0,0,0.2)] transition-transform active:scale-95 flex items-center justify-center tracking-wide"
+                        >
+                            <Pause className="h-5 w-5 mr-3 fill-white relative -top-[1px]" />
+                            PAUSAR
+                        </Button>
+                    ) : (
                         <Button
                             onClick={start}
                             className="h-14 w-[280px] bg-white text-black hover:bg-zinc-200 rounded-2xl font-bold text-base shadow-[0_0_20px_rgba(255,255,255,0.12)] transition-transform active:scale-95 flex items-center justify-center tracking-wide"
@@ -173,14 +180,6 @@ export function TimerDisplay({ topicId, topicName, subjectName, onComplete }: Ti
                             <Play className="h-5 w-5 mr-3 fill-black relative -top-[1px]" />
                             INICIAR
                         </Button>
-                    ) : (
-                        <Button
-                            onClick={pause}
-                            className="h-14 w-[280px] bg-zinc-800 text-white hover:bg-zinc-700 border border-white/10 rounded-2xl font-bold text-base shadow-[0_0_20px_rgba(0,0,0,0.2)] transition-transform active:scale-95 flex items-center justify-center tracking-wide"
-                        >
-                            <Pause className="h-5 w-5 mr-3 fill-white relative -top-[1px]" />
-                            PAUSAR
-                        </Button>
                     )}
                 </div>
 
@@ -188,7 +187,7 @@ export function TimerDisplay({ topicId, topicName, subjectName, onComplete }: Ti
                 <div className="h-20 flex items-center justify-center">
                     {isSaving && (
                         <div className="text-indigo-400 animate-pulse font-mono text-sm">
-                            /// SALVANDO PROGRESSO...
+                            {/* SALVANDO PROGRESSO... */}
                         </div>
                     )}
 

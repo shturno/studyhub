@@ -42,6 +42,7 @@ model User {
   plannedSessions PlannedSession[]
   achievements   UserAchievement[]
   editorialItems EditorialItem[]
+  editorialItems EditorialItem[]
   
   @@map("users")
 }
@@ -113,6 +114,8 @@ model Contest {
   
   // Relations
   subjects       Subject[]
+  editorialItems EditorialItem[]
+  subjects    Subject[]
   editorialItems EditorialItem[]
   
   @@index([userId])
@@ -338,6 +341,41 @@ model ContentMapping {
   @@map("content_mappings")
 }
 
+// ============================================
+// EDITORIALS
+// ============================================
 
+model EditorialItem {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contestId   String
+  contest     Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  
+  title       String
+  description String?
+  url         String?
+  uploadedAt  DateTime @default(now())
 
+  contentMappings ContentMapping[]
+
+  @@index([userId])
+  @@index([contestId])
+  @@map("editorial_items")
+}
+
+model ContentMapping {
+  id              String   @id @default(cuid())
+  editorialItemId String
+  editorialItem   EditorialItem @relation(fields: [editorialItemId], references: [id], onDelete: Cascade)
+  topicId         String
+  topic           Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  
+  contentSummary  String?
+  relevance       Int      @default(0) // 0-100
+  
+  @@index([editorialItemId])
+  @@index([topicId])
+  @@map("content_mappings")
+}
 

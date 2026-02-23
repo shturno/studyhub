@@ -71,12 +71,12 @@ export default async function GamificationPage() {
                     <Trophy className="w-5 h-5 text-yellow-500" />
                     Conquistas
                     <span className="text-sm font-normal text-zinc-500 ml-2">
-                        ({achievements.filter((a: any) => a.isUnlocked).length} / {achievements.length})
+                        ({(achievements as { isUnlocked: boolean }[]).filter((a) => a.isUnlocked).length} / {achievements.length})
                     </span>
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {achievements.map((achievement: any) => (
+                    {(achievements as Array<{ id: string; name: string; description: string; icon: string; xpReward: number; isUnlocked: boolean; unlockedAt: Date | null }>).map((achievement) => (
                         <AchievementCard key={achievement.id} achievement={achievement} />
                     ))}
 

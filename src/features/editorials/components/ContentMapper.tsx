@@ -10,7 +10,7 @@ import { Slider } from '@/components/ui/slider'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { mapContentAction } from '../actions'
-import type { Topic, Subject } from '@/features/contests/types'
+import type { Topic, Subject } from '@prisma/client'
 
 interface ContentMapperProps {
   editorialId: string
