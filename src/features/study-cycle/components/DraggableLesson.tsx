@@ -6,16 +6,16 @@ import { Clock, GripVertical } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface Lesson {
-  id: string
-  title: string
-  trackName: string
-  trackId: string
-  status: "NOT_STARTED" | "IN_PROGRESS" | "DONE"
-  estimated: number | null
+  readonly id: string
+  readonly title: string
+  readonly trackName: string
+  readonly trackId: string
+  readonly status: "NOT_STARTED" | "IN_PROGRESS" | "DONE"
+  readonly estimated: number | null
 }
 
 interface DraggableLessonProps {
-  lesson: Lesson
+  readonly lesson: Lesson
 }
 
 export function DraggableLesson({ lesson }: DraggableLessonProps) {
@@ -23,12 +23,11 @@ export function DraggableLesson({ lesson }: DraggableLessonProps) {
     id: lesson.id,
   })
 
-  // Smooth rotation for more natural feel
   const style = transform
     ? {
-      transform: `translate3d(${transform.x}px, ${transform.y}px, 0) scale(1.05)`,
+      transform: `translate3d(${transform.x}px, ${transform.y}px, 0) scale(1.02)`,
       zIndex: 999,
-      boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3)",
+      boxShadow: "0 0 20px rgba(0,255,65,0.3), 4px 4px 0 #006b1a",
     }
     : undefined
 
@@ -37,28 +36,27 @@ export function DraggableLesson({ lesson }: DraggableLessonProps) {
       ref={setNodeRef}
       style={style}
       className={cn(
-        "p-3 border rounded-xl bg-card border-border/50 cursor-grab active:cursor-grabbing transition-all duration-200 hover:border-primary/50 hover:bg-accent/50 group select-none",
-        isDragging ? "opacity-0" : "opacity-100", // Hide original when dragging (using DragOverlay usually, but if not using overlay, opacity should be 1. Assuming Overlay is used)
-        // If DropOverlay is used, we should control opacity logic there. 
-        // For simplicity with dnd-kit default behavior in previous code:
-        isDragging && "opacity-30"
+        "p-3 cursor-grab active:cursor-grabbing select-none transition-all duration-100 group",
+        isDragging ? "opacity-30" : "opacity-100 hover:-translate-y-0.5"
       )}
       {...listeners}
       {...attributes}
+      tabIndex={0}
     >
-      <div className="flex items-start space-x-3">
-        <div className="p-2 rounded-md bg-zinc-900 text-zinc-500 group-hover:text-primary transition-colors">
+      <div className="flex items-start gap-3"
+        style={{ border: '1px solid rgba(0,255,65,0.3)', background: '#020008', padding: '8px' }}>
+        <div className="p-1 text-[#555] group-hover:text-[#00ff41] transition-colors flex-shrink-0">
           <GripVertical className="h-4 w-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-sm text-foreground">{lesson.title}</h4>
-          <p className="text-xs text-muted-foreground truncate">{lesson.trackName}</p>
+          <div className="font-mono text-base text-[#e0e0ff] truncate">{lesson.title}</div>
+          <div className="font-mono text-sm text-[#7f7f9f] truncate">{lesson.trackName}</div>
           <div className="flex items-center justify-between mt-2">
-            <Badge variant={lesson.status === "IN_PROGRESS" ? "secondary" : "outline"} className="text-[10px] h-5">
-              {lesson.status === "IN_PROGRESS" ? "Em andamento" : "Não iniciada"}
+            <Badge variant={lesson.status === "IN_PROGRESS" ? "secondary" : "outline"}>
+              {lesson.status === "IN_PROGRESS" ? "EM ANDAMENTO" : "NAO INICIADA"}
             </Badge>
             {lesson.estimated && (
-              <div className="flex items-center space-x-1 text-xs text-zinc-500 font-mono">
+              <div className="flex items-center gap-1 font-mono text-sm text-[#555]">
                 <Clock className="h-3 w-3" />
                 <span>{lesson.estimated}m</span>
               </div>

@@ -5,15 +5,25 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Calendar, Zap, Brain, AlertCircle } from 'lucide-react'
+import { Calendar, Zap, Brain, AlertCircle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
+interface ScheduleData {
+  readonly schedule: {
+    readonly weeks: number
+    readonly totalHours: number
+    readonly keyMilestones?: string[]
+    readonly tips?: string[]
+  }
+  readonly coverage: {
+    readonly coverage: number
+  }
+}
+
 interface SmartScheduleGeneratorProps {
-  contestId: string
-  isOpen: boolean
-  onOpenChange: (open: boolean) => void
+  readonly contestId: string
+  readonly isOpen: boolean
+  readonly onOpenChange: (open: boolean) => void
 }
 
 export function SmartScheduleGenerator({
@@ -24,45 +34,33 @@ export function SmartScheduleGenerator({
   const [examDate, setExamDate] = useState('')
   const [weeklyHours, setWeeklyHours] = useState('40')
   const [isGenerating, setIsGenerating] = useState(false)
-  const [generatedSchedule, setGeneratedSchedule] = useState<any>(null)
+  const [generatedSchedule, setGeneratedSchedule] = useState<ScheduleData | null>(null)
 
   const handleGenerateSchedule = async () => {
-    if (!examDate) {
-      toast.error('Por favor, selecione a data da prova')
-      return
-    }
+    if (!examDate) { toast.error('Selecione a data da prova'); return }
 
-    try {
-      setIsGenerating(true)
-      const response = await fetch('/api/ai/generate-schedule', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contestId,
-          examDate,
-          weeklyHours: parseInt(weeklyHours),
-        }),
+    setIsGenerating(true)
+    await fetch('/api/ai/generate-schedule', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contestId, examDate, weeklyHours: Number.parseInt(weeklyHours) }),
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const err = await response.json() as { error?: string }
+          throw new Error(err.error ?? 'Erro ao gerar cronograma')
+        }
+        const data = await response.json() as ScheduleData
+        setGeneratedSchedule(data)
+        toast.success('Cronograma gerado!')
       })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Erro ao gerar cronograma')
-      }
-
-      const data = await response.json()
-      setGeneratedSchedule(data)
-      toast.success('Cronograma gerado com sucesso!')
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'Erro ao gerar cronograma'
-      )
-    } finally {
-      setIsGenerating(false)
-    }
+      .catch((err: unknown) => {
+        toast.error(err instanceof Error ? err.message : 'Erro ao gerar cronograma')
+      })
+      .finally(() => setIsGenerating(false))
   }
 
-  const handleAcceptSchedule = async () => {
-    // TODO: Save schedule sessions to database
+  const handleAcceptSchedule = () => {
     toast.success('Cronograma importado para seu planner!')
     onOpenChange(false)
     setGeneratedSchedule(null)
@@ -73,29 +71,26 @@ export function SmartScheduleGenerator({
       <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Brain className="w-5 h-5 text-indigo-400" />
-            Gerar Cronograma Inteligente com IA
+            <Brain className="w-5 h-5 text-[#7b61ff]" />
+            GERAR CRONOGRAMA INTELIGENTE
           </DialogTitle>
         </DialogHeader>
 
-        {!generatedSchedule ? (
-          <div className="space-y-6">
-            <div>
-              <Label htmlFor="examDate">Data da Prova *</Label>
+        {generatedSchedule === null ? (
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="examDate">DATA DA PROVA</Label>
               <Input
                 id="examDate"
                 type="date"
                 value={examDate}
                 onChange={(e) => setExamDate(e.target.value)}
-                className="mt-1"
               />
-              <p className="text-xs text-zinc-400 mt-1">
-                O cronograma será adaptado ao tempo disponível até a data
-              </p>
+              <div className="font-mono text-sm text-[#555]">O cronograma será adaptado ao tempo disponível</div>
             </div>
 
-            <div>
-              <Label htmlFor="weeklyHours">Horas disponíveis por semana</Label>
+            <div className="space-y-2">
+              <Label htmlFor="weeklyHours">HORAS POR SEMANA</Label>
               <Input
                 id="weeklyHours"
                 type="number"
@@ -103,19 +98,16 @@ export function SmartScheduleGenerator({
                 max="168"
                 value={weeklyHours}
                 onChange={(e) => setWeeklyHours(e.target.value)}
-                className="mt-1"
               />
-              <p className="text-xs text-zinc-400 mt-1">
-                Total de horas que você pode dedicar por semana
-              </p>
+              <div className="font-mono text-sm text-[#555]">Total de horas que pode dedicar por semana</div>
             </div>
 
-            <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
-              <div className="flex gap-2">
-                <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-zinc-300">
-                  <p className="font-medium text-blue-300 mb-1">Como funciona?</p>
-                  <ul className="space-y-1 text-xs">
+            <div className="p-4" style={{ border: '2px solid rgba(123,97,255,0.3)', background: '#04000a' }}>
+              <div className="flex gap-3">
+                <AlertCircle className="w-5 h-5 text-[#7b61ff] flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-pixel text-[7px] text-[#7b61ff] mb-2">COMO FUNCIONA?</div>
+                  <ul className="space-y-1 font-mono text-sm text-[#7f7f9f]">
                     <li>✓ A IA analisa seus editais e tópicos de alta prioridade</li>
                     <li>✓ Cria um cronograma personalizado até a data da prova</li>
                     <li>✓ Balanceia tempo de aprendizado, prática e revisão</li>
@@ -126,98 +118,70 @@ export function SmartScheduleGenerator({
             </div>
 
             <div className="flex gap-3 justify-end">
-              <Button
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleGenerateSchedule}
-                disabled={isGenerating}
-                className="gap-2 bg-indigo-600 hover:bg-indigo-700"
-              >
-                <Zap className="w-4 h-4" />
-                {isGenerating ? 'Gerando...' : 'Gerar Cronograma'}
+              <Button variant="outline" onClick={() => onOpenChange(false)}>CANCELAR</Button>
+              <Button onClick={handleGenerateSchedule} disabled={isGenerating}>
+                {isGenerating
+                  ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />GERANDO...</>
+                  : <><Zap className="w-4 h-4 mr-2" />GERAR CRONOGRAMA</>}
               </Button>
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
-            {/* Schedule Preview */}
-            <Card className="p-4 bg-white/5 border-white/10">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 mb-4">
-                  <Calendar className="w-5 h-5 text-indigo-400" />
-                  <h3 className="font-semibold text-white">
-                    Cronograma para {generatedSchedule.schedule.weeks} semanas
-                  </h3>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 rounded bg-white/5">
-                    <p className="text-xs text-zinc-400">Total de Horas</p>
-                    <p className="text-lg font-bold text-white">
-                      {generatedSchedule.schedule.totalHours}h
-                    </p>
-                  </div>
-                  <div className="p-3 rounded bg-white/5">
-                    <p className="text-xs text-zinc-400">Cobertura</p>
-                    <p className="text-lg font-bold text-green-400">
-                      {generatedSchedule.coverage.coverage}%
-                    </p>
-                  </div>
+          <div className="space-y-5">
+            <div className="p-4" style={{ border: '2px solid rgba(0,255,65,0.4)', background: '#04000a' }}>
+              <div className="flex items-center gap-2 mb-4">
+                <Calendar className="w-5 h-5 text-[#00ff41]" />
+                <div className="font-pixel text-[7px] text-[#00ff41]">
+                  CRONOGRAMA — {generatedSchedule.schedule.weeks} SEMANAS
                 </div>
               </div>
-            </Card>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3" style={{ border: '1px solid rgba(0,255,65,0.2)', background: '#020008' }}>
+                  <div className="font-pixel text-[6px] text-[#555]">TOTAL DE HORAS</div>
+                  <div className="font-pixel text-xl text-[#00ff41] mt-1">{generatedSchedule.schedule.totalHours}h</div>
+                </div>
+                <div className="p-3" style={{ border: '1px solid rgba(0,255,65,0.2)', background: '#020008' }}>
+                  <div className="font-pixel text-[6px] text-[#555]">COBERTURA</div>
+                  <div className="font-pixel text-xl text-[#ffbe0b] mt-1">{generatedSchedule.coverage.coverage}%</div>
+                </div>
+              </div>
+            </div>
 
-            {/* Key Milestones */}
-            {generatedSchedule.schedule.keyMilestones?.length > 0 && (
-              <Card className="p-4 bg-white/5 border-white/10">
-                <h4 className="font-semibold text-white mb-3">Marcos Importantes</h4>
+            {(generatedSchedule.schedule.keyMilestones?.length ?? 0) > 0 && (
+              <div className="p-4" style={{ border: '2px solid rgba(0,255,65,0.3)', background: '#04000a' }}>
+                <div className="font-pixel text-[7px] text-[#00ff41] mb-3">MARCOS IMPORTANTES</div>
                 <ul className="space-y-2">
-                  {generatedSchedule.schedule.keyMilestones.map((milestone: string, idx: number) => (
-                    <li key={idx} className="text-sm text-zinc-300 flex items-start gap-2">
-                      <span className="text-indigo-400 mt-0.5">→</span>
+                  {generatedSchedule.schedule.keyMilestones!.map((milestone: string) => (
+                    <li key={milestone.slice(0, 50)} className="font-mono text-sm text-[#7f7f9f] flex items-start gap-2">
+                      <span className="text-[#00ff41] mt-0.5">→</span>
                       {milestone}
                     </li>
                   ))}
                 </ul>
-              </Card>
+              </div>
             )}
 
-            {/* Tips */}
-            {generatedSchedule.schedule.tips?.length > 0 && (
-              <Card className="p-4 bg-white/5 border-white/10">
-                <h4 className="font-semibold text-white mb-3">Dicas de Estudo</h4>
+            {(generatedSchedule.schedule.tips?.length ?? 0) > 0 && (
+              <div className="p-4" style={{ border: '2px solid rgba(123,97,255,0.3)', background: '#04000a' }}>
+                <div className="font-pixel text-[7px] text-[#7b61ff] mb-3">DICAS DE ESTUDO</div>
                 <ul className="space-y-2">
-                  {generatedSchedule.schedule.tips.slice(0, 3).map((tip: string, idx: number) => (
-                    <li key={idx} className="text-sm text-zinc-300 flex items-start gap-2">
-                      <Badge variant="outline" className="mt-0.5">💡</Badge>
+                  {generatedSchedule.schedule.tips!.slice(0, 3).map((tip: string) => (
+                    <li key={tip.slice(0, 50)} className="font-mono text-sm text-[#7f7f9f] flex items-start gap-2">
+                      <span className="text-[#7b61ff]">💡</span>
                       {tip}
                     </li>
                   ))}
                 </ul>
-              </Card>
+              </div>
             )}
 
-            {/* Action Buttons */}
             <div className="flex gap-3 justify-end">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setGeneratedSchedule(null)
-                  setExamDate('')
-                }}
-              >
-                Gerar Novo
+              <Button variant="outline" onClick={() => { setGeneratedSchedule(null); setExamDate('') }}>
+                GERAR NOVO
               </Button>
-              <Button
-                onClick={handleAcceptSchedule}
-                className="gap-2 bg-green-600 hover:bg-green-700"
-              >
-                <Zap className="w-4 h-4" />
-                Importar para Planner
+              <Button onClick={handleAcceptSchedule}>
+                <Zap className="w-4 h-4 mr-2" />
+                IMPORTAR PARA PLANNER
               </Button>
             </div>
           </div>

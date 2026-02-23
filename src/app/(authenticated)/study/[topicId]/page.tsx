@@ -6,7 +6,7 @@ import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
 interface StudyPageProps {
-    params: Promise<{
+    readonly params: Promise<{
         topicId: string
     }>
 }
@@ -25,20 +25,18 @@ export default async function StudyPage(props: StudyPageProps) {
     }
 
     return (
-        <div className="min-h-screen text-zinc-100 flex flex-col">
-            {/* Minimal Header */}
-            <header className="p-6">
+        <div className="min-h-screen bg-[#080010] text-[#e0e0ff] flex flex-col">
+            <header className="px-4 md:px-8 pt-6 pb-2">
                 <Link
                     href="/dashboard"
-                    className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm font-medium"
+                    className="inline-flex items-center gap-2 text-[#7f7f9f] hover:text-[#00ff41] transition-colors font-pixel text-[8px]"
                 >
                     <ArrowLeft className="w-4 h-4" />
-                    Voltar para Dashboard
+                    DASHBOARD
                 </Link>
             </header>
 
-            {/* Main Content - Centered */}
-            <main className="flex-1 max-w-5xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <main className="flex-1 w-full max-w-5xl mx-auto px-4 md:px-8 py-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 flex flex-col items-center justify-center min-h-[400px]">
                     <TimerDisplay
                         topicId={topic.id}
@@ -47,7 +45,7 @@ export default async function StudyPage(props: StudyPageProps) {
                     />
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <MaterialManager topicId={topic.id} />
                 </div>
             </main>

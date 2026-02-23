@@ -13,18 +13,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { useSessionModal } from "@/features/timer/context/SessionModalContext"
 import { useToast } from "@/hooks/use-toast"
-import { Calendar, Clock, BookOpen } from "lucide-react"
+import { Clock, BookOpen, Loader2 } from "lucide-react"
 
 interface Track {
-  id: string
-  name: string
+  readonly id: string
+  readonly name: string
 }
 
 interface Lesson {
-  id: string
-  title: string
-  track: {
-    name: string
+  readonly id: string
+  readonly title: string
+  readonly track: {
+    readonly name: string
   }
 }
 
@@ -41,97 +41,37 @@ export function SessionModal() {
   const router = useRouter()
   const { toast } = useToast()
 
-
   useEffect(() => {
     if (isOpen) {
       fetch("/api/tracks")
         .then((res) => res.json())
-        .then((data) => {
+        .then((data: Track[]) => {
           setTracks(data)
           if (trackId) {
             setSelectedTrackId(trackId)
           }
         })
         .catch(() => {
-          toast({
-            title: "Erro",
-            description: "Erro ao carregar trilhas",
-            variant: "destructive",
-          })
+          toast({ title: "Erro ao carregar trilhas", variant: "destructive" })
         })
     }
   }, [isOpen, trackId, toast])
-
 
   useEffect(() => {
     if (selectedTrackId) {
       fetch(`/api/tracks/${selectedTrackId}`)
         .then((res) => res.json())
-        .then((data) => {
-          setLessons(data.lessons || [])
+        .then((data: { lessons?: Lesson[] }) => {
+          setLessons(data.lessons ?? [])
           if (lessonId) {
             setSelectedLessonId(lessonId)
           }
         })
         .catch(() => {
-          toast({
-            title: "Erro",
-            description: "Erro ao carregar lições",
-            variant: "destructive",
-          })
+          toast({ title: "Erro ao carregar lições", variant: "destructive" })
         })
     }
   }, [selectedTrackId, lessonId, toast])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedLessonId || !duration) {
-      toast({
-        title: "Erro",
-        description: "Selecione uma lição e defina a duração",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setLoading(true)
-
-    try {
-      const response = await fetch("/api/sessions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          lessonId: selectedLessonId,
-          duration: Number.parseInt(duration),
-          notes,
-          scheduledDate: scheduledDate || null,
-          draft: true,
-        }),
-      })
-
-      if (response.ok) {
-        toast({
-          title: "Sessão criada!",
-          description: "Sessão de estudo criada com sucesso",
-        })
-        closeModal()
-        resetForm()
-        router.refresh()
-      } else {
-        throw new Error("Erro ao criar sessão")
-      }
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao criar sessão de estudo",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const resetForm = () => {
     setSelectedTrackId("")
@@ -146,20 +86,52 @@ export function SessionModal() {
     resetForm()
   }
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedLessonId || !duration) {
+      toast({ title: "Selecione uma lição e defina a duração", variant: "destructive" })
+      return
+    }
+
+    setLoading(true)
+
+    await fetch("/api/sessions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        lessonId: selectedLessonId,
+        duration: Number.parseInt(duration),
+        notes,
+        scheduledDate: scheduledDate || null,
+        draft: true,
+      }),
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Erro ao criar sessão")
+        toast({ title: "Sessão criada!" })
+        closeModal()
+        resetForm()
+        router.refresh()
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : "Erro desconhecido"
+        toast({ title: "Erro", description: message, variant: "destructive" })
+      })
+
+    setLoading(false)
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
-            <Calendar className="h-5 w-5 text-emerald-600" />
-            <span>Nova Sessão de Estudo</span>
-          </DialogTitle>
-          <DialogDescription>Crie uma nova sessão de estudo para organizar seus estudos</DialogDescription>
+          <DialogTitle>NOVA SESSAO</DialogTitle>
+          <DialogDescription>Crie uma sessão de estudo para organizar seus estudos</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="track">Trilha</Label>
+            <Label htmlFor="track">TRILHA</Label>
             <Select value={selectedTrackId} onValueChange={setSelectedTrackId}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione uma trilha" />
@@ -167,7 +139,7 @@ export function SessionModal() {
               <SelectContent>
                 {tracks.map((track) => (
                   <SelectItem key={track.id} value={track.id}>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center gap-2">
                       <BookOpen className="h-4 w-4" />
                       <span>{track.name}</span>
                     </div>
@@ -178,7 +150,7 @@ export function SessionModal() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="lesson">Lição</Label>
+            <Label htmlFor="lesson">LICAO</Label>
             <Select value={selectedLessonId} onValueChange={setSelectedLessonId} disabled={!selectedTrackId}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione uma lição" />
@@ -195,7 +167,7 @@ export function SessionModal() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="duration">Duração (min)</Label>
+              <Label htmlFor="duration">DURACAO (MIN)</Label>
               <Select value={duration} onValueChange={setDuration}>
                 <SelectTrigger>
                   <SelectValue />
@@ -210,7 +182,7 @@ export function SessionModal() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="date">Data (opcional)</Label>
+              <Label htmlFor="date">DATA (OPCIONAL)</Label>
               <Input
                 type="date"
                 value={scheduledDate}
@@ -221,7 +193,7 @@ export function SessionModal() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Notas (opcional)</Label>
+            <Label htmlFor="notes">NOTAS (OPCIONAL)</Label>
             <Textarea
               placeholder="Adicione notas sobre esta sessão..."
               value={notes}
@@ -230,20 +202,20 @@ export function SessionModal() {
             />
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Badge variant="secondary" className="text-xs">
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary">
               <Clock className="h-3 w-3 mr-1" />
-              Rascunho
+              RASCUNHO
             </Badge>
-            <span className="text-xs text-gray-500">A sessão será salva como rascunho</span>
+            <span className="font-mono text-sm text-[#555]">Sessão salva como rascunho</span>
           </div>
 
-          <div className="flex justify-end space-x-2 pt-4">
+          <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={handleClose}>
-              Cancelar
+              CANCELAR
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Criando..." : "Criar Sessão"}
+              {loading ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />CRIANDO...</> : "CRIAR SESSAO"}
             </Button>
           </div>
         </form>

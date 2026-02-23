@@ -1,104 +1,127 @@
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowRight, CheckCircle2, Trophy, BrainCircuit } from "lucide-react"
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen text-white selection:bg-brand-primary/30">
-      {/* Navigation */}
-      <nav className="fixed w-full z-50 border-b border-white/[0.08] bg-background/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-primary to-accent flex items-center justify-center">
-              <BrainCircuit className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold tracking-tight">StudyHub</span>
-          </div>
+    <div className="min-h-screen bg-[#080010] text-[#e0e0ff] overflow-hidden">
 
-          <div className="flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="ghost" className="text-zinc-400 hover:text-white hover:bg-white/5">
-                Entrar
-              </Button>
-            </Link>
-            <Link href="/register">
-              <Button className="bg-brand-primary hover:bg-brand-primary/90 text-white font-medium px-6">
-                Criar Conta
-              </Button>
-            </Link>
-          </div>
+      {/* Stars background */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {Array.from({ length: 50 }, (_, i) => i).map((step) => (
+          <div
+            key={`star-${step}`}
+            className="absolute w-px h-px bg-[#00ff41] opacity-60"
+            style={{
+              left: `${(step * 37 + 13) % 100}%`,
+              top: `${(step * 53 + 7) % 100}%`,
+              boxShadow: '0 0 2px #00ff41',
+              animationDelay: `${step * 0.3}s`,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Nav */}
+      <nav className="fixed w-full z-50 h-14 flex items-center justify-between px-6"
+        style={{ background: '#04000a', borderBottom: '2px solid #00ff41', boxShadow: '0 2px 20px rgba(0,255,65,0.2)' }}>
+        <div className="flex items-center gap-1">
+          <span className="font-pixel text-[#00ff41] text-sm"
+            style={{ textShadow: '0 0 10px rgba(0,255,65,0.8)' }}>STUDY</span>
+          <span className="font-pixel text-[#ff006e] text-sm"
+            style={{ textShadow: '0 0 10px rgba(255,0,110,0.8)' }}>HUB</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link href="/login">
+            <button className="font-pixel text-[9px] text-[#00ff41] px-4 py-2 hover:bg-[#00ff41]/10 transition-colors"
+              style={{ border: '2px solid #00ff41' }}>
+              LOGIN
+            </button>
+          </Link>
+          <Link href="/register">
+            <button className="font-pixel text-[9px] text-black bg-[#00ff41] px-4 py-2 transition-all hover:-translate-y-0.5"
+              style={{ boxShadow: '4px 4px 0px #006b1a' }}>
+              PLAY
+            </button>
+          </Link>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6 relative overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-brand-primary/20 blur-[120px] rounded-full opacity-30 pointer-events-none" />
+      {/* Hero */}
+      <section className="flex flex-col items-center justify-center min-h-screen px-6 text-center pt-14">
 
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-zinc-400 mb-8 backdrop-blur-sm">
-            <span className="flex w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            Vagas abertas para beta testers
+        {/* Big pixel title */}
+        <div className="mb-4">
+          <div className="font-pixel text-[#00ff41] text-2xl md:text-4xl lg:text-5xl leading-relaxed mb-2"
+            style={{ textShadow: '0 0 20px rgba(0,255,65,0.8), 0 0 40px rgba(0,255,65,0.4)' }}>
+            STUDY HUB
           </div>
-
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 leading-tight">
-            Domine seus estudos com <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary via-purple-400 to-accent">
-              foco extremo & gamificação
-            </span>
-          </h1>
-
-          <p className="text-xl text-zinc-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-            A plataforma definitiva para estudantes com TDAH. Transforme a preparação para concursos em uma jornada viciante de progresso e recompensas.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/register">
-              <Button size="lg" className="h-14 px-8 text-lg bg-brand-primary hover:bg-brand-primary/90 shadow-[0_0_30px_-10px_rgba(124,58,237,0.5)] transition-transform hover:scale-105">
-                Começar Agora
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-            </Link>
-            <Link href="/login">
-              <Button size="lg" variant="outline" className="h-14 px-8 text-lg border-white/10 bg-white/5 hover:bg-white/10 hover:text-white backdrop-blur-sm">
-                Já tenho conta
-              </Button>
-            </Link>
+          <div className="font-pixel text-[#ff006e] text-sm md:text-lg"
+            style={{ textShadow: '0 0 15px rgba(255,0,110,0.8)' }}>
+            PREPARE. LEVEL UP. CONQUER.
           </div>
         </div>
-      </section>
 
-      {/* Features Grid */}
-      <section className="py-20 px-6 border-t border-white/[0.08] bg-white/[0.02]">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          <FeatureCard
-            icon={<BrainCircuit className="w-8 h-8 text-purple-400" />}
-            title="Design TDAH-Friendly"
-            description="Interface minimalista escura que elimina distrações e reduz a carga cognitiva durante suas sessões."
-          />
-          <FeatureCard
-            icon={<Trophy className="w-8 h-8 text-yellow-400" />}
-            title="Gamificação Real"
-            description="Ganhe XP, suba de nível e desbloqueie conquistas reais. Torne o estudo tão engajante quanto um jogo."
-          />
-          <FeatureCard
-            icon={<CheckCircle2 className="w-8 h-8 text-emerald-400" />}
-            title="Ciclos Inteligentes"
-            description="Algoritmo que adapta seu cronograma automaticamente baseado no seu desempenho e cansaço."
-          />
+        {/* Insert coin blinking */}
+        <div className="font-pixel text-[#ffbe0b] text-xs mt-8 mb-12 animate-blink"
+          style={{ textShadow: '0 0 10px rgba(255,190,11,0.8)' }}>
+          ► INSERT COIN TO START ◄
+        </div>
+
+        {/* Stats bar like arcade high scores */}
+        <div className="mb-12 w-full max-w-lg"
+          style={{ border: '2px solid #00ff41', background: '#04000a', padding: '16px' }}>
+          <div className="font-pixel text-[8px] text-[#00ff41] mb-4 text-center">— HIGH SCORES —</div>
+          <div className="space-y-2">
+            {[
+              { rank: '1ST', name: 'CONCURSO PUBLICO', xp: '99999' },
+              { rank: '2ND', name: 'APROVACAO', xp: '88888' },
+              { rank: '3RD', name: 'CONQUISTAS', xp: '77777' },
+            ].map((row) => (
+              <div key={row.rank} className="flex justify-between font-mono text-xl px-2">
+                <span className="text-[#ff006e]">{row.rank}</span>
+                <span className="text-[#e0e0ff]">{row.name}</span>
+                <span className="text-[#ffbe0b]">{row.xp}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA Buttons */}
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <Link href="/register">
+            <button className="font-pixel text-[10px] text-black bg-[#00ff41] px-8 py-4 transition-all hover:-translate-y-1 active:translate-y-1"
+              style={{ boxShadow: '6px 6px 0px #006b1a, 0 0 20px rgba(0,255,65,0.4)' }}>
+              ▶ NOVO JOGO
+            </button>
+          </Link>
+          <Link href="/login">
+            <button className="font-pixel text-[10px] text-[#00ff41] px-8 py-4 hover:bg-[#00ff41]/10 transition-colors"
+              style={{ border: '2px solid #00ff41' }}>
+              ↺ CONTINUAR
+            </button>
+          </Link>
+        </div>
+
+        {/* Features row */}
+        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-3xl">
+          {[
+            { emoji: '🧠', title: 'TDAH-FRIENDLY', desc: 'Interface clean, sem distrações' },
+            { emoji: '🏆', title: 'GAMIFICADO', desc: 'XP, níveis e conquistas reais' },
+            { emoji: '⚡', title: 'SMART CYCLE', desc: 'Cronograma adaptativo com IA' },
+          ].map((card) => (
+            <div key={card.title} className="p-4 text-center hover:bg-[#00ff41]/5 transition-colors cursor-default"
+              style={{ border: '2px solid rgba(0,255,65,0.4)' }}>
+              <div className="text-3xl mb-3">{card.emoji}</div>
+              <div className="font-pixel text-[8px] text-[#00ff41] mb-2">{card.title}</div>
+              <div className="font-mono text-base text-[#7f7f9f]">{card.desc}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Version tag */}
+        <div className="mt-16 font-pixel text-[7px] text-[#7f7f9f]">
+          © 2026 STUDYHUB CORP. · VER 1.0.0 · BUILD 001
         </div>
       </section>
-    </div>
-  )
-}
-
-function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
-  return (
-    <div className="p-8 rounded-2xl bg-card border border-white/[0.08] hover:border-brand-primary/50 transition-colors group">
-      <div className="mb-6 p-4 rounded-xl bg-white/5 w-fit group-hover:scale-110 transition-transform duration-300">
-        {icon}
-      </div>
-      <h3 className="text-xl font-bold mb-3 text-white">{title}</h3>
-      <p className="text-zinc-400 leading-relaxed">{description}</p>
     </div>
   )
 }

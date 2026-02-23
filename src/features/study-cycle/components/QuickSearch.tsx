@@ -14,10 +14,10 @@ import { BookOpen, FileText } from "lucide-react"
 import type { Track, Lesson } from "@/features/study-cycle/types"
 
 interface QuickSearchProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  tracks: Track[]
-  lessons: Lesson[]
+  readonly open: boolean
+  readonly onOpenChange: (open: boolean) => void
+  readonly tracks: Track[]
+  readonly lessons: Lesson[]
 }
 
 export function QuickSearch({ open, onOpenChange, tracks, lessons }: QuickSearchProps) {
@@ -26,10 +26,8 @@ export function QuickSearch({ open, onOpenChange, tracks, lessons }: QuickSearch
 
   const filteredTracks = tracks.filter((track) => track.name.toLowerCase().includes(search.toLowerCase()))
 
-  const filteredLessons = lessons.filter(
-    (lesson) =>
-      lesson.title.toLowerCase().includes(search.toLowerCase()) ||
-      lesson.title.toLowerCase().includes(search.toLowerCase()),
+  const filteredLessons = lessons.filter((lesson) =>
+    lesson.title.toLowerCase().includes(search.toLowerCase())
   )
 
   const handleSelect = (type: "track" | "lesson", id: string, trackId?: string) => {
@@ -37,9 +35,9 @@ export function QuickSearch({ open, onOpenChange, tracks, lessons }: QuickSearch
     setSearch("")
 
     if (type === "track") {
-      router.push(`/track/${id}`)
+      router.push(`/tracks/${id}`)
     } else if (type === "lesson" && trackId) {
-      router.push(`/track/${trackId}`)
+      router.push(`/tracks/${trackId}`)
     }
   }
 
@@ -63,7 +61,7 @@ export function QuickSearch({ open, onOpenChange, tracks, lessons }: QuickSearch
                 onSelect={() => handleSelect("track", track.id)}
                 className="flex items-center gap-2"
               >
-                <BookOpen className="h-4 w-4" />
+                <BookOpen className="h-4 w-4 text-[#00ff41]" />
                 <span>{track.name}</span>
               </CommandItem>
             ))}
@@ -80,12 +78,14 @@ export function QuickSearch({ open, onOpenChange, tracks, lessons }: QuickSearch
                   onSelect={() => handleSelect("lesson", lesson.id, lesson.trackId)}
                   className="flex items-center gap-2"
                 >
-                  <FileText className="h-4 w-4" />
+                  <FileText className="h-4 w-4 text-[#7b61ff]" />
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium">{lesson.title}</div>
-                    {track && <div className="text-xs text-muted-foreground">{track.name}</div>}
+                    <div className="font-mono text-base">{lesson.title}</div>
+                    {track && <div className="font-mono text-sm text-[#555]">{track.name}</div>}
                   </div>
-                  {lesson.status === 'DONE' && <div className="text-xs text-emerald-600 dark:text-emerald-400">✓</div>}
+                  {lesson.status === 'DONE' && (
+                    <span className="font-pixel text-[7px] text-[#00ff41]">✓</span>
+                  )}
                 </CommandItem>
               )
             })}

@@ -1,185 +1,152 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie } from "recharts"
+import { Loader2 } from "lucide-react"
 
 interface WeeklyData {
-  week: string
-  hours: number
+  readonly week: string
+  readonly hours: number
 }
 
 interface TrackData {
-  name: string
-  hours: number
-  minutes: number
+  readonly name: string
+  readonly hours: number
+  readonly minutes: number
 }
 
 interface StatsData {
-  weeklyStats: WeeklyData[]
-  trackDistribution: TrackData[]
+  readonly weeklyStats: WeeklyData[]
+  readonly trackDistribution: TrackData[]
 }
 
-const COLORS = ["#10b981", "#3b82f6", "#8b5cf6", "#f59e0b", "#ef4444", "#06b6d4", "#84cc16", "#f97316"]
+const COLORS = ["#00ff41", "#ff006e", "#7b61ff", "#ffbe0b", "#00f5ff", "#ff7700", "#84cc16", "#f97316"]
 
 export function StatsCharts() {
   const [stats, setStats] = useState<StatsData | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await fetch("/api/stats")
-        if (response.ok) {
-          const data = await response.json()
-          setStats(data)
-        }
-      } catch (error) {
-        console.error("Error fetching stats:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchStats()
+    fetch("/api/stats")
+      .then((res) => res.json() as Promise<StatsData>)
+      .then((data) => setStats(data))
+      .catch(() => undefined)
+      .finally(() => setLoading(false))
   }, [])
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="animate-pulse">
-              <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
-              <div className="h-64 bg-gray-200 rounded"></div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="animate-pulse">
-              <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
-              <div className="h-64 bg-gray-200 rounded"></div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {[0, 1].map((i) => (
+          <div key={i} className="p-6 flex items-center justify-center h-64"
+            style={{ border: '2px solid rgba(0,255,65,0.2)', background: '#04000a' }}>
+            <Loader2 className="h-6 w-6 text-[#00ff41] animate-spin" />
+          </div>
+        ))}
       </div>
     )
   }
 
-  if (!stats) {
-    return null
-  }
+  if (!stats) return null
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Weekly Hours Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Horas por Semana</CardTitle>
-          <CardDescription>Progresso de estudos nas últimas 12 semanas</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div style={{ border: '2px solid rgba(0,255,65,0.4)', background: '#04000a' }}>
+        <div className="px-4 py-3 font-pixel text-[7px] text-[#00ff41]"
+          style={{ borderBottom: '1px solid rgba(0,255,65,0.2)' }}>
+          HORAS POR SEMANA
+        </div>
+        <div className="p-4">
+          <ResponsiveContainer width="100%" height={260}>
             <BarChart data={stats.weeklyStats}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="week" />
-              <YAxis />
+              <XAxis dataKey="week" tick={{ fill: '#555', fontSize: 10, fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: '#555', fontSize: 10, fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
               <Tooltip
-                formatter={(value: any) => [`${value}h`, "Horas"]}
-                labelFormatter={(label: any) => `Semana ${label}`}
+                formatter={(value: unknown) => [`${value as number}h`, "Horas"] as [string, string]}
+                labelFormatter={(label: unknown) => `Semana ${label as string}`}
+                contentStyle={{ background: '#04000a', border: '2px solid #00ff41', borderRadius: 0 }}
+                itemStyle={{ color: '#00ff41', fontFamily: 'monospace' }}
+                labelStyle={{ color: '#7f7f9f', fontFamily: 'monospace', fontSize: 11 }}
               />
-              <Bar dataKey="hours" fill="#10b981" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="hours" fill="#00ff41" radius={0} />
             </BarChart>
           </ResponsiveContainer>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* Track Distribution Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Distribuição por Trilha</CardTitle>
-          <CardDescription>Tempo dedicado a cada trilha de estudo</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div style={{ border: '2px solid rgba(0,255,65,0.4)', background: '#04000a' }}>
+        <div className="px-4 py-3 font-pixel text-[7px] text-[#00ff41]"
+          style={{ borderBottom: '1px solid rgba(0,255,65,0.2)' }}>
+          DISTRIBUICAO POR TRILHA
+        </div>
+        <div className="p-4">
           {stats.trackDistribution.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={260}>
               <PieChart>
                 <Pie
-                  data={stats.trackDistribution}
+                  data={stats.trackDistribution.map((d, i) => ({ ...d, fill: COLORS[i % COLORS.length] }))}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, value }: any) => `${name}: ${value}h`}
-                  outerRadius={80}
-                  fill="#8884d8"
+                  label={({ name, value }: { name?: string; value?: number }) =>
+                    name !== undefined && value !== undefined ? `${name}: ${value}h` : ''}
+                  outerRadius={90}
                   dataKey="hours"
-                >
-                  {stats.trackDistribution.map((_: TrackData, index: number) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
+                />
                 <Tooltip
-                  formatter={(value: any) => [`${value}h`, "Horas"]}
-                  cursor={{ fill: 'hsl(var(--muted)/0.2)' }}
-                  contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}
-                  itemStyle={{ color: 'hsl(var(--foreground))' }}
+                  formatter={(value: unknown) => [`${value as number}h`, "Horas"] as [string, string]}
+                  contentStyle={{ background: '#04000a', border: '2px solid #00ff41', borderRadius: 0 }}
+                  itemStyle={{ color: '#00ff41', fontFamily: 'monospace' }}
                 />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-64 text-gray-500">
-              <p>Nenhum dado de estudo disponível ainda</p>
+            <div className="flex items-center justify-center h-64 font-mono text-base text-[#555]">
+              Nenhum dado disponível ainda
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* Track Details Table */}
       {stats.trackDistribution.length > 0 && (
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Detalhes por Trilha</CardTitle>
-            <CardDescription>Tempo detalhado dedicado a cada trilha</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2">Trilha</th>
-                    <th className="text-right py-2">Horas</th>
-                    <th className="text-right py-2">Minutos</th>
-                    <th className="text-right py-2">Porcentagem</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stats.trackDistribution.map((track: TrackData, index: number) => {
-                    const totalMinutes = stats.trackDistribution.reduce((sum: number, t: TrackData) => sum + t.minutes, 0)
-                    const percentage = totalMinutes > 0 ? ((track.minutes / totalMinutes) * 100).toFixed(1) : "0"
-
-                    return (
-                      <tr key={track.name} className="border-b">
-                        <td className="py-2">
-                          <div className="flex items-center space-x-2">
-                            <div
-                              className="w-3 h-3 rounded-full"
-                              style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                            />
-                            <span>{track.name}</span>
-                          </div>
-                        </td>
-                        <td className="text-right py-2 font-medium">{track.hours}h</td>
-                        <td className="text-right py-2 text-gray-600">{track.minutes}min</td>
-                        <td className="text-right py-2 text-gray-600">{percentage}%</td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="lg:col-span-2" style={{ border: '2px solid rgba(0,255,65,0.4)', background: '#04000a' }}>
+          <div className="px-4 py-3 font-pixel text-[7px] text-[#00ff41]"
+            style={{ borderBottom: '1px solid rgba(0,255,65,0.2)' }}>
+            DETALHES POR TRILHA
+          </div>
+          <div className="overflow-x-auto p-4">
+            <table className="w-full">
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(0,255,65,0.2)' }}>
+                  <th className="text-left pb-2 font-pixel text-[6px] text-[#555]">TRILHA</th>
+                  <th className="text-right pb-2 font-pixel text-[6px] text-[#555]">HORAS</th>
+                  <th className="text-right pb-2 font-pixel text-[6px] text-[#555]">MIN</th>
+                  <th className="text-right pb-2 font-pixel text-[6px] text-[#555]">%</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats.trackDistribution.map((track, index) => {
+                  const totalMinutes = stats.trackDistribution.reduce((sum, t) => sum + t.minutes, 0)
+                  const pct = totalMinutes > 0 ? ((track.minutes / totalMinutes) * 100).toFixed(1) : "0"
+                  return (
+                    <tr key={track.name} style={{ borderBottom: '1px solid rgba(0,255,65,0.08)' }}>
+                      <td className="py-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 flex-shrink-0"
+                            style={{ background: COLORS[index % COLORS.length] }} />
+                          <span className="font-mono text-base text-[#e0e0ff]">{track.name}</span>
+                        </div>
+                      </td>
+                      <td className="text-right py-2 font-mono text-base text-[#e0e0ff]">{track.hours}h</td>
+                      <td className="text-right py-2 font-mono text-sm text-[#555]">{track.minutes}m</td>
+                      <td className="text-right py-2 font-mono text-sm text-[#555]">{pct}%</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
     </div>
   )
