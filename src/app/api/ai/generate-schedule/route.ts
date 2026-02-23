@@ -20,7 +20,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get study priorities and coverage
     const priorities = await generateStudyPriorities(
       contestId,
       session.user.id,
@@ -38,7 +37,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Generate schedule
     const schedule = await generateScheduleWithGemini({
       contestName: 'Civil Service Exam',
       priorities,

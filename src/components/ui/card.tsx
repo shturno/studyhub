@@ -9,7 +9,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      // Pixel border, dark panel bg, green neon glow
+
       "bg-[#0d001a] text-card-foreground",
       className
     )}
@@ -41,7 +41,7 @@ const CardTitle = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      // Pixel label style
+
       "font-pixel text-[10px] leading-relaxed tracking-widest uppercase text-[#00ff41]",
       className
     )}

@@ -7,7 +7,7 @@ export async function ContestList() {
 
     return (
         <div className="space-y-6">
-            {/* List header */}
+            
             <div className="flex items-center justify-between">
                 <div className="font-pixel text-[7px] text-[#7f7f9f]">
                     {contests.length} EDITAL{contests.length === 1 ? '' : 'S'} ENCONTRADO{contests.length === 1 ? '' : 'S'}

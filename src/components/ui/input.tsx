@@ -8,13 +8,13 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
       <input
         type={type}
         className={cn(
-          // Arcade terminal input style
+
           "flex h-10 w-full bg-[#020008] px-3 py-2 font-mono text-base text-[#e0e0ff]",
           "placeholder:text-[#3a3a5c]",
           "focus-visible:outline-none",
           "disabled:cursor-not-allowed disabled:opacity-50",
           "file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground",
-          // Caret blinks like a cursor
+
           "caret-[#00ff41]",
           className
         )}

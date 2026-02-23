@@ -14,7 +14,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      // Pixel tab bar — dark bg, green top border
+
       "inline-flex items-center bg-[#04000a] p-0 gap-0",
       className
     )}
@@ -31,18 +31,18 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      // Inactive: muted, Active: green neon + bottom border highlight
+
       "relative inline-flex items-center justify-center whitespace-nowrap px-5 py-2.5",
       "font-pixel text-[8px] tracking-wide uppercase",
       "text-[#7f7f9f] transition-all duration-100",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
       "disabled:pointer-events-none disabled:opacity-50",
-      // Active state
+
       "data-[state=active]:text-[#00ff41] data-[state=active]:bg-[#00ff41]/5",
       className
     )}
     style={{
-      // Bottom border indicator on active
+
     }}
     {...props}
   />

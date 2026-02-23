@@ -20,10 +20,6 @@ export interface StudyAreaPriority {
   coveragePercent?: number
 }
 
-/**
- * Analyze content crossings between multiple editorials
- * Identifies topics that appear in multiple editorials (high priority)
- */
 export async function analyzeContentCrossings(
   contestId: string,
   userId: string
@@ -51,7 +47,6 @@ export async function analyzeContentCrossings(
     },
   })
 
-  // Group by topic
   const topicMap = new Map<string, any>()
 
   for (const mapping of contentMappings) {
@@ -70,7 +65,6 @@ export async function analyzeContentCrossings(
     entry.relevances.push(mapping.relevance)
   }
 
-  // Build results with statistics
   const results: ContentOverlap[] = Array.from(topicMap.values()).map((entry) => ({
     topicId: entry.topicId,
     topicName: entry.topicName,
@@ -82,7 +76,6 @@ export async function analyzeContentCrossings(
     editorialTitles: Array.from(entry.editorials.values()),
   }))
 
-  // Sort by number of editorials (more is better), then by relevance
   return results.sort(
     (a, b) =>
       b.editorialsCount - a.editorialsCount ||
@@ -90,15 +83,12 @@ export async function analyzeContentCrossings(
   )
 }
 
-/**
- * Generate study priorities based on content crossings
- */
 export async function generateStudyPriorities(
   contestId: string,
   userId: string,
   weeklyHours: number = 40
 ): Promise<StudyAreaPriority[]> {
-  // Get topics with their subject information
+
   const contentMappings = await prisma.contentMapping.findMany({
     where: {
       editorialItem: {
@@ -130,7 +120,6 @@ export async function generateStudyPriorities(
     return []
   }
 
-  // Group by topic and calculate statistics
   const topicMap = new Map<string, any>()
 
   for (const mapping of contentMappings) {
@@ -151,7 +140,6 @@ export async function generateStudyPriorities(
     entry.relevances.push(mapping.relevance)
   }
 
-  // Convert to array and sort by editorial count and relevance
   const sortedTopics = Array.from(topicMap.values())
     .map((entry) => ({
       ...entry,
@@ -165,7 +153,6 @@ export async function generateStudyPriorities(
       return b.averageRelevance - a.averageRelevance
     })
 
-  // Assign priorities based on frequency and relevance
   const priorities: StudyAreaPriority[] = []
   const totalTopics = sortedTopics.length
 
@@ -207,9 +194,6 @@ export async function generateStudyPriorities(
   return priorities
 }
 
-/**
- * Identify topics not covered by any edital (potential gaps)
- */
 export async function identifyContentGaps(
   contestId: string,
   userId: string
@@ -218,7 +202,7 @@ export async function identifyContentGaps(
   topicName: string
   subjectName: string
 }[]> {
-  // Get all topics in the contest
+
   const allTopics = await prisma.topic.findMany({
     where: {
       subject: {
@@ -241,7 +225,6 @@ export async function identifyContentGaps(
     },
   })
 
-  // Find topics without any mappings
   const gaps = allTopics
     .filter((topic) => topic.contentMappings.length === 0)
     .map((topic) => ({
@@ -253,9 +236,6 @@ export async function identifyContentGaps(
   return gaps.sort((a, b) => a.subjectName.localeCompare(b.subjectName))
 }
 
-/**
- * Calculate overall coverage percentage for contest editorials
- */
 export async function calculateCoveragePercentage(
   contestId: string,
   userId: string

@@ -29,7 +29,6 @@ export function DashboardView({ data, contests = [], activeContestId: _activeCon
         )
     }
 
-    // Empty state — no contests
     if (contests.length === 0) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center">
@@ -56,7 +55,7 @@ export function DashboardView({ data, contests = [], activeContestId: _activeCon
     return (
         <div className="min-h-screen bg-[#080010] p-4 md:p-6 space-y-6">
 
-            {/* Header / HUD Top Bar */}
+            
             <div className="flex items-center justify-between p-3"
                 style={{ border: '2px solid #00ff41', background: '#04000a' }}>
                 <div>
@@ -82,10 +81,10 @@ export function DashboardView({ data, contests = [], activeContestId: _activeCon
                 </div>
             </div>
 
-            {/* Main Grid */}
+            
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-                {/* CURRENT STAGE - Study Now */}
+                
                 <div className="lg:col-span-2 p-6"
                     style={{ border: '2px solid #00ff41', background: '#04000a', boxShadow: '0 0 20px rgba(0,255,65,0.1)' }}>
                     <div className="font-pixel text-[8px] text-[#7f7f9f] mb-4">── CURRENT STAGE ──</div>
@@ -115,9 +114,9 @@ export function DashboardView({ data, contests = [], activeContestId: _activeCon
                     )}
                 </div>
 
-                {/* Stats Column */}
+                
                 <div className="space-y-4">
-                    {/* Streak */}
+                    
                     <div className="p-4" style={{ border: '2px solid #ff006e', background: '#04000a' }}>
                         <div className="font-pixel text-[7px] text-[#7f7f9f] mb-1">COMBO</div>
                         <div className="flex items-baseline gap-2">
@@ -128,7 +127,7 @@ export function DashboardView({ data, contests = [], activeContestId: _activeCon
                             </span>
                             <span className="font-mono text-lg text-[#7f7f9f]">dias</span>
                         </div>
-                        {/* Pixel progress bar */}
+                        
                         <div className="mt-3 h-4" style={{ background: '#080010', border: '2px solid #ff006e' }}>
                             <div className="h-full"
                                 style={{
@@ -139,7 +138,7 @@ export function DashboardView({ data, contests = [], activeContestId: _activeCon
                         </div>
                     </div>
 
-                    {/* XP */}
+                    
                     <div className="p-4" style={{ border: '2px solid #ffbe0b', background: '#04000a' }}>
                         <div className="font-pixel text-[7px] text-[#7f7f9f] mb-1">HIGH SCORE</div>
                         <div className="flex items-baseline gap-2">
@@ -152,7 +151,7 @@ export function DashboardView({ data, contests = [], activeContestId: _activeCon
                         </div>
                     </div>
 
-                    {/* Explore */}
+                    
                     <Link href="/subjects">
                         <div className="p-4 hover:bg-[#00f5ff]/5 transition-colors cursor-pointer"
                             style={{ border: '2px solid #00f5ff', background: '#04000a' }}>
@@ -166,7 +165,7 @@ export function DashboardView({ data, contests = [], activeContestId: _activeCon
                 </div>
             </div>
 
-            {/* Recent Activity — Scoreboard */}
+            
             <div style={{ border: '2px solid rgba(0,255,65,0.4)', background: '#04000a' }}>
                 <div className="px-4 py-3 flex items-center justify-between"
                     style={{ borderBottom: '1px solid rgba(0,255,65,0.2)' }}>
@@ -176,7 +175,7 @@ export function DashboardView({ data, contests = [], activeContestId: _activeCon
 
                 {recentSessions.length > 0 ? (
                     <div>
-                        {/* Table header */}
+                        
                         <div className="grid grid-cols-12 px-4 py-2 font-pixel text-[7px] text-[#7f7f9f]"
                             style={{ borderBottom: '1px solid rgba(0,255,65,0.1)' }}>
                             <span className="col-span-5">TOPIC</span>

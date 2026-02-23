@@ -40,7 +40,7 @@ export function LoginForm() {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email */}
+            
             <div className="space-y-2">
                 <label htmlFor="email" className="font-pixel text-[7px] text-[#00ff41] block">
                     EMAIL
@@ -57,7 +57,7 @@ export function LoginForm() {
                 />
             </div>
 
-            {/* Password */}
+            
             <div className="space-y-2">
                 <label htmlFor="password" className="font-pixel text-[7px] text-[#00ff41] block">
                     SENHA
@@ -85,7 +85,7 @@ export function LoginForm() {
                 </div>
             </div>
 
-            {/* Submit */}
+            
             <button
                 type="submit"
                 disabled={isLoading}

@@ -7,7 +7,7 @@ export interface Review {
 }
 
 export interface ReviewSchedule {
-    intervals: number[] // dias: [1, 3, 7, 15, 30]
+    intervals: number[]
     nextReviewDate: Date
 }
 

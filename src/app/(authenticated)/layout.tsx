@@ -19,13 +19,13 @@ export default async function AuthenticatedLayout({
         <SessionModalProvider>
             <div className="flex min-h-screen bg-[#080010] text-[#e0e0ff] flex-col">
 
-                {/* Top Header */}
+                
                 <div className="sticky top-0 left-0 right-0 h-14 z-50 flex items-center px-4 justify-between"
                     style={{ background: '#04000a', borderBottom: '2px solid #00ff41', boxShadow: '0 2px 20px rgba(0,255,65,0.2)' }}>
 
-                    {/* Mobile menu + Logo */}
+                    
                     <div className="flex items-center gap-4">
-                        {/* Mobile sidebar toggle */}
+                        
                         <Sheet>
                             <SheetTrigger asChild>
                                 <button
@@ -41,7 +41,7 @@ export default async function AuthenticatedLayout({
                             </SheetContent>
                         </Sheet>
 
-                        {/* Logo */}
+                        
                         <div className="flex items-center gap-2">
                             <span className="font-pixel text-[#00ff41] text-xs hidden md:block"
                                 style={{ textShadow: '0 0 10px rgba(0,255,65,0.6)' }}>
@@ -54,7 +54,7 @@ export default async function AuthenticatedLayout({
                         </div>
                     </div>
 
-                    {/* Right: Score display */}
+                    
                     <div className="flex items-center gap-6">
                         <div className="hidden md:flex items-center gap-2">
                             <span className="font-pixel text-[8px] text-[#7f7f9f]">PLAYER</span>
@@ -67,14 +67,14 @@ export default async function AuthenticatedLayout({
                     </div>
                 </div>
 
-                {/* Body: Sidebar + Content */}
+                
                 <div className="flex flex-1">
-                    {/* Desktop Sidebar */}
+                    
                     <div className="hidden md:block w-52 flex-shrink-0 sticky top-14 h-[calc(100vh-56px)] overflow-y-auto">
                         <AppSidebar user={session.user} className="w-full h-full" />
                     </div>
 
-                    {/* Main Content */}
+                    
                     <main className="flex-1 min-h-0 relative overflow-x-hidden">
                         <div className="relative z-10">
                             {children}

@@ -104,7 +104,7 @@ export async function deleteEditorialItem(editorialItemId: string): Promise<void
     select: { userId: true }
   })
 
-  if (!item || item.userId !== session.user.id) {
+  if (item?.userId !== session.user.id) {
     throw new Error('Unauthorized')
   }
 
@@ -120,29 +120,26 @@ export async function mapContentToTopics(
   const session = await auth()
   if (!session?.user?.id) throw new Error('Unauthorized')
 
-  // Verify ownership
   const item = await prisma.editorialItem.findUnique({
     where: { id: editorialItemId },
     select: { userId: true }
   })
 
-  if (!item || item.userId !== session.user.id) {
+  if (item?.userId !== session.user.id) {
     throw new Error('Unauthorized')
   }
 
-  // Delete existing mappings
   await prisma.contentMapping.deleteMany({
     where: { editorialItemId }
   })
 
-  // Create new mappings
   for (const mapping of mappings) {
     await prisma.contentMapping.create({
       data: {
         editorialItemId,
         topicId: mapping.topicId,
         contentSummary: mapping.contentSummary,
-        relevance: Math.max(0, Math.min(100, mapping.relevance)) // Clamp 0-100
+        relevance: Math.max(0, Math.min(100, mapping.relevance))
       }
     })
   }
@@ -161,7 +158,6 @@ export async function getContentMappingsBetweenEditorials(
   const session = await auth()
   if (!session?.user?.id) throw new Error('Unauthorized')
 
-  // Get all topics mapped in both editorials
   const mappings1 = await prisma.contentMapping.findMany({
     where: { editorialItemId: editorialId1 },
     select: { topicId: true, relevance: true }
@@ -172,10 +168,8 @@ export async function getContentMappingsBetweenEditorials(
     select: { topicId: true, relevance: true }
   })
 
-  // Find intersections
   const topicIds1 = new Set(mappings1.map(m => m.topicId))
-  const relevanceMap1 = new Map(mappings1.map(m => [m.topicId, m.relevance]))
-  const relevanceMap2 = new Map(mappings2.map(m => [m.topicId, m.relevance]))
+    const relevanceMap1 = new Map(mappings1.map(m => [m.topicId, m.relevance]))
 
   const crossings = mappings2
     .filter(m => topicIds1.has(m.topicId))
@@ -187,7 +181,6 @@ export async function getContentMappingsBetweenEditorials(
 
   if (crossings.length === 0) return []
 
-  // Fetch topic details
   const topics = await prisma.topic.findMany({
     where: {
       id: { in: crossings.map(c => c.topicId) }

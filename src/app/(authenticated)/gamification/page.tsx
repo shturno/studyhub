@@ -31,7 +31,7 @@ export default async function GamificationPage() {
     return (
         <div className="min-h-screen bg-[#080010] p-4 md:p-6 max-w-5xl mx-auto space-y-6">
 
-            {/* Header */}
+            
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4"
                 style={{ borderBottom: '2px solid rgba(0,255,65,0.2)' }}>
                 <div>
@@ -46,7 +46,7 @@ export default async function GamificationPage() {
                 <XPBadge currentXP={user.xp} currentLevel={user.level} />
             </div>
 
-            {/* Stats Grid */}
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {[
                     { icon: <Zap className="w-5 h-5 text-[#00f5ff]" />, value: stats.totalSessions, label: 'SESSOES', color: '#00f5ff' },
@@ -67,7 +67,7 @@ export default async function GamificationPage() {
                 ))}
             </div>
 
-            {/* Achievements */}
+            
             <div>
                 <div className="flex items-center gap-4 mb-4">
                     <span className="font-pixel text-[8px] text-[#ffbe0b]">── CONQUISTAS ──</span>

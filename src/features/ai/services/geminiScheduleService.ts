@@ -28,9 +28,6 @@ export interface GeneratedSchedule {
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '')
 
-/**
- * Generate an optimized study schedule using Gemini 1.5 Flash
- */
 export async function generateScheduleWithGemini(
   request: ScheduleRequest
 ): Promise<GeneratedSchedule> {
@@ -92,7 +89,6 @@ Return ONLY valid JSON, no additional text.
     const result = await model.generateContent(prompt)
     const responseText = result.response.text()
 
-    // Extract JSON from the response
     const jsonMatch = responseText.match(/\{[\s\S]*\}/)
     if (!jsonMatch) {
       throw new Error('No JSON found in Gemini response')
@@ -106,9 +102,6 @@ Return ONLY valid JSON, no additional text.
   }
 }
 
-/**
- * Get study recommendations based on content crossings
- */
 export async function getStudyRecommendations(
   contestName: string,
   priorities: StudyAreaPriority[],
@@ -157,9 +150,6 @@ Return as a JSON array of strings.
   }
 }
 
-/**
- * Analyze content coverage and suggest next steps
- */
 export async function analyzeCoverageAndSuggest(
   contestName: string,
   coverage: number,

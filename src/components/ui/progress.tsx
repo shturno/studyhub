@@ -28,7 +28,7 @@ const Progress = React.forwardRef<
         indicatorClassName
       )}
       style={{
-        // Pixel block fill pattern
+
         width: `${value || 0}%`,
         background: 'repeating-linear-gradient(90deg, #00ff41 0px, #00ff41 12px, transparent 12px, transparent 16px)',
         boxShadow: '0 0 8px rgba(0,255,65,0.5)',

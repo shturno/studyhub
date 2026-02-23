@@ -54,7 +54,6 @@ export async function deleteEditorialItem(editorialId: string): Promise<void> {
   const session = await auth()
   if (!session?.user?.id) throw new Error('Unauthorized')
 
-  // Verify ownership
   const editorial = await prisma.editorialItem.findUnique({
     where: { id: editorialId },
   })
@@ -77,7 +76,6 @@ export async function createContentMapping(data: {
   const session = await auth()
   if (!session?.user?.id) throw new Error('Unauthorized')
 
-  // Verify the editorial belongs to the user
   const editorial = await prisma.editorialItem.findUnique({
     where: { id: data.editorialItemId },
   })
@@ -128,7 +126,6 @@ export async function getContentCrossings(contestId: string): Promise<{
   const session = await auth()
   if (!session?.user?.id) throw new Error('Unauthorized')
 
-  // Get all content mappings for editorials in this contest
   const mappings = await prisma.contentMapping.findMany({
     where: {
       editorialItem: {
@@ -146,7 +143,6 @@ export async function getContentCrossings(contestId: string): Promise<{
     },
   })
 
-  // Group by topic and calculate statistics
   interface TopicEntry { topicId: string; topicName: string; mappingCount: number; editorialCount: Set<string>; totalRelevance: number }
   const topicMap = new Map<string, TopicEntry>()
 
@@ -170,7 +166,6 @@ export async function getContentCrossings(contestId: string): Promise<{
     }
   }
 
-  // Format the response
   const result = Array.from(topicMap.values()).map((entry) => ({
     topicId: entry.topicId,
     topicName: entry.topicName,
