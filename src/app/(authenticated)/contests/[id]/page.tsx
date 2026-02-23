@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { auth } from '@/lib/auth.config'
+import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -17,17 +17,18 @@ export const metadata: Metadata = {
 }
 
 interface ContestDetailPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function ContestDetailPage({ params }: ContestDetailPageProps) {
+  const { id } = await params
   const session = await auth()
   if (!session?.user?.id) {
     return notFound()
   }
 
   const contest = await prisma.contest.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       subjects: {
         include: {
@@ -37,6 +38,12 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
       editorialItems: {
         include: {
           contentMappings: true,
+          contest: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       },
     },
