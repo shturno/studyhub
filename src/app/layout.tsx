@@ -1,14 +1,27 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { GeistSans } from "geist/font/sans"
-import { GeistMono } from "geist/font/mono"
+import { Press_Start_2P, VT323 } from "next/font/google"
 import { Toaster } from "sonner"
 import { AuthProvider } from "@/components/auth-provider"
 import "./globals.css"
 
+const pressStart2P = Press_Start_2P({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-pixel",
+  display: "swap",
+})
+
+const vt323 = VT323({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-mono-pixel",
+  display: "swap",
+})
+
 export const metadata: Metadata = {
-  title: "StudyHub - Plataforma de Estudos Gamificada",
-  description: "Estude para concursos com gamificação e acompanhamento de progresso",
+  title: "StudyHub — PRESS START",
+  description: "Estude para concursos — modo gamificado. INSERT COIN TO BEGIN.",
 }
 
 export default function RootLayout({
@@ -17,11 +30,23 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="pt-BR" className="dark" suppressHydrationWarning>
-      <body className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased bg-background text-foreground`}>
+    <html lang="pt-BR" className={`dark ${pressStart2P.variable} ${vt323.variable}`} suppressHydrationWarning>
+      <body className="antialiased bg-[#080010] text-[#e0e0ff]">
         <AuthProvider>
           {children}
-          <Toaster position="top-right" />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              style: {
+                background: '#0d001a',
+                border: '2px solid #00ff41',
+                color: '#e0e0ff',
+                fontFamily: 'var(--font-mono-pixel), monospace',
+                fontSize: '18px',
+                borderRadius: '0',
+              },
+            }}
+          />
         </AuthProvider>
       </body>
     </html>

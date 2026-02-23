@@ -2,8 +2,7 @@
 
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Trash2, Calendar, Award, Building2, ChevronRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Trash2, Calendar, Building2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { deleteContest } from '../actions'
 import { toast } from 'sonner'
@@ -11,13 +10,13 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 interface ContestCardProps {
-    contest: {
-        id: string
-        name: string
-        institution: string
-        role: string
-        examDate?: Date | null
-        isPrimary: boolean
+    readonly contest: {
+        readonly id: string
+        readonly name: string
+        readonly institution: string
+        readonly role: string
+        readonly examDate?: Date | null
+        readonly isPrimary: boolean
     }
 }
 
@@ -25,67 +24,68 @@ export function ContestCard({ contest }: ContestCardProps) {
     const router = useRouter()
 
     async function handleDelete() {
-        try {
-            await deleteContest(contest.id)
-            toast.success('Concurso removido')
-            router.refresh()
-        } catch (error) {
-            toast.error('Erro ao remover concurso')
-        }
+        await deleteContest(contest.id)
+            .then(() => {
+                toast.success('Concurso removido')
+                router.refresh()
+            })
+            .catch((err: unknown) => {
+                const message = err instanceof Error ? err.message : 'Erro desconhecido'
+                toast.error(`Erro ao remover concurso: ${message}`)
+            })
     }
 
     return (
-        <div className="group relative p-6 rounded-2xl bg-card border border-white/[0.08] hover:border-brand-primary/50 transition-all duration-300">
+        <div className="group relative p-5 hover:-translate-y-0.5 transition-transform duration-100"
+            style={{ border: '2px solid rgba(0,255,65,0.4)', background: '#04000a', boxShadow: '4px 4px 0px rgba(0,255,65,0.15)' }}>
+
+            {/* Primary badge */}
             {contest.isPrimary && (
-                <div className="absolute -top-3 left-6">
-                    <Badge className="bg-brand-primary hover:bg-brand-primary text-white border-0 shadow-lg shadow-brand-primary/25">
-                        Foco Principal
-                    </Badge>
+                <div className="absolute -top-3 left-4">
+                    <Badge variant="gold">★ FOCO PRINCIPAL</Badge>
                 </div>
             )}
 
+            {/* Header row */}
             <div className="flex justify-between items-start mb-4">
-                <div>
-                    <h3 className="text-xl font-bold text-white mb-1 group-hover:text-brand-primary transition-colors">
+                <div className="flex-1 min-w-0 pr-4">
+                    <div className="font-mono text-2xl text-[#e0e0ff] group-hover:text-[#00ff41] transition-colors truncate mb-1">
                         {contest.name}
-                    </h3>
-                    <div className="flex items-center gap-2 text-sm text-zinc-400">
-                        <Building2 className="w-3 h-3" />
-                        <span>{contest.institution}</span>
-                        <span className="w-1 h-1 rounded-full bg-zinc-700" />
-                        <span className="text-zinc-500">{contest.role}</span>
+                    </div>
+                    <div className="flex items-center gap-2 font-mono text-base text-[#7f7f9f]">
+                        <Building2 className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span className="truncate">{contest.institution}</span>
+                        <span className="text-[#333]">·</span>
+                        <span className="truncate text-[#555]">{contest.role}</span>
                     </div>
                 </div>
 
-                <Button
-                    variant="ghost"
-                    size="icon"
+                <button
                     onClick={handleDelete}
-                    className="text-zinc-500 hover:text-red-400 hover:bg-red-400/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="opacity-0 group-hover:opacity-100 text-[#555] hover:text-[#ff006e] transition-all p-1"
+                    aria-label="Remover concurso"
                 >
                     <Trash2 className="w-4 h-4" />
-                </Button>
+                </button>
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-white/[0.08]">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-xs font-medium text-zinc-300">
-                    <Calendar className="w-3.5 h-3.5 text-zinc-500" />
+            {/* Footer row */}
+            <div className="flex items-center justify-between pt-3"
+                style={{ borderTop: '1px solid rgba(0,255,65,0.15)' }}>
+                <div className="flex items-center gap-2 font-mono text-base text-[#7f7f9f]">
+                    <Calendar className="w-3.5 h-3.5 text-[#555]" />
                     {contest.examDate ? (
-                        format(new Date(contest.examDate), "d 'of' MMMM, yyyy", { locale: ptBR })
+                        <span>{format(new Date(contest.examDate), "d 'de' MMMM, yyyy", { locale: ptBR })}</span>
                     ) : (
-                        <span className="italic">Data não definida</span>
+                        <span className="text-[#444] italic">Data não definida</span>
                     )}
                 </div>
 
                 <Link href={`/contests/${contest.id}`}>
-                    <Button 
-                        variant="ghost" 
-                        size="sm"
-                        className="gap-2 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10"
-                    >
-                        Detalhes
-                        <ChevronRight className="w-4 h-4" />
-                    </Button>
+                    <button className="font-pixel text-[7px] text-[#00ff41] px-3 py-1.5 hover:bg-[#00ff41] hover:text-black transition-all"
+                        style={{ border: '2px solid rgba(0,255,65,0.5)' }}>
+                        ► VER
+                    </button>
                 </Link>
             </div>
         </div>

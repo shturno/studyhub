@@ -1,13 +1,12 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Clock, Target, TrendingUp } from 'lucide-react'
 
 interface WeeklyStatsProps {
-    stats: {
-        minutesStudied: number
-        sessionsCompleted: number
-        xpEarned: number
+    readonly stats: {
+        readonly minutesStudied: number
+        readonly sessionsCompleted: number
+        readonly xpEarned: number
     }
 }
 
@@ -15,50 +14,45 @@ export function WeeklyStats({ stats }: WeeklyStatsProps) {
     const hours = Math.floor(stats.minutesStudied / 60)
     const minutes = stats.minutesStudied % 60
 
+    const items = [
+        {
+            label: 'TEMPO ESTUDADO',
+            value: `${hours}h ${minutes}m`,
+            sub: 'esta semana',
+            Icon: Clock,
+            color: '#00ff41',
+        },
+        {
+            label: 'SESSOES',
+            value: String(stats.sessionsCompleted),
+            sub: 'completadas',
+            Icon: Target,
+            color: '#7b61ff',
+        },
+        {
+            label: 'XP GANHO',
+            value: `${stats.xpEarned} XP`,
+            sub: 'nesta semana',
+            Icon: TrendingUp,
+            color: '#ffbe0b',
+        },
+    ]
+
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Tempo Estudado</CardTitle>
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">
-                        {hours}h {minutes}m
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {items.map(({ label, value, sub, Icon, color }) => (
+                <div key={label} className="p-4"
+                    style={{ border: `2px solid ${color}40`, background: '#04000a' }}>
+                    <div className="flex items-center justify-between mb-3">
+                        <span className="font-pixel text-[6px] text-[#7f7f9f]">{label}</span>
+                        <Icon className="h-4 w-4" style={{ color }} />
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                        Esta semana
-                    </p>
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Sessões</CardTitle>
-                    <Target className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{stats.sessionsCompleted}</div>
-                    <p className="text-xs text-muted-foreground">
-                        Sessões completadas
-                    </p>
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">XP Ganho</CardTitle>
-                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold text-xp-gold">
-                        {stats.xpEarned} XP
+                    <div className="font-pixel text-xl mb-1" style={{ color, textShadow: `0 0 12px ${color}80` }}>
+                        {value}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                        Nesta semana
-                    </p>
-                </CardContent>
-            </Card>
+                    <div className="font-mono text-sm text-[#555]">{sub}</div>
+                </div>
+            ))}
         </div>
     )
 }

@@ -1,4 +1,4 @@
-import { ArrowLeft, PieChart } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getSubjectDetails } from '@/features/subjects/actions'
@@ -6,7 +6,7 @@ import { TopicList } from '@/features/subjects/components/TopicList'
 import { Progress } from '@/components/ui/progress'
 
 interface SubjectDetailsPageProps {
-    params: Promise<{
+    readonly params: Promise<{
         id: string
     }>
 }
@@ -23,65 +23,60 @@ export default async function SubjectDetailsPage(props: SubjectDetailsPageProps)
 
     const { subjectName, topics } = data
     const completedTopics = topics.filter(t => t.status !== 'pending').length
-    const progress = Math.round((completedTopics / topics.length) * 100)
+    const masteredTopics = topics.filter(t => t.status === 'mastered').length
+    const progress = topics.length > 0 ? Math.round((completedTopics / topics.length) * 100) : 0
 
     return (
-        <div className="min-h-screen text-zinc-100">
-            {/* Header */}
-            <header className="border-b border-white/[0.08] bg-background/80 backdrop-blur-md sticky top-0 z-50">
-                <div className="max-w-4xl mx-auto px-6 h-16 flex items-center gap-4">
-                    <Link href="/subjects" className="p-2 -ml-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-full transition-colors">
+        <div className="min-h-screen bg-[#080010] text-[#e0e0ff]">
+
+            <div className="px-4 md:px-8 pt-6 pb-4 max-w-3xl mx-auto">
+                <div className="flex items-center gap-4 mb-2">
+                    <Link href="/subjects" className="text-[#7f7f9f] hover:text-[#00ff41] transition-colors">
                         <ArrowLeft className="w-5 h-5" />
                     </Link>
-                    <h1 className="text-xl font-bold tracking-tight truncate">{subjectName}</h1>
+                    <div className="font-pixel text-[#00ff41] text-sm truncate"
+                        style={{ textShadow: '0 0 10px rgba(0,255,65,0.6)' }}>
+                        {subjectName.toUpperCase()}
+                    </div>
                 </div>
-            </header>
+            </div>
 
-            <main className="max-w-4xl mx-auto px-6 py-8 space-y-10">
+            <main className="px-4 md:px-8 pb-8 max-w-3xl mx-auto space-y-4">
 
-                {/* Stats Overview */}
-                <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="p-6 rounded-2xl bg-card border border-white/[0.08] flex flex-col justify-between">
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Progresso Geral</h3>
-                        <div className="flex items-end gap-2 mb-4">
-                            <span className="text-4xl font-bold text-white">{progress}%</span>
-                            <span className="text-sm text-zinc-500 mb-1">concluído</span>
-                        </div>
-                        <Progress value={progress} className="h-2" />
-                    </div>
-
-                    <div className="p-6 rounded-2xl bg-card border border-white/[0.08] flex flex-col justify-between">
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Tópicos</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="p-4 space-y-3" style={{ border: '2px solid rgba(0,255,65,0.4)', background: '#04000a' }}>
+                        <div className="font-pixel text-[6px] text-[#7f7f9f]">PROGRESSO GERAL</div>
                         <div className="flex items-end gap-2">
-                            <span className="text-4xl font-bold text-white">{completedTopics}</span>
-                            <span className="text-sm text-zinc-500 mb-1">de {topics.length} estudados</span>
+                            <span className="font-pixel text-2xl text-[#00ff41]">{progress}%</span>
+                            <span className="font-mono text-sm text-[#555] mb-0.5">concluído</span>
                         </div>
+                        <Progress value={progress} />
                     </div>
 
-                    <div className="p-6 rounded-2xl bg-card border border-white/[0.08] flex flex-col justify-between relative overflow-hidden">
-                        <div className="absolute right-0 top-0 p-4 opacity-5">
-                            <PieChart className="w-20 h-20" />
-                        </div>
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Mastery</h3>
+                    <div className="p-4" style={{ border: '2px solid rgba(0,255,65,0.4)', background: '#04000a' }}>
+                        <div className="font-pixel text-[6px] text-[#7f7f9f] mb-2">TOPICOS</div>
                         <div className="flex items-end gap-2">
-                            <span className="text-4xl font-bold text-emerald-400">
-                                {topics.filter(t => t.status === 'mastered').length}
-                            </span>
-                            <span className="text-sm text-zinc-500 mb-1">tópicos dominados</span>
+                            <span className="font-pixel text-2xl text-[#00ff41]">{completedTopics}</span>
+                            <span className="font-mono text-sm text-[#555] mb-0.5">de {topics.length}</span>
                         </div>
                     </div>
-                </section>
 
-                {/* Topics List */}
-                <section>
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-lg font-bold text-zinc-200">Tópicos do Edital</h2>
-                        <span className="text-xs text-zinc-500 bg-zinc-900 px-3 py-1 rounded-full border border-white/5">
-                            {topics.length} itens
-                        </span>
+                    <div className="p-4" style={{ border: '2px solid rgba(255,190,11,0.4)', background: '#04000a' }}>
+                        <div className="font-pixel text-[6px] text-[#7f7f9f] mb-2">MASTERY</div>
+                        <div className="flex items-end gap-2">
+                            <span className="font-pixel text-2xl text-[#ffbe0b]">{masteredTopics}</span>
+                            <span className="font-mono text-sm text-[#555] mb-0.5">dominados</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div className="flex items-center justify-between mb-3">
+                        <span className="font-pixel text-[8px] text-[#00ff41]">TOPICOS DO EDITAL</span>
+                        <span className="font-pixel text-[6px] text-[#555]">{topics.length} ITENS</span>
                     </div>
                     <TopicList topics={topics} />
-                </section>
+                </div>
 
             </main>
         </div>

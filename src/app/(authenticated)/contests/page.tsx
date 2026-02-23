@@ -8,20 +8,17 @@ export const metadata: Metadata = {
 
 export default function ContestsPage() {
     return (
-        <div className="min-h-screen bg-background">
-            <header className="border-b border-white/[0.08] bg-background/80 backdrop-blur-md sticky top-0 z-50">
-                <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold">
-                            S
-                        </div>
-                        <span className="font-bold text-lg text-white">StudyHub</span>
-                    </div>
-                    {/* User Profile / Nav could go here */}
+        <div className="min-h-screen bg-[#080010] text-[#e0e0ff]">
+            <div className="px-4 md:px-8 pt-6 pb-4 max-w-5xl mx-auto">
+                <div className="font-pixel text-[#00ff41] text-sm mb-1"
+                    style={{ textShadow: '0 0 10px rgba(0,255,65,0.6)' }}>
+                    CONCURSOS
                 </div>
-            </header>
-
-            <main className="max-w-6xl mx-auto px-6 py-8">
+                <div className="font-mono text-lg text-[#7f7f9f]">
+                    Gerencie seus editais e metas.
+                </div>
+            </div>
+            <main className="px-4 md:px-8 py-2 max-w-5xl mx-auto">
                 <ContestList />
             </main>
         </div>

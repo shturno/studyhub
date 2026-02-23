@@ -17,9 +17,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
+import { Loader2 } from "lucide-react"
 
 interface CreateTrackDialogProps {
-  children: React.ReactNode
+  readonly children: React.ReactNode
 }
 
 export function CreateTrackDialog({ children }: CreateTrackDialogProps) {
@@ -34,43 +35,29 @@ export function CreateTrackDialog({ children }: CreateTrackDialogProps) {
     e.preventDefault()
     setIsLoading(true)
 
-    try {
-      const response = await fetch("/api/tracks", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, description }),
-      })
-
-      if (response.ok) {
-        const track = await response.json()
-        toast({
-          title: "Trilha criada!",
-          description: "Sua nova trilha foi criada com sucesso.",
-        })
+    await fetch("/api/tracks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, description }),
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const err = await response.json() as { error?: string }
+          throw new Error(err.error ?? "Erro ao criar trilha")
+        }
+        const track = await response.json() as { id: string }
+        toast({ title: "Trilha criada!" })
         setOpen(false)
         setName("")
         setDescription("")
         router.refresh()
         router.push(`/tracks/${track.id}`)
-      } else {
-        const error = await response.json()
-        toast({
-          title: "Erro",
-          description: error.error || "Erro ao criar trilha",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao criar trilha",
-        variant: "destructive",
       })
-    } finally {
-      setIsLoading(false)
-    }
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : "Erro ao criar trilha"
+        toast({ title: "Erro", description: message, variant: "destructive" })
+      })
+      .finally(() => setIsLoading(false))
   }
 
   return (
@@ -78,14 +65,14 @@ export function CreateTrackDialog({ children }: CreateTrackDialogProps) {
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Nova Trilha de Estudo</DialogTitle>
-          <DialogDescription>Crie uma nova trilha para organizar suas lições de aprendizado.</DialogDescription>
+          <DialogTitle>NOVA TRILHA</DialogTitle>
+          <DialogDescription>Crie uma nova trilha para organizar suas lições.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Nome da Trilha</Label>
+            <Label htmlFor="track-name">NOME DA TRILHA</Label>
             <Input
-              id="name"
+              id="track-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Java & Spring Boot"
@@ -94,21 +81,21 @@ export function CreateTrackDialog({ children }: CreateTrackDialogProps) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">Descrição (opcional)</Label>
+            <Label htmlFor="track-desc">DESCRICAO (OPCIONAL)</Label>
             <Textarea
-              id="description"
+              id="track-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Descreva o que você vai aprender nesta trilha..."
+              placeholder="Descreva o que você vai aprender..."
               disabled={isLoading}
             />
           </div>
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
-              Cancelar
+              CANCELAR
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Criando..." : "Criar Trilha"}
+              {isLoading ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />CRIANDO...</> : "CRIAR TRILHA"}
             </Button>
           </div>
         </form>
