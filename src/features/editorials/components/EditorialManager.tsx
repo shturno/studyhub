@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,8 +8,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Plus, Trash2, Link as LinkIcon } from 'lucide-react'
 import { createEditorialItem, deleteEditorialItem, getEditorialsForContest } from '../actions'
-import { EditorialItem } from '../types'
+import { EditorialWithMappings } from '../types'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 interface EditorialManagerProps {
   contestId: string
@@ -17,12 +18,30 @@ interface EditorialManagerProps {
 }
 
 export function EditorialManager({ contestId, onEditorialAdded }: EditorialManagerProps) {
+  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [url, setUrl] = useState('')
-  const [editorials, setEditorials] = useState<EditorialItem[]>([])
+  const [editorials, setEditorials] = useState<EditorialWithMappings[]>([])
+
+  useEffect(() => {
+    loadEditorials()
+  }, [contestId])
+
+  async function loadEditorials() {
+    try {
+      setIsLoading(true)
+      const data = await getEditorialsForContest(contestId)
+      setEditorials(data)
+    } catch (error) {
+      console.error('Error loading editorials:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleAddEditorial = async () => {
     if (!title.trim()) {
@@ -31,7 +50,7 @@ export function EditorialManager({ contestId, onEditorialAdded }: EditorialManag
     }
 
     try {
-      setIsLoading(true)
+      setIsSubmitting(true)
       await createEditorialItem({
         contestId,
         title: title.trim(),
@@ -44,13 +63,15 @@ export function EditorialManager({ contestId, onEditorialAdded }: EditorialManag
       setDescription('')
       setUrl('')
       setIsOpen(false)
+      await loadEditorials()
+      router.refresh()
       onEditorialAdded?.()
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : 'Erro ao adicionar edital'
       )
     } finally {
-      setIsLoading(false)
+      setIsSubmitting(false)
     }
   }
 
@@ -59,6 +80,7 @@ export function EditorialManager({ contestId, onEditorialAdded }: EditorialManag
       await deleteEditorialItem(editorialId)
       toast.success('Edital removido com sucesso!')
       setEditorials(editorials.filter((e) => e.id !== editorialId))
+      router.refresh()
       onEditorialAdded?.()
     } catch (error) {
       toast.error(
@@ -130,10 +152,10 @@ export function EditorialManager({ contestId, onEditorialAdded }: EditorialManag
                 </Button>
                 <Button
                   onClick={handleAddEditorial}
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                   className="bg-indigo-600 hover:bg-indigo-700"
                 >
-                  {isLoading ? 'Adicionando...' : 'Adicionar Edital'}
+                  {isSubmitting ? 'Adicionando...' : 'Adicionar Edital'}
                 </Button>
               </div>
             </div>
@@ -142,7 +164,17 @@ export function EditorialManager({ contestId, onEditorialAdded }: EditorialManag
       </div>
 
       <div className="grid gap-3 mt-4">
-        {editorials.map((editorial) => (
+        {isLoading ? (
+          <div className="text-center py-4 text-zinc-400">
+            <div className="w-4 h-4 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin mx-auto mb-2" />
+            <p className="text-sm">Carregando editais...</p>
+          </div>
+        ) : editorials.length === 0 ? (
+          <div className="text-center py-8 text-zinc-400">
+            <p>Nenhum edital adicionado ainda</p>
+          </div>
+        ) : (
+          editorials.map((editorial) => (
           <div
             key={editorial.id}
             className="p-4 rounded-lg border border-white/10 bg-white/5 flex items-start justify-between hover:bg-white/[0.07] transition-colors"
@@ -177,14 +209,8 @@ export function EditorialManager({ contestId, onEditorialAdded }: EditorialManag
               <Trash2 className="w-4 h-4" />
             </button>
           </div>
-        ))}
-      </div>
-
-      {editorials.length === 0 && (
-        <div className="text-center py-8 text-zinc-400">
-          <p>Nenhum edital adicionado ainda</p>
-        </div>
-      )}
+          ))
+        )}
     </div>
   )
 }
