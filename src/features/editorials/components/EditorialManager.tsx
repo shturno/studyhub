@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Plus, Trash2, Book } from 'lucide-react'
-import { createEditorialItem, deleteEditorialItem } from '../actions'
+import { Plus, Book } from 'lucide-react'
+import { createEditorialItem } from '../actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
@@ -16,7 +16,7 @@ interface EditorialManagerProps {
   onEditorialAdded?: () => void
 }
 
-export function EditorialManager({ contestId, onEditorialAdded }: EditorialManagerProps) {
+export function EditorialManager({ contestId, onEditorialAdded }: Readonly<EditorialManagerProps>) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -58,12 +58,12 @@ export function EditorialManager({ contestId, onEditorialAdded }: EditorialManag
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-white mb-1 flex items-center gap-2">
-          <Book className="w-5 h-5 text-indigo-400" />
-          Gerenciar Editais
+        <h3 className="font-pixel text-[12px] text-[#ff006e] mb-1 flex items-center gap-2" style={{ textShadow: '0 0 10px rgba(255,0,110,0.5)' }}>
+          <Book className="w-5 h-5 text-[#ff006e]" />
+          INVENTÁRIO
         </h3>
-        <p className="text-sm text-zinc-400">
-          Adicione e gerencie os editais deste concurso
+        <p className="font-mono text-sm text-[#7f7f9f]">
+          Adicione os editais bases que compõem este concurso.
         </p>
       </div>
 
@@ -130,8 +130,8 @@ export function EditorialManager({ contestId, onEditorialAdded }: EditorialManag
         </DialogContent>
       </Dialog>
 
-      <div className="text-sm text-zinc-400 p-3 bg-white/5 rounded border border-white/10">
-        <p>Dica: Mapeie o conteúdo dos seus editais para os tópicos de estudo</p>
+      <div className="font-mono text-[10px] text-[#555] p-3 bg-[#0a0005] rounded-none border border-dashed border-[#ff006e]/30">
+        <p>Dica: Mapeie o conteúdo dos seus editais para os tópicos de estudo para o Alquimista funcionar.</p>
       </div>
     </div>
   )
