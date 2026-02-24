@@ -113,8 +113,8 @@ export function EditorialManager({ contestId, onEditorialAdded }: Readonly<Edito
             NOVO EDITAL
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[500px] border-0 rounded-none p-0 overflow-hidden" style={{ background: '#0a0005', border: '2px solid #ff006e', boxShadow: '0 0 30px rgba(255,0,110,0.2)' }}>
-          <div className="p-4" style={{ borderBottom: '2px dashed #ff006e' }}>
+        <DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[90vh] overflow-y-auto border-0 rounded-none p-0" style={{ background: '#0a0005', border: '2px solid #ff006e', boxShadow: '0 0 30px rgba(255,0,110,0.2)' }}>
+          <div className="p-4 sticky top-0 z-10 bg-[#0a0005]" style={{ borderBottom: '2px dashed #ff006e' }}>
             <DialogHeader>
               <DialogTitle className="font-pixel text-lg text-[#ff006e] flex items-center gap-2">
                 <Book className="w-5 h-5" />
@@ -130,17 +130,8 @@ export function EditorialManager({ contestId, onEditorialAdded }: Readonly<Edito
                 <Cpu className="w-4 h-4" /> OPÇÃO RECOMENDADA: SCANNER IA (GEMINI)
               </Label>
               
-              <div 
-                role="button"
-                tabIndex={0}
-                className={`p-6 border-2 border-dashed transition-all flex flex-col items-center justify-center gap-3 cursor-pointer group ${isParsing ? 'border-[#ff006e] bg-[#ff006e]/10 animate-pulse' : 'border-[#00ff41]/50 bg-[#00ff41]/5 hover:bg-[#00ff41]/20 hover:border-[#00ff41]'}`}
-                onClick={() => !isParsing && fileInputRef.current?.click()}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    if (!isParsing) fileInputRef.current?.click()
-                  }
-                }}
+              <label 
+                className={`w-full p-6 border-2 border-dashed transition-all flex flex-col items-center justify-center gap-3 cursor-pointer group ${isParsing ? 'border-[#ff006e] bg-[#ff006e]/10 animate-pulse' : 'border-[#00ff41]/50 bg-[#00ff41]/5 hover:bg-[#00ff41]/20 hover:border-[#00ff41]'}`}
               >
                 <input 
                   type="file" 
@@ -166,7 +157,7 @@ export function EditorialManager({ contestId, onEditorialAdded }: Readonly<Edito
                     </span>
                   </>
                 )}
-              </div>
+              </label>
             </div>
 
             <div className="flex items-center gap-2 opacity-50">
