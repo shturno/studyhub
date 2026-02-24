@@ -59,16 +59,18 @@ export function CreateContestDialog() {
     })
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        await createContest(values)
-            .then(() => {
+        try {
+            const res = await createContest(values)
+            if (res?.error) {
+                toast.error(`Erro: ${res.error}`)
+            } else {
                 toast.success('Concurso criado!')
                 setOpen(false)
                 form.reset()
-            })
-            .catch((err: unknown) => {
-                const message = err instanceof Error ? err.message : 'Erro desconhecido'
-                toast.error(`Erro ao criar concurso: ${message}`)
-            })
+            }
+        } catch {
+            toast.error('Ocorreu um erro inesperado ao salvar o concurso.')
+        }
     }
 
     return (
