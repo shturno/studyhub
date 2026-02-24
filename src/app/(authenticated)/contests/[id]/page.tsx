@@ -7,6 +7,8 @@ import { ArrowLeft, Building2, Calendar, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import { EditorialManager } from '@/features/editorials/components/EditorialManager'
 import { ContentCrossingView } from '@/features/editorials/components/ContentCrossingView'
+import { format } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 
 export const metadata: Metadata = {
   title: 'Detalhes do Concurso | StudyHub',
@@ -79,7 +81,7 @@ export default async function ContestDetailPage(props: ContestDetailPageProps) {
             {[
               {
                 label: 'DATA DA PROVA',
-                value: contest.examDate ? new Date(contest.examDate).toLocaleDateString('pt-BR') : 'Não definida',
+                value: contest.examDate ? format(new Date(contest.examDate), "dd/MM/yyyy", { locale: ptBR }) : 'Não definida',
                 icon: <Calendar className="w-3.5 h-3.5" />,
               },
               { label: 'DISCIPLINAS', value: String(contest.subjects.length), icon: null },
@@ -112,7 +114,7 @@ export default async function ContestDetailPage(props: ContestDetailPageProps) {
                 <BookOpen className="w-4 h-4 text-[#00ff41]" />
                 <span className="font-pixel text-[8px] text-[#00ff41]">ANALISE DE CONTEUDO</span>
               </div>
-              <ContentCrossingView editorials={contest.editorialItems as Parameters<typeof ContentCrossingView>[0]['editorials']} />
+              <ContentCrossingView contestId={contest.id} editorialCount={contest.editorialItems.length} />
             </div>
           </div>
         </div>

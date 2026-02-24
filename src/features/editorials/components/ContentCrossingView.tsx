@@ -5,10 +5,9 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { AlertCircle, Zap } from 'lucide-react'
 import { getContentCrossings } from '../actions'
-import type { EditorialWithMappings } from '../types'
-
 interface ContentCrossingViewProps {
-  editorials: EditorialWithMappings[]
+  contestId: string
+  editorialCount: number
 }
 
 interface Crossing {
@@ -19,17 +18,15 @@ interface Crossing {
   relevanceScore: number
 }
 
-export function ContentCrossingView({ editorials = [] }: Readonly<ContentCrossingViewProps>) {
+export function ContentCrossingView({ contestId, editorialCount = 0 }: Readonly<ContentCrossingViewProps>) {
   const [crossings, setCrossings] = useState<Crossing[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!editorials || editorials.length === 0) {
+    if (editorialCount < 2) {
       setLoading(false)
       return
     }
-
-    const contestId = editorials[0].contestId
 
     async function loadCrossings() {
       try {
@@ -45,9 +42,9 @@ export function ContentCrossingView({ editorials = [] }: Readonly<ContentCrossin
     }
 
     loadCrossings()
-  }, [editorials])
+  }, [contestId, editorialCount])
 
-  if (!editorials || editorials.length < 2) {
+  if (editorialCount < 2) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4">
         <AlertCircle className="w-12 h-12 text-[#ff006e]/50 mb-4" />
