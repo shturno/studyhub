@@ -13,17 +13,16 @@ async function main() {
     await prisma.editorialItem.deleteMany()
     await prisma.contentMapping.deleteMany()
     await prisma.plannedSession.deleteMany()
-    await prisma.user.deleteMany()
-
     console.log('✅ Database cleaned successfully')
     console.log('✅ Seed completed! Database is ready for users to add their own contests.')
 }
-
-main()
-    .catch((e) => {
-        console.error(e)
-        process.exit(1)
-    })
-    .finally(async () => {
-        await prisma.$disconnect()
-    })
+try {
+    // @ts-expect-error: Top-level await is fine for the seed script
+    await main()
+} catch (e) {
+    console.error(e)
+    process.exit(1)
+} finally {
+    // @ts-expect-error: Top-level await is fine for the seed script
+    await prisma.$disconnect()
+}

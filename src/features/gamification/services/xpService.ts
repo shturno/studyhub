@@ -27,7 +27,7 @@ export function getLevelInfo(currentXP: number): LevelInfo {
     }
 }
 
-export async function awardXP(userId: string, amount: number, source: string): Promise<{ leveledUp: boolean; newLevel: number; newXP: number }> {
+export async function awardXP(userId: string, amount: number): Promise<{ leveledUp: boolean; newLevel: number; newXP: number }> {
     const user = await prisma.user.findUnique({
         where: { id: userId },
         select: { xp: true, level: true }

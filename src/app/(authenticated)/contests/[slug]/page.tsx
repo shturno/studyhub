@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 }
 
 interface ContestDetailPageProps {
-  readonly params: Promise<{ id: string }>
+  readonly params: Promise<{ slug: string }>
 }
 
 export default async function ContestDetailPage(props: ContestDetailPageProps) {
@@ -28,7 +28,7 @@ export default async function ContestDetailPage(props: ContestDetailPageProps) {
     }
 
     const contest = await prisma.contest.findUnique({
-      where: { id: params.id },
+      where: { slug: params.slug },
       include: {
         subjects: {
           include: {

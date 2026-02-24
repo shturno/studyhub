@@ -14,7 +14,6 @@ export async function fuseContests(contestIds: string[]) {
 
     const userId = session.user.id
 
-    // Busca os editais originais com suas matérias e tópicos
     const contests = await prisma.contest.findMany({
         where: { 
             id: { in: contestIds },
@@ -35,20 +34,22 @@ export async function fuseContests(contestIds: string[]) {
 
     const fusedName = `Super-Ciclo: ${contests.map(c => c.name.split(' ')[0]).join(' + ')}`
     
-    // Inicia a transação da Fusão (Alquimia)
+    const baseSlug = fusedName.toLowerCase().trim().replaceAll(/[^a-z0-9]+/g, '-')
+    const uniqueSuffix = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
+    const finalSlug = `${baseSlug}-${uniqueSuffix}`
+
     const result = await prisma.$transaction(async (tx) => {
-        // 1. Cria o Novo Concurso "Misto"
         const fusedContest = await tx.contest.create({
             data: {
                 userId,
                 name: fusedName,
+                slug: finalSlug,
                 institution: 'Laboratório StudyHub',
                 role: 'Edital Otimizado (Múltiplos)',
-                isPrimary: true // O Super-ciclo vira o foco principal automaticamente
+                isPrimary: true
             }
         })
 
-        // 2. Remove o status de isPrimary dos outros concursos do usuário
         await tx.contest.updateMany({
             where: { 
                 userId, 
@@ -58,9 +59,8 @@ export async function fuseContests(contestIds: string[]) {
             data: { isPrimary: false }
         })
 
-        // Mapas para evitar duplicação de Matérias e Tópicos com o MESMO NOME (Case Insensitive)
-        const subjectMap = new Map<string, string>() // normalized_name -> Subject ID no novo concurso
-        const topicMap = new Map<string, string>()   // normalized_name_within_subject -> Topic ID no novo concurso
+        const subjectMap = new Map<string, string>()
+        const topicMap = new Map<string, string>()
 
         for (const contest of contests) {
             for (const subject of contest.subjects) {
@@ -69,7 +69,6 @@ export async function fuseContests(contestIds: string[]) {
                 let fusedSubjectId = subjectMap.get(normalizedSubjName)
                 
                 if (!fusedSubjectId) {
-                    // Cria a matéria agregada
                     const newSubject = await tx.subject.create({
                         data: {
                             name: subject.name,
@@ -80,7 +79,6 @@ export async function fuseContests(contestIds: string[]) {
                     subjectMap.set(normalizedSubjName, fusedSubjectId)
                 }
 
-                // Agora mescla os tópicos dessa matéria
                 for (const topic of subject.topics) {
                     const normalizedTopicName = `${normalizedSubjName}::${topic.name.trim().toLowerCase()}`
                     
