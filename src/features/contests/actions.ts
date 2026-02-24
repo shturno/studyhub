@@ -25,30 +25,40 @@ export async function createContest(data: {
     examDate?: Date
     isPrimary?: boolean
 }) {
-    const session = await auth()
-    if (!session?.user?.id) throw new Error('Unauthorized')
+    try {
+        const session = await auth()
+        if (!session?.user?.id) return { error: 'Não autorizado' }
 
-    if (data.isPrimary) {
-        await prisma.contest.updateMany({
-            where: { userId: session.user.id, isPrimary: true },
-            data: { isPrimary: false }
-        })
-    }
-
-    const baseSlug = data.name.toLowerCase().trim().replaceAll(/[^a-z0-9]+/g, '-')
-    const uniqueSuffix = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
-    const finalSlug = `${baseSlug}-${uniqueSuffix}`
-
-    await prisma.contest.create({
-        data: {
-            ...data,
-            slug: finalSlug,
-            userId: session.user.id
+        if (data.isPrimary) {
+            await prisma.contest.updateMany({
+                where: { userId: session.user.id, isPrimary: true },
+                data: { isPrimary: false }
+            })
         }
-    })
 
-    revalidatePath('/contests')
-    revalidatePath('/dashboard')
+        const baseSlug = data.name.toLowerCase().trim().replaceAll(/[^a-z0-9]+/g, '-')
+        const uniqueSuffix = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
+        const finalSlug = `${baseSlug}-${uniqueSuffix}`
+
+        await prisma.contest.create({
+            data: {
+                name: data.name,
+                institution: data.institution,
+                role: data.role,
+                examDate: data.examDate,
+                isPrimary: data.isPrimary,
+                slug: finalSlug,
+                userId: session.user.id
+            }
+        })
+
+        revalidatePath('/contests')
+        revalidatePath('/dashboard')
+        return { success: true }
+    } catch (error) {
+        console.error('[createContest] Error:', error)
+        return { error: 'Erro interno ao salvar no banco de dados.' }
+    }
 }
 
 export async function deleteContest(id: string) {
