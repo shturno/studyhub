@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Plus, Trash2, FileText, Video, Link as LinkIcon, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,104 +24,90 @@ import { toast } from 'sonner'
 import { createMaterial, deleteMaterial, getMaterials } from '../actions'
 
 interface Material {
-    id: string
-    type: string
-    title: string
-    url: string | null
-    content: string | null
-    createdAt: Date
+    readonly id: string
+    readonly type: string
+    readonly title: string
+    readonly url: string | null
+    readonly content: string | null
+    readonly createdAt: Date
 }
 
-export function MaterialManager({ topicId }: { topicId: string }) {
+export function MaterialManager({ topicId }: { readonly topicId: string }) {
     const [materials, setMaterials] = useState<Material[]>([])
     const [isOpen, setIsOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
+    const [newMaterial, setNewMaterial] = useState({ type: 'link', title: '', url: '' })
 
-    // Form state
-    const [newMaterial, setNewMaterial] = useState({
-        type: 'link',
-        title: '',
-        url: '',
-    })
-
-    useEffect(() => {
-        loadMaterials()
+    const loadMaterials = useCallback(async () => {
+        const data = await getMaterials(topicId)
+            .catch(() => [] as Material[])
+        setMaterials(data)
+        setIsLoading(false)
     }, [topicId])
 
-    async function loadMaterials() {
-        try {
-            const data = await getMaterials(topicId)
-            setMaterials(data)
-        } catch (error) {
-            console.error(error)
-        } finally {
-            setIsLoading(false)
-        }
-    }
+    useEffect(() => {
+        void loadMaterials()
+    }, [loadMaterials])
 
     async function handleAdd() {
-        if (!newMaterial.title) return toast.error('Digite um título')
+        if (!newMaterial.title) { toast.error('Digite um título'); return }
 
-        try {
-            await createMaterial({
-                topicId,
-                type: newMaterial.type,
-                title: newMaterial.title,
-                url: newMaterial.url || undefined
+        await createMaterial({
+            topicId,
+            type: newMaterial.type,
+            title: newMaterial.title,
+            url: newMaterial.url || undefined
+        })
+            .then(() => {
+                toast.success('Material adicionado')
+                setIsOpen(false)
+                setNewMaterial({ type: 'link', title: '', url: '' })
+                void loadMaterials()
             })
-            toast.success('Material adicionado')
-            setIsOpen(false)
-            setNewMaterial({ type: 'link', title: '', url: '' })
-            loadMaterials()
-        } catch (error) {
-            toast.error('Erro ao adicionar material')
-        }
+            .catch(() => toast.error('Erro ao adicionar material'))
     }
 
     async function handleDelete(id: string) {
-        try {
-            await deleteMaterial(id)
-            toast.success('Material removido')
-            setMaterials(materials.filter(m => m.id !== id))
-        } catch (error) {
-            toast.error('Erro ao remover')
-        }
+        await deleteMaterial(id)
+            .then(() => {
+                toast.success('Material removido')
+                setMaterials(materials.filter(m => m.id !== id))
+            })
+            .catch(() => toast.error('Erro ao remover'))
     }
 
     function getIcon(type: string) {
-        switch (type) {
-            case 'pdf': return <FileText className="w-4 h-4 text-red-400" />
-            case 'video': return <Video className="w-4 h-4 text-blue-400" />
-            default: return <LinkIcon className="w-4 h-4 text-zinc-400" />
-        }
+        if (type === 'pdf') return <FileText className="w-4 h-4 text-[#ff006e]" />
+        if (type === 'video') return <Video className="w-4 h-4 text-[#7b61ff]" />
+        return <LinkIcon className="w-4 h-4 text-[#00ff41]" />
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-3">
             <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-500">Materiais de Estudo</h3>
+                <span className="font-pixel text-[7px] text-[#00ff41]">MATERIAIS</span>
                 <Dialog open={isOpen} onOpenChange={setIsOpen}>
                     <DialogTrigger asChild>
-                        <Button size="sm" variant="outline" className="h-8 border-dashed border-zinc-700 hover:border-zinc-500 text-zinc-400 hover:text-white">
-                            <Plus className="w-3.5 h-3.5 mr-2" />
-                            Adicionar
+                        <Button size="sm" variant="outline">
+                            <Plus className="w-3.5 h-3.5 mr-1.5" />
+                            ADD
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100">
+                    <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Novo Material</DialogTitle>
+                            <DialogTitle>NOVO MATERIAL</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             <div className="space-y-2">
-                                <Label>Tipo</Label>
+                                <Label>TIPO</Label>
                                 <Select
                                     value={newMaterial.type}
                                     onValueChange={(val) => setNewMaterial({ ...newMaterial, type: val })}
                                 >
-                                    <SelectTrigger className="bg-zinc-950/50 border-zinc-800">
+                                    <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-100">
+                                    <SelectContent>
                                         <SelectItem value="link">Link</SelectItem>
                                         <SelectItem value="pdf">PDF</SelectItem>
                                         <SelectItem value="video">Vídeo</SelectItem>
@@ -129,49 +115,53 @@ export function MaterialManager({ topicId }: { topicId: string }) {
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label>Título</Label>
+                                <Label>TITULO</Label>
                                 <Input
                                     value={newMaterial.title}
                                     onChange={(e) => setNewMaterial({ ...newMaterial, title: e.target.value })}
                                     placeholder="Ex: Resumo em PDF"
-                                    className="bg-zinc-950/50 border-zinc-800"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label>URL (Opcional)</Label>
+                                <Label>URL (OPCIONAL)</Label>
                                 <Input
                                     value={newMaterial.url}
                                     onChange={(e) => setNewMaterial({ ...newMaterial, url: e.target.value })}
                                     placeholder="https://..."
-                                    className="bg-zinc-950/50 border-zinc-800"
                                 />
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button onClick={handleAdd} className="bg-brand-primary text-white">Salvar</Button>
+                            <Button onClick={handleAdd}>SALVAR</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
             </div>
 
-            {isLoading ? (
-                <div className="text-zinc-500 text-xs text-center py-4">Carregando...</div>
-            ) : materials.length === 0 ? (
-                <div className="text-zinc-600 text-xs text-center py-8 border border-dashed border-white/5 rounded-lg">
+            {isLoading && (
+                <div className="font-mono text-sm text-[#555] text-center py-4">Carregando...</div>
+            )}
+            {!isLoading && materials.length === 0 && (
+                <div className="font-mono text-sm text-[#444] text-center py-6"
+                    style={{ border: '1px dashed rgba(0,255,65,0.15)' }}>
                     Nenhum material vinculado
                 </div>
-            ) : (
-                <div className="grid gap-2">
+            )}
+            {!isLoading && materials.length > 0 && (
+                <div className="space-y-2">
                     {materials.map(material => (
-                        <div key={material.id} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:border-white/10 transition-colors group">
+                        <div key={material.id}
+                            className="flex items-center justify-between p-3 group hover:-translate-y-0.5 transition-transform"
+                            style={{ border: '1px solid rgba(0,255,65,0.2)', background: '#020008' }}>
                             <div className="flex items-center gap-3 overflow-hidden">
                                 {getIcon(material.type)}
                                 <div className="truncate">
-                                    <div className="text-sm font-medium text-zinc-200 truncate">{material.title}</div>
+                                    <div className="font-mono text-base text-[#e0e0ff] truncate">{material.title}</div>
                                     {material.url && (
-                                        <a href={material.url} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-primary hover:underline flex items-center gap-1 truncate">
+                                        <a href={material.url} target="_blank" rel="noopener noreferrer"
+                                            className="font-mono text-sm text-[#00ff41] hover:underline flex items-center gap-1 truncate">
                                             {material.url}
-                                            <ExternalLink className="w-3 h-3" />
+                                            <ExternalLink className="w-3 h-3 flex-shrink-0" />
                                         </a>
                                     )}
                                 </div>
@@ -180,7 +170,7 @@ export function MaterialManager({ topicId }: { topicId: string }) {
                                 size="icon"
                                 variant="ghost"
                                 onClick={() => handleDelete(material.id)}
-                                className="h-7 w-7 text-zinc-600 hover:text-red-400 hover:bg-red-400/10 opacity-0 group-hover:opacity-100 transition-all"
+                                className="h-7 w-7 text-[#555] hover:text-[#ff006e] opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
                             >
                                 <Trash2 className="w-3.5 h-3.5" />
                             </Button>

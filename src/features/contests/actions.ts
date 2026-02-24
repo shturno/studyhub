@@ -29,7 +29,7 @@ export async function createContest(data: {
     if (!session?.user?.id) throw new Error('Unauthorized')
 
     if (data.isPrimary) {
-        // Unset other primary contests
+
         await prisma.contest.updateMany({
             where: { userId: session.user.id, isPrimary: true },
             data: { isPrimary: false }

@@ -17,5 +17,5 @@ export interface LevelInfo {
     currentLevel: number
     currentXP: number
     xpForNextLevel: number
-    progress: number // 0-100
+    progress: number
 }

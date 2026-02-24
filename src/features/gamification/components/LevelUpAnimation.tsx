@@ -6,9 +6,9 @@ import { Trophy, Sparkles } from 'lucide-react'
 import confetti from 'canvas-confetti'
 
 interface LevelUpAnimationProps {
-    show: boolean
-    newLevel: number
-    onComplete?: () => void
+    readonly show: boolean
+    readonly newLevel: number
+    readonly onComplete?: () => void
 }
 
 export function LevelUpAnimation({ show, newLevel, onComplete }: LevelUpAnimationProps) {
@@ -18,14 +18,13 @@ export function LevelUpAnimation({ show, newLevel, onComplete }: LevelUpAnimatio
         if (show) {
             setIsVisible(true)
 
-            // Trigger confetti
             confetti({
-                particleCount: 100,
-                spread: 70,
-                origin: { y: 0.6 }
+                particleCount: 120,
+                spread: 80,
+                origin: { y: 0.6 },
+                colors: ['#00ff41', '#ffbe0b', '#ff006e', '#7b61ff'],
             })
 
-            // Auto-hide after 3 seconds
             const timer = setTimeout(() => {
                 setIsVisible(false)
                 onComplete?.()
@@ -42,37 +41,44 @@ export function LevelUpAnimation({ show, newLevel, onComplete }: LevelUpAnimatio
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
                 >
                     <motion.div
                         initial={{ scale: 0.5, y: 50 }}
                         animate={{ scale: 1, y: 0 }}
                         exit={{ scale: 0.5, y: -50 }}
                         transition={{ type: 'spring', damping: 15 }}
-                        className="bg-gradient-to-br from-xp-gold to-xp-glow p-12 rounded-2xl shadow-2xl text-center"
+                        className="p-12 text-center"
+                        style={{
+                            border: '3px solid #ffbe0b',
+                            background: '#04000a',
+                            boxShadow: '0 0 60px rgba(255,190,11,0.3), 8px 8px 0 rgba(255,190,11,0.1)',
+                        }}
                     >
                         <motion.div
                             animate={{ rotate: [0, 10, -10, 10, 0] }}
                             transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 1 }}
                         >
-                            <Trophy className="h-24 w-24 mx-auto mb-6 text-white" />
+                            <Trophy className="h-20 w-20 mx-auto mb-6 text-[#ffbe0b]"
+                                style={{ filter: 'drop-shadow(0 0 20px rgba(255,190,11,0.6))' }} />
                         </motion.div>
 
-                        <h2 className="text-5xl font-bold text-white mb-2">
+                        <div className="font-pixel text-2xl text-[#ffbe0b] mb-3"
+                            style={{ textShadow: '0 0 20px rgba(255,190,11,0.6)' }}>
                             LEVEL UP!
-                        </h2>
-
-                        <div className="flex items-center justify-center gap-2 text-white/90">
-                            <Sparkles className="h-6 w-6" />
-                            <p className="text-3xl font-semibold">
-                                Nível {newLevel}
-                            </p>
-                            <Sparkles className="h-6 w-6" />
                         </div>
 
-                        <p className="text-white/80 mt-4 text-lg">
+                        <div className="flex items-center justify-center gap-2">
+                            <Sparkles className="h-5 w-5 text-[#ffbe0b]" />
+                            <div className="font-pixel text-lg text-[#00ff41]">
+                                NIVEL {newLevel}
+                            </div>
+                            <Sparkles className="h-5 w-5 text-[#ffbe0b]" />
+                        </div>
+
+                        <div className="font-mono text-lg text-[#7f7f9f] mt-4">
                             Continue assim! 🎉
-                        </p>
+                        </div>
                     </motion.div>
                 </motion.div>
             )}

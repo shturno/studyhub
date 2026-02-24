@@ -1,18 +1,23 @@
 import { cn } from '@/lib/utils'
 
 interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
-    hoverEffect?: boolean
-    gradient?: boolean
+    readonly hoverEffect?: boolean
+    readonly gradient?: boolean
 }
 
-export function GlassCard({ className, children, hoverEffect = false, gradient = false, ...props }: GlassCardProps) {
+export function GlassCard({ className, children, hoverEffect = false, ...props }: Readonly<GlassCardProps>) {
     return (
         <div className={cn(
-            "p-5 rounded-2xl bg-card border border-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] relative overflow-hidden transition-all duration-300",
-            hoverEffect && "group hover:border-brand-primary/50 hover:shadow-[0_0_20px_rgba(124,58,237,0.1)]",
-            gradient && "bg-gradient-to-br from-card to-card/50",
+            "p-5 relative overflow-hidden transition-all duration-200",
+            hoverEffect && "hover:-translate-y-0.5",
             className
-        )} {...props}>
+        )}
+            style={{
+                background: '#04000a',
+                border: '2px solid rgba(0,255,65,0.4)',
+                boxShadow: '4px 4px 0 rgba(0,255,65,0.1)',
+            }}
+            {...props}>
             {children}
         </div>
     )

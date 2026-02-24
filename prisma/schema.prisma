@@ -41,6 +41,7 @@ model User {
   studySessions  StudySession[]
   plannedSessions PlannedSession[]
   achievements   UserAchievement[]
+  editorialItems EditorialItem[]
   
   @@map("users")
 }
@@ -111,7 +112,8 @@ model Contest {
   updatedAt   DateTime @updatedAt
   
   // Relations
-  subjects    Subject[]
+  subjects       Subject[]
+  editorialItems EditorialItem[]
   
   @@index([userId])
   @@map("contests")
@@ -157,7 +159,8 @@ model Topic {
   plannedSessions PlannedSession[]
   reviewQueue   ReviewQueue[]
   materials     Material[]
-  
+  contentMappings ContentMapping[]
+
   @@index([subjectId])
   @@index([parentId])
   @@map("topics")
@@ -289,4 +292,48 @@ model Material {
   createdAt   DateTime @default(now())
   
   @@map("materials")
+}
+
+// ============================================
+// EDITORIALS
+// ============================================
+
+model EditorialItem {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  contestId   String
+  contest     Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+  url         String?
+
+  uploadedAt  DateTime @default(now())
+
+  // Relations
+  contentMappings ContentMapping[]
+
+  @@index([userId])
+  @@index([contestId])
+  @@map("editorial_items")
+}
+
+model ContentMapping {
+  id              String   @id @default(cuid())
+  editorialItemId String
+  editorialItem   EditorialItem @relation(fields: [editorialItemId], references: [id], onDelete: Cascade)
+
+  topicId         String
+  topic           Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  contentSummary  String?
+  relevance       Int      @default(50) // 0-100
+
+  createdAt       DateTime @default(now())
+
+  @@index([editorialItemId])
+  @@index([topicId])
+  @@map("content_mappings")
 }
