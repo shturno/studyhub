@@ -81,7 +81,7 @@ export function ContentCrossingView({ contestId, editorialCount = 0 }: Readonly<
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4">
+      <div className="grid gap-4 max-h-[500px] overflow-y-auto pr-2">
         {crossings.map((crossing) => (
           <Card
             key={crossing.topicId}
@@ -90,8 +90,8 @@ export function ContentCrossingView({ contestId, editorialCount = 0 }: Readonly<
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <Zap className="w-4 h-4 text-[#ff006e] group-hover:animate-pulse" />
-                  <h4 className="font-pixel text-[10px] text-[#e0e0ff] leading-loose">{crossing.topicName}</h4>
+                  <Zap className="w-4 h-4 text-[#ff006e] group-hover:animate-pulse shrink-0" />
+                  <h4 className="font-pixel text-[10px] text-[#e0e0ff] leading-loose break-words">{crossing.topicName}</h4>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="outline" className="border-[#ff006e]/50 text-[#ff006e] bg-[#ff006e]/10 font-mono text-xs rounded-none">
