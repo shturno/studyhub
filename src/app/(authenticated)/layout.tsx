@@ -37,7 +37,7 @@ export default async function AuthenticatedLayout({
                             </SheetTrigger>
                             <SheetContent side="left" className="p-0 border-0 w-64" style={{ background: '#04000a' }}>
                                 <SheetTitle className="sr-only">Menu de Navegação</SheetTitle>
-                                <AppSidebar user={session.user} className="w-full" />
+                                <AppSidebar user={session.user} className="w-full h-full" />
                             </SheetContent>
                         </Sheet>
 
