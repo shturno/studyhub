@@ -3,10 +3,10 @@ import { notFound } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Building2, Calendar, BookOpen } from 'lucide-react'
+import { ArrowLeft, Building2, Calendar } from 'lucide-react'
 import Link from 'next/link'
 import { EditorialManager } from '@/features/editorials/components/EditorialManager'
-import { ContentCrossingView } from '@/features/editorials/components/ContentCrossingView'
+
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
@@ -102,48 +102,45 @@ export default async function ContestDetailPage(props: ContestDetailPageProps) {
         </div>
 
         <main className="px-4 md:px-8 py-4 max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-1">
-              <div className="p-5 sticky top-24" style={{ border: '2px solid rgba(0,255,65,0.4)', background: '#04000a' }}>
-                <EditorialManager contestId={contest.id} />
+          {contest.subjects.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-12 text-center" style={{ border: '2px dashed #ff006e', background: '#0a0005' }}>
+              <h2 className="font-pixel text-[#ff006e] text-xl mb-4" style={{ textShadow: '0 0 10px rgba(255,0,110,0.5)' }}>NENHUM EDITAL MAPEADO</h2>
+              <p className="font-mono text-[#7f7f9f] max-w-lg mx-auto mb-8">
+                Para gerar sua Skill Tree e começar a planejar seus ciclos de estudos, precisamos extrair as disciplinas e os assuntos do seu edital.
+                Faça o upload do documento e deixe a Inteligência Artificial mapear para você.
+              </p>
+              <div className="w-full max-w-xs" style={{ border: '2px solid rgba(0,255,65,0.4)', padding: '16px', background: '#04000a' }}>
+                 <EditorialManager contestId={contest.id} />
               </div>
             </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between p-5" style={{ border: '2px solid #00ff41', background: '#04000a' }}>
+                 <div>
+                   <h3 className="font-pixel text-[#00ff41] text-lg mb-1" style={{ textShadow: '0 0 10px rgba(0,255,65,0.5)' }}>SKILL TREE</h3>
+                   <p className="font-mono text-sm text-[#7f7f9f]">Seu edital formatado em árvore de habilidades.</p>
+                 </div>
+                 <div className="w-48 text-right">
+                   <EditorialManager contestId={contest.id} />
+                 </div>
+              </div>
 
-            <div className="lg:col-span-2">
-              <div className="p-5" style={{ border: '2px solid rgba(0,255,65,0.4)', background: '#04000a' }}>
-                <div className="flex items-center gap-2 mb-4 pb-3" style={{ borderBottom: '1px solid rgba(0,255,65,0.2)' }}>
-                  <BookOpen className="w-4 h-4 text-[#00ff41]" />
-                  <span className="font-pixel text-[8px] text-[#00ff41]">ANALISE DE CONTEUDO</span>
+              <div className="p-5" style={{ border: '1px solid rgba(0,255,65,0.2)', background: '#020008' }}>
+                <div className="space-y-6">
+                  {contest.subjects.map(subject => (
+                    <div key={subject.id} style={{ borderLeft: '2px solid #00ff41' }} className="pl-4">
+                      <div className="font-mono text-xl text-[#e0e0ff]">{subject.name}</div>
+                      <div className="font-mono text-[10px] text-[#7f7f9f] mb-2">{subject.topics.length} tópicos</div>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {subject.topics.map(topic => (
+                          <Badge key={topic.id} variant="outline" className="border-[#00ff41]/30 text-[#00ff41] bg-[#00ff41]/5">
+                            {topic.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <ContentCrossingView contestId={contest.id} editorialCount={contest.editorialItems.length} />
-              </div>
-            </div>
-          </div>
-
-          {contest.subjects.length > 0 && (
-            <div className="p-5 mt-4" style={{ border: '2px solid rgba(0,255,65,0.4)', background: '#04000a' }}>
-              <div className="font-pixel text-[8px] text-[#00ff41] mb-4">DISCIPLINAS</div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {contest.subjects.map((subject) => (
-                  <div
-                    key={subject.id}
-                    className="p-4"
-                    style={{ border: '1px solid rgba(0,255,65,0.2)', background: '#020008' }}
-                  >
-                    <div className="font-mono text-base text-[#e0e0ff] mb-1">{subject.name}</div>
-                    <div className="font-mono text-sm text-[#555] mb-2">
-                      {subject.topics.length} tópico{subject.topics.length === 1 ? '' : 's'}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {subject.topics.slice(0, 3).map((topic) => (
-                        <Badge key={topic.id} variant="secondary">{topic.name}</Badge>
-                      ))}
-                      {subject.topics.length > 3 && (
-                        <Badge variant="outline">+{subject.topics.length - 3}</Badge>
-                      )}
-                    </div>
-                  </div>
-                ))}
               </div>
             </div>
           )}
