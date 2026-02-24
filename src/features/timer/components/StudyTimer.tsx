@@ -2,19 +2,21 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Play, Pause, Square, RotateCcw } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
 
 interface StudyTimerProps {
-  lessonId: string
-  lessonTitle: string
-  onSessionComplete?: () => void
+  readonly lessonId: string
+  readonly lessonTitle: string
+  readonly onSessionComplete?: () => void
 }
 
+const DURATIONS = [15, 25, 45, 60]
+
 export function StudyTimer({ lessonId, lessonTitle, onSessionComplete }: StudyTimerProps) {
-  const [timeLeft, setTimeLeft] = useState(25 * 60) 
+  const [timeLeft, setTimeLeft] = useState(25 * 60)
   const [isRunning, setIsRunning] = useState(false)
   const [sessionMinutes, setSessionMinutes] = useState(0)
   const [totalSessionTime, setTotalSessionTime] = useState(25 * 60)
@@ -29,13 +31,30 @@ export function StudyTimer({ lessonId, lessonTitle, onSessionComplete }: StudyTi
 
   const progress = ((totalSessionTime - timeLeft) / totalSessionTime) * 100
 
+  const saveSession = async (studiedMinutes: number) => {
+    if (studiedMinutes <= 0) return
+    await fetch(`/api/lessons/${lessonId}/study-logs`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ minutes: studiedMinutes }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error()
+        setSessionMinutes((prev) => prev + studiedMinutes)
+        toast({ title: "Sessão salva!" })
+        onSessionComplete?.()
+      })
+      .catch(() => toast({ title: "Erro ao salvar sessão", variant: "destructive" }))
+  }
+
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
       intervalRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
             setIsRunning(false)
-            handleSessionComplete()
+            const studiedMinutes = Math.ceil(totalSessionTime / 60)
+            void saveSession(studiedMinutes)
             return 0
           }
           return prev - 1
@@ -47,69 +66,17 @@ export function StudyTimer({ lessonId, lessonTitle, onSessionComplete }: StudyTi
         intervalRef.current = null
       }
     }
-
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
+      if (intervalRef.current) clearInterval(intervalRef.current)
     }
   }, [isRunning, timeLeft])
-
-  const handleSessionComplete = async () => {
-    const studiedMinutes = Math.ceil((totalSessionTime - timeLeft) / 60)
-
-    if (studiedMinutes > 0) {
-      try {
-        const response = await fetch(`/api/lessons/${lessonId}/study-logs`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ minutes: studiedMinutes }),
-        })
-
-        if (response.ok) {
-          setSessionMinutes((prev) => prev + studiedMinutes)
-          toast({
-            title: "Sessão salva!",
-            description: `${studiedMinutes} minutos de estudo foram registrados.`,
-          })
-          onSessionComplete?.()
-        } else {
-          toast({
-            title: "Erro",
-            description: "Erro ao salvar sessão de estudo",
-            variant: "destructive",
-          })
-        }
-      } catch (error) {
-        toast({
-          title: "Erro",
-          description: "Erro ao salvar sessão de estudo",
-          variant: "destructive",
-        })
-      }
-    }
-  }
-
-  const handleStart = () => {
-    setIsRunning(true)
-  }
-
-  const handlePause = () => {
-    setIsRunning(false)
-  }
 
   const handleStop = async () => {
     setIsRunning(false)
     if (timeLeft < totalSessionTime) {
-      await handleSessionComplete()
+      const studiedMinutes = Math.ceil((totalSessionTime - timeLeft) / 60)
+      await saveSession(studiedMinutes)
     }
-    setTimeLeft(totalSessionTime)
-  }
-
-  const handleReset = () => {
-    setIsRunning(false)
     setTimeLeft(totalSessionTime)
   }
 
@@ -122,88 +89,66 @@ export function StudyTimer({ lessonId, lessonTitle, onSessionComplete }: StudyTi
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle className="text-center">Timer de Estudo</CardTitle>
-        <p className="text-sm text-center text-muted-foreground">{lessonTitle}</p>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {}
-        <div className="text-center">
-          <div className="text-6xl font-mono font-bold text-emerald-600 mb-2">{formatTime(timeLeft)}</div>
-          <Progress value={progress} className="h-2" />
-        </div>
+    <div className="w-full space-y-5" style={{ border: '2px solid rgba(0,255,65,0.4)', background: '#04000a', padding: '24px' }}>
+      <div className="text-center">
+        <div className="font-pixel text-[7px] text-[#7f7f9f] mb-1">TIMER DE ESTUDO</div>
+        <div className="font-mono text-base text-[#7f7f9f]">{lessonTitle}</div>
+      </div>
 
-        {}
-        <div className="flex justify-center space-x-2">
-          <Button
-            variant={totalSessionTime === 15 * 60 ? "default" : "outline"}
-            size="sm"
-            onClick={() => setTimerDuration(15)}
-            disabled={isRunning}
-          >
-            15min
-          </Button>
-          <Button
-            variant={totalSessionTime === 25 * 60 ? "default" : "outline"}
-            size="sm"
-            onClick={() => setTimerDuration(25)}
-            disabled={isRunning}
-          >
-            25min
-          </Button>
-          <Button
-            variant={totalSessionTime === 45 * 60 ? "default" : "outline"}
-            size="sm"
-            onClick={() => setTimerDuration(45)}
-            disabled={isRunning}
-          >
-            45min
-          </Button>
-          <Button
-            variant={totalSessionTime === 60 * 60 ? "default" : "outline"}
-            size="sm"
-            onClick={() => setTimerDuration(60)}
-            disabled={isRunning}
-          >
-            60min
-          </Button>
-        </div>
-
-        {}
-        <div className="flex justify-center space-x-2">
-          {!isRunning ? (
-            <Button onClick={handleStart} size="lg" className="px-8">
-              <Play className="h-5 w-5 mr-2" />
-              Iniciar
-            </Button>
-          ) : (
-            <Button onClick={handlePause} size="lg" className="px-8" variant="secondary">
-              <Pause className="h-5 w-5 mr-2" />
-              Pausar
-            </Button>
-          )}
-
-          <Button onClick={handleStop} size="lg" variant="outline">
-            <Square className="h-5 w-5 mr-2" />
-            Parar
-          </Button>
-
-          <Button onClick={handleReset} size="lg" variant="outline">
-            <RotateCcw className="h-5 w-5 mr-2" />
-            Reset
-          </Button>
-        </div>
-
-        {}
-        {sessionMinutes > 0 && (
-          <div className="text-center p-3 bg-emerald-50 dark:bg-emerald-950 rounded-lg">
-            <p className="text-sm text-emerald-700 dark:text-emerald-300">
-              Sessão atual: <span className="font-semibold">{sessionMinutes} minutos</span>
-            </p>
-          </div>
+      <div className="text-center">
+        <div className={cn(
+          "font-pixel text-5xl tracking-widest mb-3 transition-all duration-300",
+          isRunning ? "text-[#00ff41]" : "text-[#7f7f9f]"
         )}
-      </CardContent>
-    </Card>
+          style={isRunning ? { textShadow: '0 0 20px rgba(0,255,65,0.8)' } : {}}>
+          {formatTime(timeLeft)}
+        </div>
+        <Progress value={progress} />
+      </div>
+
+      <div className="flex justify-center gap-2">
+        {DURATIONS.map((d) => (
+          <button key={d}
+            onClick={() => setTimerDuration(d)}
+            disabled={isRunning}
+            className={cn(
+              "font-pixel text-[7px] px-3 py-1.5 transition-all",
+              totalSessionTime === d * 60
+                ? "bg-[#00ff41] text-black"
+                : "text-[#555] hover:text-[#00ff41] disabled:opacity-30"
+            )}
+            style={{ border: totalSessionTime === d * 60 ? '2px solid #00ff41' : '2px solid #333' }}>
+            {d}m
+          </button>
+        ))}
+      </div>
+
+      <div className="flex justify-center gap-3">
+        {!isRunning ? (
+          <Button onClick={() => setIsRunning(true)} size="lg">
+            <Play className="h-4 w-4 mr-2" />
+            INICIAR
+          </Button>
+        ) : (
+          <Button onClick={() => setIsRunning(false)} size="lg" variant="outline">
+            <Pause className="h-4 w-4 mr-2" />
+            PAUSAR
+          </Button>
+        )}
+        <Button onClick={handleStop} size="lg" variant="outline">
+          <Square className="h-4 w-4 mr-2" />
+          PARAR
+        </Button>
+        <Button onClick={() => { setIsRunning(false); setTimeLeft(totalSessionTime) }} size="lg" variant="outline">
+          <RotateCcw className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {sessionMinutes > 0 && (
+        <div className="text-center p-3" style={{ border: '1px solid rgba(0,255,65,0.3)', background: '#020008' }}>
+          <span className="font-pixel text-[7px] text-[#00ff41]">SESSAO ATUAL: {sessionMinutes} MIN</span>
+        </div>
+      )}
+    </div>
   )
 }

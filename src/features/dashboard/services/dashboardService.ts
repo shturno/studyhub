@@ -32,14 +32,6 @@ export interface DashboardData {
     streak: number
 }
 
-/**
- * Busca todos os dados necessários para o dashboard
- */
-
-
-/**
- * Busca todos os dados necessários para o dashboard
- */
 export async function getDashboardData(contestId?: string): Promise<DashboardData> {
     const session = await auth()
     if (!session?.user?.id) throw new Error("Unauthorized")
@@ -72,6 +64,7 @@ export async function getDashboardData(contestId?: string): Promise<DashboardDat
                             name: true,
                             subject: {
                                 select: {
+                                    id: true,
                                     name: true
                                 }
                             }
@@ -82,13 +75,18 @@ export async function getDashboardData(contestId?: string): Promise<DashboardDat
         }
     })
 
-    // Filter random topic by contest
     const randomTopic = await prisma.topic.findFirst({
         where: contestId ? {
             subject: {
                 contestId
             }
-        } : undefined,
+        } : {
+            subject: {
+                contest: {
+                    userId
+                }
+            }
+        },
         select: {
             id: true,
             name: true,
@@ -117,44 +115,30 @@ export async function getDashboardData(contestId?: string): Promise<DashboardDat
     }
 }
 
-
-
-/**
- * Calcula dias consecutivos de estudo
- */
 function calculateStreak(sessions: Array<{ completedAt: Date }>): number {
     if (sessions.length === 0) return 0
 
-    // Ordenar sessões da mais recente para a mais antiga (garantir)
     const sortedSessions = [...sessions].sort((a, b) => b.completedAt.getTime() - a.completedAt.getTime())
 
     let streak = 0
-    let currentDay = new Date()
-
-    // Verificar se estudou hoje (senão o streak pode ser 0 ou manter o de ontem)
-    // Se a última sessão foi hoje, começa a contar. Se foi ontem, também conta.
-    // Se foi antes de ontem, o streak quebrou.
+    const currentDay = new Date()
 
     const lastSessionDate = sortedSessions[0].completedAt
     const daysSinceLastSession = differenceInCalendarDays(currentDay, lastSessionDate)
 
     if (daysSinceLastSession > 1) {
-        return 0 // Streak quebrou
+        return 0
     }
 
-    // Usar um Set para garantir dias únicos
     const uniqueDays = new Set<string>()
     sortedSessions.forEach(s => {
         uniqueDays.add(s.completedAt.toISOString().split('T')[0])
     })
 
-    const daysList = Array.from(uniqueDays).sort().reverse() // ['2023-10-05', '2023-10-04'...]
-
-    // Validar consecutividade a partir do dia mais recente
-    // Se o dia mais recente não for hoje nem ontem, já retornamos 0 acima.
+    const daysList = Array.from(uniqueDays).sort((a, b) => b.localeCompare(a))
 
     let previousDate = new Date(daysList[0])
-    streak = 1 // Contamos o primeiro dia da lista (que é hoje ou ontem)
+    streak = 1
 
     for (let i = 1; i < daysList.length; i++) {
         const date = new Date(daysList[i])

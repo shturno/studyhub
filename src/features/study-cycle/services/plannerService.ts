@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 
 export interface PlannerData {
+    primaryContestId?: string
     tracks: Array<{
         id: string
         name: string
@@ -74,7 +75,7 @@ export async function getPlannerData(): Promise<PlannerData> {
                 trackName: subject.name,
                 trackId: subject.id,
                 status: completedTopicIds.has(topic.id) ? "DONE" as const : "NOT_STARTED" as const,
-                estimated: 30 // Default estimate
+                estimated: 30
             }))
 
             tracks.push({
@@ -97,7 +98,10 @@ export async function getPlannerData(): Promise<PlannerData> {
         draft: false
     }))
 
+    const primaryContest = contests.find(c => c.isPrimary) ?? contests[0]
+
     return {
+        primaryContestId: primaryContest?.id,
         tracks,
         availableLessons,
         plannedSessions

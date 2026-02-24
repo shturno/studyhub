@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { toast } from 'sonner'
 import { saveStudySession } from '../actions'
 
@@ -20,6 +19,41 @@ export function useStudyTimer({ topicId, initialMinutes = 25, onComplete }: UseS
     const intervalRef = useRef<NodeJS.Timeout | null>(null)
     const totalTimeRef = useRef(initialMinutes * 60)
 
+    const handleComplete = useCallback(async () => {
+        setIsRunning(false)
+        setHasCompleted(true)
+        setIsSaving(true)
+
+        try {
+            const studiedMinutes = Math.ceil(totalTimeRef.current / 60)
+
+            if (studiedMinutes > 0) {
+                const result = await saveStudySession({
+                    topicId,
+                    minutes: studiedMinutes,
+                    difficulty: null
+                })
+
+                toast.success(`🎉 Sessão concluída! +${result.xpEarned} XP`, {
+                    description: result.leveledUp
+                        ? `Parabéns! Você subiu para o nível ${result.newLevel}!`
+                        : `Faltam ${result.xpToNextLevel} XP para o próximo nível`
+                })
+
+                if (onComplete) {
+                    onComplete(result)
+                }
+            }
+        } catch (error) {
+            console.error('Save session error:', error)
+            toast.error('Erro ao salvar sessão', {
+                description: 'Não foi possível registrar sua sessão de estudos'
+            })
+        } finally {
+            setIsSaving(false)
+        }
+    }, [topicId, onComplete])
+
     useEffect(() => {
         if (isRunning && timeLeft > 0) {
             intervalRef.current = setInterval(() => {
@@ -31,11 +65,9 @@ export function useStudyTimer({ topicId, initialMinutes = 25, onComplete }: UseS
                     return prev - 1
                 })
             }, 1000)
-        } else {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current)
-                intervalRef.current = null
-            }
+        } else if (intervalRef.current) {
+            clearInterval(intervalRef.current)
+            intervalRef.current = null
         }
 
         return () => {
@@ -43,40 +75,7 @@ export function useStudyTimer({ topicId, initialMinutes = 25, onComplete }: UseS
                 clearInterval(intervalRef.current)
             }
         }
-    }, [isRunning, timeLeft])
-
-    const handleComplete = async () => {
-        setIsRunning(false)
-        setHasCompleted(true)
-        setIsSaving(true)
-
-        try {
-            const studiedMinutes = Math.ceil((totalTimeRef.current - timeLeft) / 60)
-
-            if (studiedMinutes > 0) {
-                const result = await saveStudySession({
-                    topicId,
-                    minutes: studiedMinutes,
-                    difficulty: null // Will be asked in modal
-                })
-
-                toast.success(`🎉 Sessão concluída! +${result.xpEarned} XP`, {
-                    description: result.leveledUp
-                        ? `Parabéns! Você subiu para o nível ${result.newLevel}!`
-                        : `Faltam ${result.xpToNextLevel} XP para o próximo nível`
-                })
-
-                onComplete?.(result)
-            }
-        } catch (error) {
-            console.error('Save session error:', error)
-            toast.error('Erro ao salvar sessão', {
-                description: 'Não foi possível registrar sua sessão de estudos'
-            })
-        } finally {
-            setIsSaving(false)
-        }
-    }
+    }, [isRunning, timeLeft, handleComplete])
 
     const start = () => setIsRunning(true)
 

@@ -2,111 +2,62 @@
 
 > **A Focus-First Study Management Platform for Neurodivergent Minds.**
 
-StudyHub is a modern, gamified study planner designed specifically for users with ADHD. It combines radical minimalism with powerful gamification to reduce cognitive load and dopamine-driven engagement. Instead of selling courses, it helps you master your own study routine.
+StudyHub is a modern, gamified study planner and content analyzer designed specifically for high-level students and users with ADHD. It combines radical minimalism, AI-powered document parsing, and powerful gamification to reduce cognitive load and maximize focus. Instead of selling courses, it helps you master your own study routine and strategically plan your syllabus.
 
-## ✨ Key Philosophy
+⚠️ **Note: This is a proprietary, closed-source application. Unauthorized distribution or copying of this repository is prohibited.**
 
-- **Radical Minimalism**: Interface designed to prevent overwhelm. Constant feedback loops (toasts, sounds) without visual clutter.
-- **Gamification**: XP points, levels, streaks, and confetti rewards for every completed session.
-- **Physical Interaction**: Satisfying Drag & Drop study planner that feels tactile.
-- **Adaptive Timer**: Breathing animations and dynamic gradients to help maintain flow state.
+## ✨ Key Capabilities
 
-## 🛠️ Tech Stack
+### 1. The Alchemist (Content Crossing)
+A strategic engine that analyzes multiple "Editais" (Exam Syllabuses) simultaneously. It identifies intersections, overlapping topics, and redundancies, allowing users to study once for multiple exams and highlighting high-yield subjects.
 
-Built with the **Bleeding Edge** React ecosystem:
+### 2. AI Edital Parser (Scanner IA)
+Powered by **Google Gemini 1.5 Flash**, the platform allows users to upload raw PDF syllabuses. The AI automatically digests hundreds of pages to extract a clean, structured JSON of all Subjects and Topics, instantly building the user's study database without any manual data entry.
 
-- **Framework**: [Next.js 14](https://nextjs.org/) (App Router, Server Actions)
+### 3. Radical Minimalism & Gamification
+- **Visual Clarity:** A retro-arcade, high-contrast, cyberpunk aesthetic designed to prevent overwhelm.
+- **Reward Systems:** XP points, levels, and dynamic feedback (like confetti and pixel-art elements) for every completed session.
+- **Adaptive Timer:** Flow-state timers with built-in mechanics designed specifically for neurodivergent focus retention.
+
+## 🛠️ Tech Stack & Architecture
+
+Built with a **Bleeding Edge** React ecosystem:
+
+- **Framework**: [Next.js](https://nextjs.org/) (App Router, Server Actions, Server Components)
 - **Language**: [TypeScript](https://www.typescriptlang.org/) (Strict Mode)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) + [Shadcn/ui](https://ui.shadcn.com/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) + Custom Arcade/Cyberpunk theming
 - **Database**: [PostgreSQL](https://www.postgresql.org/) (via [Prisma ORM](https://www.prisma.io/))
-- **Auth**: [NextAuth.js](https://next-auth.js.org/) (v5 Beta)
-- **State**: [Zustand](https://github.com/pmndrs/zustand) (Client) + Server Actions (Mutations)
-- **Animation**: `framer-motion`, `canvas-confetti`, `tailwindcss-animate`
+- **Auth**: [NextAuth.js](https://next-auth.js.org/) (v5)
+- **AI Integration**: `@google/generative-ai` (Gemini API for document intelligence)
 - **Validation**: [Zod](https://zod.dev/)
 
-## 📂 Project Architecture
-
-We follow a strictly **Feature-Based Architecture**. Code is organized by **Domain**, not by technical role.
+### Feature-Based Architecture
+The codebase is structured around features (Domain-Driven) rather than technical roles:
 
 ```bash
 src/
-├── app/                  # Next.js App Router (Routes & Layouts ONLY)
-│   ├── (authenticated)/  # Protected Routes (Dashboard, Planner, etc.)
-│   └── login/            # Public Routes
-├── features/             # Business Logic (The Core)
-│   ├── dashboard/        # Stats, Recent Activity, Greeting Logic
-│   ├── study-cycle/      # Planner, Lessons, Tracks
-│   ├── timer/            # Pomodoro logic, Session Persistence
-│   ├── gamification/     # XP, Levels, Achievements
-│   └── auth/             # Login Forms, Session Management
-├── components/           # Shared UI Kit (Buttons, Cards, Inputs)
-├── lib/                  # Global Singletons (Prisma, Auth, Utils)
-└── hooks/                # Global Hooks (useToast, etc.)
+├── app/                  # Next.js App Router (Routes & Core Layouts)
+├── features/             # Business Logic Domains
+│   ├── ai/               # AI Services (Gemini Parser)
+│   ├── auth/             # Session Management
+│   ├── contests/         # Exams and Fusion Mechanics
+│   ├── dashboard/        # Stats and Analytics
+│   ├── editorials/       # Document Management & The Alchemist
+│   ├── gamification/     # XP, Levels Formula
+│   ├── planner/          # Calendar and Scheduling
+│   ├── settings/         # Profile and Preferences
+│   ├── study-cycle/      # Cycles and Tracks
+│   ├── subjects/         # Syllabuses Content
+│   └── timer/            # Pomodoro and Focus logic
+└── components/           # Shared UI elements
 ```
-
-### Why this structure?
-- **Scalability**: New features don't clutter global folders.
-- **Co-location**: A feature's hook, component, and server action live together.
-- **Maintainability**: Deleting a feature is as simple as deleting one folder.
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 18+
-- PostgreSQL Database
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/shturno/studyhub.git
-   cd studyhub
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Environment Setup**
-   Create a `.env` file in the root:
-   ```env
-   DATABASE_URL="postgresql://user:password@localhost:5432/studyhub"
-   AUTH_SECRET="your-secret-key-openssl-rand-base64-32"
-   ```
-
-4. **Database Setup**
-   Push the schema to your database:
-   ```bash
-   npx prisma db push
-   ```
-
-5. **Run Development Server**
-   ```bash
-   npm run dev
-   ```
-
-   Open [http://localhost:3000](http://localhost:3000) to see the app.
-
-## ⚡ Key Features Implementation
-
-### The Planner (Drag & Drop)
-Uses `@dnd-kit` for a physics-based interaction.
-- **Optimistic UI**: Moving a card updates the interface immediately.
-- **Persistence**: Drops trigger Server Actions to sync with PostgreSQL effortlessly.
-
-### The Timer (Focus Mode)
-- **Breathing Effect**: A Tailwind animation mimics a 4-7-8 breathing rhythm.
-- **Confetti**: `canvas-confetti` triggers on server response success.
-- **No IDORs**: All actions derive `userId` securely from the server session.
 
 ## 🛡️ Security
 
-- **IDOR Prevention**: Server Actions never trust client `userId`.
-- **Rate Limiting**: Middleware protects auth routes (10 req/min).
-- **Security Headers**: HSTS, X-Frame-Options configured in Middleware.
-- **Input Validation**: Critical mutations validated with Zod schemas.
+- **AI Sandbox**: Document parsing happens purely in-memory via buffers to prevent filesystem vulnerabilities.
+- **IDOR Prevention**: Server Actions inherently validate the session's `userId` against database records across all mutations.
+- **Strict Typing**: Full end-to-end type safety from the Prisma Schema up to the UI Components.
 
 ---
 
-By Kai.
+Proprietary Software. Internal Use Only.

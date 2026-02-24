@@ -14,5 +14,5 @@ export default async function PlannerPage() {
 
     const plannerData = await getPlannerData()
 
-    return <PlannerContent data={plannerData} />
+    return <PlannerContent data={plannerData} contestId={plannerData.primaryContestId} />
 }

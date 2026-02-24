@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { format } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 import { CalendarIcon, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -58,27 +59,29 @@ export function CreateContestDialog() {
     })
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        try {
-            await createContest(values)
-            toast.success('Concurso criado com sucesso!')
-            setOpen(false)
-            form.reset()
-        } catch (error) {
-            toast.error('Erro ao criar concurso')
-        }
+        await createContest(values)
+            .then(() => {
+                toast.success('Concurso criado!')
+                setOpen(false)
+                form.reset()
+            })
+            .catch((err: unknown) => {
+                const message = err instanceof Error ? err.message : 'Erro desconhecido'
+                toast.error(`Erro ao criar concurso: ${message}`)
+            })
     }
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="bg-brand-primary text-white hover:bg-brand-primary/90">
+                <Button>
                     <Plus className="w-4 h-4 mr-2" />
-                    Novo Concurso
+                    NOVO CONCURSO
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] bg-card border-white/10">
+            <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Adicionar Concurso</DialogTitle>
+                    <DialogTitle>ADICIONAR CONCURSO</DialogTitle>
                     <DialogDescription>
                         Cadastre o edital que você está focado.
                     </DialogDescription>
@@ -90,7 +93,7 @@ export function CreateContestDialog() {
                             name="name"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Nome do Concurso</FormLabel>
+                                    <FormLabel>NOME DO CONCURSO</FormLabel>
                                     <FormControl>
                                         <Input placeholder="Ex: Banco do Brasil 2026" {...field} />
                                     </FormControl>
@@ -104,7 +107,7 @@ export function CreateContestDialog() {
                                 name="institution"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Banca/Inst.</FormLabel>
+                                        <FormLabel>BANCA</FormLabel>
                                         <FormControl>
                                             <Input placeholder="Ex: Cesgranrio" {...field} />
                                         </FormControl>
@@ -117,7 +120,7 @@ export function CreateContestDialog() {
                                 name="role"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Cargo</FormLabel>
+                                        <FormLabel>CARGO</FormLabel>
                                         <FormControl>
                                             <Input placeholder="Ex: Escriturário" {...field} />
                                         </FormControl>
@@ -132,19 +135,19 @@ export function CreateContestDialog() {
                             name="examDate"
                             render={({ field }) => (
                                 <FormItem className="flex flex-col">
-                                    <FormLabel>Data da Prova</FormLabel>
+                                    <FormLabel>DATA DA PROVA</FormLabel>
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <FormControl>
                                                 <Button
-                                                    variant={"outline"}
+                                                    variant="outline"
                                                     className={cn(
-                                                        "w-full pl-3 text-left font-normal bg-background/50 border-input",
-                                                        !field.value && "text-muted-foreground"
+                                                        "w-full pl-3 text-left font-mono text-base",
+                                                        !field.value && "text-[#555]"
                                                     )}
                                                 >
                                                     {field.value ? (
-                                                        format(field.value, "PPP")
+                                                        format(field.value, "d 'de' MMMM, yyyy", { locale: ptBR })
                                                     ) : (
                                                         <span>Selecione uma data</span>
                                                     )}
@@ -157,9 +160,7 @@ export function CreateContestDialog() {
                                                 mode="single"
                                                 selected={field.value}
                                                 onSelect={field.onChange}
-                                                disabled={(date) =>
-                                                    date < new Date()
-                                                }
+                                                disabled={(date) => date < new Date()}
                                                 initialFocus
                                             />
                                         </PopoverContent>
@@ -173,10 +174,11 @@ export function CreateContestDialog() {
                             control={form.control}
                             name="isPrimary"
                             render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border border-white/10 p-4 bg-background/50">
+                                <FormItem className="flex flex-row items-center justify-between p-4"
+                                    style={{ border: '1px solid rgba(0,255,65,0.3)', background: '#020008' }}>
                                     <div className="space-y-0.5">
-                                        <FormLabel className="text-base">Foco Principal</FormLabel>
-                                        <FormDescription className="text-xs">
+                                        <FormLabel>FOCO PRINCIPAL</FormLabel>
+                                        <FormDescription>
                                             Definir como meta principal atual
                                         </FormDescription>
                                     </div>
@@ -191,7 +193,7 @@ export function CreateContestDialog() {
                         />
 
                         <DialogFooter>
-                            <Button type="submit" className="w-full bg-brand-primary hover:bg-brand-primary/90">Salvar Concurso</Button>
+                            <Button type="submit" className="w-full">SALVAR CONCURSO</Button>
                         </DialogFooter>
                     </form>
                 </Form>

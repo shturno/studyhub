@@ -1,36 +1,48 @@
 import { getContests } from '../actions'
 import { ContestCard } from './ContestCard'
 import { CreateContestDialog } from './CreateContestDialog'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 export async function ContestList() {
     const contests = await getContests()
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-6">
+            
             <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-2xl font-bold text-white tracking-tight">Meus Concursos</h2>
-                    <p className="text-zinc-400">Gerencie seus editais e metas.</p>
+                <div className="font-pixel text-[7px] text-[#7f7f9f]">
+                    {contests.length} EDITAL{contests.length === 1 ? '' : 'S'} ENCONTRADO{contests.length === 1 ? '' : 'S'}
                 </div>
-                <CreateContestDialog />
-            </div>
-
-            {contests.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-12 rounded-2xl border border-dashed border-white/10 bg-white/5">
-                    <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center mb-4">
-                        <span className="text-2xl">🎯</span>
-                    </div>
-                    <h3 className="text-lg font-medium text-white mb-2">Nenhum concurso encontrado</h3>
-                    <p className="text-zinc-400 text-center max-w-sm mb-6">
-                        Adicione seu primeiro edital para começar a organizar seus estudos.
-                    </p>
+                <div className="flex items-center gap-3">
+                    {contests.length >= 2 && (
+                        <Link href="/contests/fuse">
+                            <Button variant="outline" className="h-9 border-[#ff006e]/30 text-[#ff006e] hover:bg-[#ff006e]/10 font-pixel text-[8px]">
+                                LABORATÓRIO DE FUSÃO
+                            </Button>
+                        </Link>
+                    )}
                     <CreateContestDialog />
                 </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            </div>
+
+            {contests.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {contests.map((contest) => (
                         <ContestCard key={contest.id} contest={contest} />
                     ))}
+                </div>
+            ) : (
+                <div className="py-16 flex flex-col items-center justify-center text-center"
+                    style={{ border: '2px dashed rgba(0,255,65,0.2)', background: '#04000a' }}>
+                    <span className="text-4xl mb-4">🎯</span>
+                    <div className="font-pixel text-[8px] text-[#555] mb-2">
+                        NENHUM CONCURSO ENCONTRADO
+                    </div>
+                    <div className="font-mono text-base text-[#444] mb-6">
+                        Adicione seu primeiro edital para organizar seus estudos.
+                    </div>
+                    <CreateContestDialog />
                 </div>
             )}
         </div>

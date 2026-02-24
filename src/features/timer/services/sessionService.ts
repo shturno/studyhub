@@ -7,14 +7,10 @@ export interface StudySessionData {
     difficulty?: number
 }
 
-/**
- * Cria uma nova sessão de estudo
- */
 export async function createStudySession(data: StudySessionData) {
     const { topicId, userId, minutes, difficulty } = data
 
-    // Calcular XP baseado na duração
-    const xpEarned = Math.floor(minutes * 2) // 2 XP por minuto
+    const xpEarned = Math.floor(minutes * 2)
 
     const session = await prisma.studySession.create({
         data: {
@@ -37,9 +33,6 @@ export async function createStudySession(data: StudySessionData) {
     return session
 }
 
-/**
- * Busca sessões recentes do usuário
- */
 export async function getRecentSessions(userId: string, limit: number = 10) {
     return prisma.studySession.findMany({
         where: { userId },
@@ -55,9 +48,6 @@ export async function getRecentSessions(userId: string, limit: number = 10) {
     })
 }
 
-/**
- * Calcula total de minutos estudados
- */
 export async function getTotalStudyTime(userId: string): Promise<number> {
     const result = await prisma.studySession.aggregate({
         where: { userId },
