@@ -47,7 +47,13 @@ export async function analyzeContentCrossings(
     },
   })
 
-  const topicMap = new Map<string, any>()
+  interface TopicEntry {
+    topicId: string
+    topicName: string
+    editorials: Map<string, string>
+    relevances: number[]
+  }
+  const topicMap = new Map<string, TopicEntry>()
 
   for (const mapping of contentMappings) {
     const key = mapping.topicId
@@ -61,8 +67,10 @@ export async function analyzeContentCrossings(
     }
 
     const entry = topicMap.get(key)
-    entry.editorials.set(mapping.editorialItem.id, mapping.editorialItem.title)
-    entry.relevances.push(mapping.relevance)
+    if (entry) {
+      entry.editorials.set(mapping.editorialItem.id, mapping.editorialItem.title)
+      entry.relevances.push(mapping.relevance)
+    }
   }
 
   const results: ContentOverlap[] = Array.from(topicMap.values()).map((entry) => ({
@@ -120,7 +128,15 @@ export async function generateStudyPriorities(
     return []
   }
 
-  const topicMap = new Map<string, any>()
+  interface PriorityTopicEntry {
+    topicId: string
+    topicName: string
+    subjectId: string
+    subjectName: string
+    editorials: Set<string>
+    relevances: number[]
+  }
+  const topicMap = new Map<string, PriorityTopicEntry>()
 
   for (const mapping of contentMappings) {
     const key = mapping.topicId
@@ -136,8 +152,10 @@ export async function generateStudyPriorities(
     }
 
     const entry = topicMap.get(key)
-    entry.editorials.add(mapping.editorialItem.id)
-    entry.relevances.push(mapping.relevance)
+    if (entry) {
+      entry.editorials.add(mapping.editorialItem.id)
+      entry.relevances.push(mapping.relevance)
+    }
   }
 
   const sortedTopics = Array.from(topicMap.values())
