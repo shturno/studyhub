@@ -48,7 +48,7 @@ export function EditorialsView({ contestId, editorials, subjects }: EditorialsVi
               Identifique os tópicos que aparecem em múltiplos editais
             </p>
           </div>
-          <ContentCrossingView editorials={editorials} />
+          <ContentCrossingView contestId={contestId} editorialCount={editorials.length} />
         </TabsContent>
 
         <TabsContent value="mapper" className="space-y-4">
