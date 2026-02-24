@@ -19,12 +19,12 @@ interface Crossing {
   relevanceScore: number
 }
 
-export function ContentCrossingView({ editorials }: ContentCrossingViewProps) {
+export function ContentCrossingView({ editorials = [] }: Readonly<ContentCrossingViewProps>) {
   const [crossings, setCrossings] = useState<Crossing[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (editorials.length === 0) {
+    if (!editorials || editorials.length === 0) {
       setLoading(false)
       return
     }
@@ -47,13 +47,13 @@ export function ContentCrossingView({ editorials }: ContentCrossingViewProps) {
     loadCrossings()
   }, [editorials])
 
-  if (editorials.length < 2) {
+  if (!editorials || editorials.length < 2) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4">
-        <AlertCircle className="w-12 h-12 text-zinc-500 mb-4" />
-        <h3 className="text-lg font-semibold text-zinc-200 mb-2">Nenhum cruzamento</h3>
-        <p className="text-zinc-400 text-sm text-center">
-          Adicione pelo menos 2 editais e mapeie seu conteúdo para identificar cruzamentos
+        <AlertCircle className="w-12 h-12 text-[#ff006e]/50 mb-4" />
+        <h3 className="font-pixel text-[10px] text-[#e0e0ff] mb-2">NENHUM CRUZAMENTO</h3>
+        <p className="font-mono text-[#7f7f9f] text-sm text-center">
+          Adicione pelo menos 2 editais ao concurso para mapear sobreposições.
         </p>
       </div>
     )
@@ -63,8 +63,8 @@ export function ContentCrossingView({ editorials }: ContentCrossingViewProps) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <div className="w-8 h-8 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin mx-auto mb-3" />
-          <p className="text-zinc-400">Carregando cruzamentos...</p>
+          <div className="w-8 h-8 rounded-none border-2 border-[#00ff41] border-t-transparent animate-[spin_0.5s_linear_infinite] mx-auto mb-3" />
+          <p className="font-pixel text-[8px] text-[#00ff41] animate-pulse">CARREGANDO...</p>
         </div>
       </div>
     )
@@ -72,11 +72,11 @@ export function ContentCrossingView({ editorials }: ContentCrossingViewProps) {
 
   if (crossings.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 px-4">
-        <AlertCircle className="w-12 h-12 text-zinc-500 mb-4" />
-        <h3 className="text-lg font-semibold text-zinc-200 mb-2">Nenhum cruzamento encontrado</h3>
-        <p className="text-zinc-400 text-sm text-center">
-          Nenhum tópico foi mapeado em múltiplos editais ainda
+      <div className="flex flex-col items-center justify-center py-12 px-4 border border-[#333] border-dashed">
+        <AlertCircle className="w-8 h-8 text-[#555] mb-4" />
+        <h3 className="font-pixel text-[8px] text-[#a0a0ff] mb-2">CÓDIGO LIMPO</h3>
+        <p className="font-mono text-[#7f7f9f] text-xs text-center">
+          Nenhum tópico idêntico encontrado nestes editais.
         </p>
       </div>
     )
@@ -88,39 +88,37 @@ export function ContentCrossingView({ editorials }: ContentCrossingViewProps) {
         {crossings.map((crossing) => (
           <Card
             key={crossing.topicId}
-            className="p-4 bg-card/50 border-white/10 hover:border-white/20 transition-colors"
+            className="p-4 bg-[#0a0a0f] border-2 border-[#333] hover:border-[#ff006e] transition-colors group"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <Zap className="w-4 h-4 text-yellow-400" />
-                  <h4 className="font-semibold text-white">{crossing.topicName}</h4>
+                  <Zap className="w-4 h-4 text-[#ff006e] group-hover:animate-pulse" />
+                  <h4 className="font-pixel text-[10px] text-[#e0e0ff] leading-loose">{crossing.topicName}</h4>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant="secondary" className="text-xs">
-                    {crossing.editorialCount} edital{crossing.editorialCount !== 1 ? 'is' : ''}
+                  <Badge variant="outline" className="border-[#ff006e]/50 text-[#ff006e] bg-[#ff006e]/10 font-mono text-xs rounded-none">
+                    {crossing.editorialCount} edital{crossing.editorialCount === 1 ? '' : 'is'}
                   </Badge>
-                  <Badge
-                    variant="outline"
-                    className="text-xs border-indigo-500/50 text-indigo-400"
-                  >
-                    {crossing.mappingCount} mapeamento{crossing.mappingCount !== 1 ? 's' : ''}
+                  <Badge variant="outline" className="border-[#00ff41]/50 text-[#00ff41] bg-[#00ff41]/10 font-mono text-xs rounded-none">
+                    {crossing.mappingCount} maps
                   </Badge>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-indigo-400">{crossing.relevanceScore}%</div>
-                <p className="text-xs text-zinc-400">Relevância média</p>
+              <div className="text-right flex flex-col items-end justify-center">
+                <div className="text-2xl font-pixel text-[#00ff41]" style={{ textShadow: '0 0 10px rgba(0,255,65,0.4)' }}>
+                  {crossing.relevanceScore}%
+                </div>
+                <p className="font-mono text-[10px] text-[#555] mt-1">RELEVÂNCIA</p>
               </div>
             </div>
           </Card>
         ))}
       </div>
 
-      <Card className="p-4 bg-indigo-600/20 border-indigo-500/50">
-        <p className="text-sm text-indigo-200">
-          <strong>{crossings.length}</strong> tópico{crossings.length !== 1 ? 's' : ''} aparecem em múltiplos
-          editais. Estes são ótimos pontos de foco para seus estudos!
+      <Card className="p-4 bg-[#0a0005] border-2 border-dashed border-[#ff006e]/50">
+        <p className="font-mono text-xs text-[#ff006e]/80 leading-relaxed">
+          <span className="font-bold text-[#ff006e]">[{crossings.length}]</span> tópico{crossings.length === 1 ? '' : 's'} em intersecção. Focar nessas matérias rende XP dobrado no aprendizado global.
         </p>
       </Card>
     </div>
