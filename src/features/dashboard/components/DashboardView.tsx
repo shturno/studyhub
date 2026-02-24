@@ -8,11 +8,10 @@ import type { DashboardData } from '../services/dashboardService'
 
 interface DashboardViewProps {
     readonly data: DashboardData
-    readonly contests?: { id: string; name: string; [key: string]: unknown }[]
-    readonly activeContestId?: string
+    readonly contests?: { id: string; name: string; slug: string; [key: string]: unknown }[]
 }
 
-export function DashboardView({ data, contests = [], activeContestId: _activeContestId }: DashboardViewProps) {
+export function DashboardView({ data, contests = [] }: DashboardViewProps) {
     const { user, randomTopic, recentSessions, streak } = data
 
     if (!user) {

@@ -81,19 +81,18 @@ export function PlannerContent({ data, contestId }: PlannerContentProps) {
       }
       setPlannedSessions((prev) => [...prev, newSession])
 
-      await savePlannedSession({
-        lessonId: lesson.id,
-        date: newSession.scheduledDate,
-        duration: newSession.duration,
-      })
-        .then(() => {
-          toast({ title: "Sessão agendada!", description: `${lesson.title} salvo no planner` })
+      try {
+        await savePlannedSession({
+          lessonId: lesson.id,
+          date: newSession.scheduledDate,
+          duration: newSession.duration,
         })
-        .catch((err: unknown) => {
-          setPlannedSessions((prev) => prev.filter((s) => s.id !== tempId))
-          const message = err instanceof Error ? err.message : "Erro desconhecido"
-          toast({ title: "Erro ao salvar", description: message, variant: "destructive" })
-        })
+        toast({ title: "Sessão agendada!", description: `${lesson.title} salvo no planner` })
+      } catch (err: unknown) {
+        setPlannedSessions((prev) => prev.filter((s) => s.id !== tempId))
+        const message = err instanceof Error ? err.message : "Erro desconhecido"
+        toast({ title: "Erro ao salvar", description: message, variant: "destructive" })
+      }
     }
   }
 
@@ -101,15 +100,14 @@ export function PlannerContent({ data, contestId }: PlannerContentProps) {
     const previousSessions = [...plannedSessions]
     setPlannedSessions((prev) => prev.filter((s) => s.id !== sessionId))
 
-    await removePlannedSession(sessionId)
-      .then(() => {
-        toast({ title: "Sessão removida" })
-      })
-      .catch((err: unknown) => {
-        setPlannedSessions(previousSessions)
-        const message = err instanceof Error ? err.message : "Erro desconhecido"
-        toast({ title: "Erro ao remover", description: message, variant: "destructive" })
-      })
+    try {
+      await removePlannedSession(sessionId)
+      toast({ title: "Sessão removida" })
+    } catch (err: unknown) {
+      setPlannedSessions(previousSessions)
+      const message = err instanceof Error ? err.message : "Erro desconhecido"
+      toast({ title: "Erro ao remover", description: message, variant: "destructive" })
+    }
   }
 
   const handleEditSession = (session: PlannedSession) => {

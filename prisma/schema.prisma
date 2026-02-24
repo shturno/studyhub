@@ -1,4 +1,4 @@
-// Prisma Schema - StudyHub MVP
+
 
 generator client {
   provider = "prisma-client-js"
@@ -9,33 +9,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================
-// CORE DOMAIN
-// ============================================
-
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
   emailVerified DateTime?
   name          String?
-  password      String?   // bcrypt hash (nullable para OAuth)
+  password      String?
   image         String?
-  
-  // Gamification
   xp        Int      @default(0)
   level     Int      @default(1)
-  
-  // ADHD Settings (JSON)
   settings  Json     @default("{\"pomodoroDefault\": 25, \"breakDefault\": 5, \"dailyGoalMinutes\": 120}")
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  // NextAuth Relations
   accounts      Account[]
   sessions      Session[]
-  
-  // App Relations
   contests       Contest[]
   studyCycles    StudyCycle[]
   studySessions  StudySession[]
@@ -45,10 +33,6 @@ model User {
   
   @@map("users")
 }
-
-// ============================================
-// NEXTAUTH TABLES
-// ============================================
 
 model Account {
   id                String  @id @default(cuid())
@@ -92,26 +76,21 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
-// ============================================
-// CORE DOMAIN
-// ============================================
-
 
 model Contest {
   id          String   @id @default(cuid())
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  name        String   // "Banco do Brasil - Escriturário"
-  institution String   // "Banco do Brasil"
-  role        String   // "Escriturário"
-  examDate    DateTime? // Data da prova (se conhecida)
-  isPrimary   Boolean  @default(false) // Concurso principal vs futuro
+  name        String
+  slug        String   @unique
+  institution String
+  role        String
+  examDate    DateTime?
+  isPrimary   Boolean  @default(false)
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
-  // Relations
   subjects       Subject[]
   editorialItems EditorialItem[]
   
@@ -124,14 +103,12 @@ model Subject {
   contestId   String
   contest     Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
   
-  name        String   // "Matemática Financeira"
-  weight      Int      @default(1) // Peso na prova (1-10)
-  userLevel   Int      @default(1) // Autoavaliação do usuário (1-5)
+  name        String
+  weight      Int      @default(1)
+  userLevel   Int      @default(1)
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
-  // Relations
   topics      Topic[]
   
   @@index([contestId])
@@ -143,18 +120,14 @@ model Topic {
   subjectId   String
   subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   
-  name        String   // "Juros Simples"
+  name        String
   description String?
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
-  // Hierarchy
   parentId    String?
   parent      Topic?   @relation("TopicHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
   children    Topic[]  @relation("TopicHierarchy")
-
-  // Relations
   studySessions StudySession[]
   plannedSessions PlannedSession[]
   reviewQueue   ReviewQueue[]
@@ -166,20 +139,13 @@ model Topic {
   @@map("topics")
 }
 
-// ============================================
-// STUDY CYCLE & SESSIONS
-// ============================================
-
 model StudyCycle {
   id          String   @id @default(cuid())
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  name        String   // "Ciclo BB - Janeiro 2026"
+  name        String
   isActive    Boolean  @default(true)
-  
-  // Cycle configuration (JSON)
-  // { "topicIds": ["id1", "id2"], "order": "manual", "weeklyHours": 14 }
   config      Json
   
   createdAt   DateTime @default(now())
@@ -197,9 +163,9 @@ model StudySession {
   topicId     String
   topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
   
-  minutes     Int      // Duração da sessão
-  xpEarned    Int      // XP ganho nesta sessão
-  difficulty  Int?     // Rating de dificuldade (1-5)
+  minutes     Int
+  xpEarned    Int
+  difficulty  Int?
   
   startedAt   DateTime @default(now())
   completedAt DateTime @default(now())
@@ -214,7 +180,7 @@ model ReviewQueue {
   topicId     String
   topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
   
-  scheduledFor DateTime // Data agendada para revisão
+  scheduledFor DateTime
   completed    Boolean  @default(false)
   
   createdAt    DateTime @default(now())
@@ -242,20 +208,14 @@ model PlannedSession {
   @@map("planned_sessions")
 }
 
-// ============================================
-// GAMIFICATION
-// ============================================
-
 model Achievement {
   id          String   @id @default(cuid())
   
-  slug        String   @unique // "first-session", "level-5", "7-day-streak"
-  name        String   // "Primeira Sessão"
-  description String   // "Complete sua primeira sessão de estudos"
-  icon        String   // "🎯"
+  slug        String   @unique
+  name        String
+  description String
+  icon        String
   xpReward    Int      @default(0)
-  
-  // Relations
   users       UserAchievement[]
   
   @@map("achievements")
@@ -275,28 +235,20 @@ model UserAchievement {
   @@map("user_achievements")
 }
 
-// ============================================
-// MATERIALS (V2 - opcional no MVP)
-// ============================================
-
 model Material {
   id          String   @id @default(cuid())
   topicId     String
   topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
   
-  type        String   // "pdf", "video", "link", "note"
+  type        String
   title       String
-  url         String?  // URL externa ou path no storage
-  content     String?  // Conteúdo de nota
+  url         String?
+  content     String?
   
   createdAt   DateTime @default(now())
   
   @@map("materials")
 }
-
-// ============================================
-// EDITORIALS
-// ============================================
 
 model EditorialItem {
   id          String   @id @default(cuid())
@@ -311,8 +263,6 @@ model EditorialItem {
   url         String?
 
   uploadedAt  DateTime @default(now())
-
-  // Relations
   contentMappings ContentMapping[]
 
   @@index([userId])
@@ -329,7 +279,7 @@ model ContentMapping {
   topic           Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
 
   contentSummary  String?
-  relevance       Int      @default(50) // 0-100
+  relevance       Int      @default(50)
 
   createdAt       DateTime @default(now())
 

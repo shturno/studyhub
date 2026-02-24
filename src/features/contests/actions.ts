@@ -29,16 +29,20 @@ export async function createContest(data: {
     if (!session?.user?.id) throw new Error('Unauthorized')
 
     if (data.isPrimary) {
-
         await prisma.contest.updateMany({
             where: { userId: session.user.id, isPrimary: true },
             data: { isPrimary: false }
         })
     }
 
+    const baseSlug = data.name.toLowerCase().trim().replaceAll(/[^a-z0-9]+/g, '-')
+    const uniqueSuffix = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
+    const finalSlug = `${baseSlug}-${uniqueSuffix}`
+
     await prisma.contest.create({
         data: {
             ...data,
+            slug: finalSlug,
             userId: session.user.id
         }
     })

@@ -12,6 +12,7 @@ import Link from 'next/link'
 interface ContestCardProps {
     readonly contest: {
         readonly id: string
+        readonly slug: string
         readonly name: string
         readonly institution: string
         readonly role: string
@@ -81,7 +82,7 @@ export function ContestCard({ contest }: ContestCardProps) {
                     )}
                 </div>
 
-                <Link href={`/contests/${contest.id}`}>
+                <Link href={`/contests/${contest.slug}`}>
                     <button className="font-pixel text-[7px] text-[#00ff41] px-3 py-1.5 hover:bg-[#00ff41] hover:text-black transition-all"
                         style={{ border: '2px solid rgba(0,255,65,0.5)' }}>
                         ► VER
