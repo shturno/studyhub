@@ -28,5 +28,3 @@ next-env.d.ts
 
 # Antigravity
 .agent/
-
-*.md
