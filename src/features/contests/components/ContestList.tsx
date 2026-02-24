@@ -1,6 +1,8 @@
 import { getContests } from '../actions'
 import { ContestCard } from './ContestCard'
 import { CreateContestDialog } from './CreateContestDialog'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 export async function ContestList() {
     const contests = await getContests()
@@ -12,7 +14,16 @@ export async function ContestList() {
                 <div className="font-pixel text-[7px] text-[#7f7f9f]">
                     {contests.length} EDITAL{contests.length === 1 ? '' : 'S'} ENCONTRADO{contests.length === 1 ? '' : 'S'}
                 </div>
-                <CreateContestDialog />
+                <div className="flex items-center gap-3">
+                    {contests.length >= 2 && (
+                        <Link href="/contests/fuse">
+                            <Button variant="outline" className="h-9 border-[#ff006e]/30 text-[#ff006e] hover:bg-[#ff006e]/10 font-pixel text-[8px]">
+                                LABORATÓRIO DE FUSÃO
+                            </Button>
+                        </Link>
+                    )}
+                    <CreateContestDialog />
+                </div>
             </div>
 
             {contests.length > 0 ? (
