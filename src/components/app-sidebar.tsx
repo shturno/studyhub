@@ -25,7 +25,7 @@ export function AppSidebar({ className, user }: AppSidebarProps) {
     const pathname = usePathname()
 
     return (
-        <div className={cn("pb-12 min-h-screen bg-[#04000a] flex flex-col", className)}
+        <div className={cn("pb-12 h-full overflow-y-auto bg-[#04000a] flex flex-col", className)}
             style={{ borderRight: '2px solid #00ff41', boxShadow: '4px 0 20px rgba(0,255,65,0.15)' }}>
 
             
