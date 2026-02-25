@@ -14,12 +14,13 @@ export async function POST(request: NextRequest) {
     }
 
     const formData = await request.formData()
-    const file = formData.get('file') as File | null
+    const fileUrl = formData.get('fileUrl') as string | null
+    const fileName = formData.get('fileName') as string | null
     const contestId = formData.get('contestId') as string | null
 
-    if (!file || !contestId) {
+    if (!fileUrl || !contestId) {
       return NextResponse.json(
-        { error: 'File and contestId are required' },
+        { error: 'fileUrl and contestId are required' },
         { status: 400 }
       )
     }
@@ -33,9 +34,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Contest not found' }, { status: 404 })
     }
 
-    const buffer = await file.arrayBuffer()
+    const fileResponse = await fetch(fileUrl)
+    if (!fileResponse.ok) {
+        throw new Error('Falha ao obter o arquivo da Vercel Blob.')
+    }
+    const buffer = await fileResponse.arrayBuffer()
     const base64Data = Buffer.from(buffer).toString('base64')
-    const mimeType = file.type || 'application/pdf'
+    const mimeType = fileResponse.headers.get('content-type') || 'application/pdf'
 
     // 1. Ask Gemini to extract Subjects and Topics from PDF
     const parsedData = await parsePdfWithGemini(base64Data, mimeType)
@@ -47,7 +52,7 @@ export async function POST(request: NextRequest) {
         data: {
           userId: session.user.id,
           contestId: contestId,
-          title: parsedData.title || `Edital Extraído (${file.name})`,
+          title: parsedData.title || `Edital Extraído (${fileName || 'document'})`,
           description: "Mapeamento automático via Inteligência Artificial.",
         },
       })
