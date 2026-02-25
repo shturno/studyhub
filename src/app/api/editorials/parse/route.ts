@@ -3,6 +3,9 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { parsePdfWithGemini } from '@/features/ai/services/editalParserService'
 
+// Extending the limit on Vercel Hobby to the maximum possible (60 seconds)
+export const maxDuration = 60
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()
@@ -26,7 +29,7 @@ export async function POST(request: NextRequest) {
       where: { id: contestId },
     })
 
-    if (!contest || contest.userId !== session.user.id) {
+    if (contest?.userId !== session.user.id) {
       return NextResponse.json({ error: 'Contest not found' }, { status: 404 })
     }
 
@@ -56,15 +59,13 @@ export async function POST(request: NextRequest) {
           where: { contestId, name: parsedSubject.name },
         })
 
-        if (!subject) {
-          subject = await tx.subject.create({
-            data: {
-              contestId,
-              name: parsedSubject.name,
-              weight: 1,
-            },
-          })
-        }
+        subject ??= await tx.subject.create({
+          data: {
+            contestId,
+            name: parsedSubject.name,
+            weight: 1,
+          },
+        })
 
         for (const parsedTopic of parsedSubject.topics) {
           // Find or create topic
@@ -72,14 +73,12 @@ export async function POST(request: NextRequest) {
             where: { subjectId: subject.id, name: parsedTopic.name },
           })
 
-          if (!topic) {
-            topic = await tx.topic.create({
-              data: {
-                subjectId: subject.id,
-                name: parsedTopic.name,
-              },
-            })
-          }
+          topic ??= await tx.topic.create({
+            data: {
+              subjectId: subject.id,
+              name: parsedTopic.name,
+            },
+          })
 
           // Create mapping link for the Alchemist feature
           await tx.contentMapping.create({

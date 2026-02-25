@@ -75,8 +75,21 @@ export function EditorialManager({ contestId, onEditorialAdded }: Readonly<Edito
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Erro ao processar PDF')
+        const errorText = await response.text()
+        let errorMessage = 'Erro ao processar PDF no backend.'
+        try {
+          const expectedJSON = JSON.parse(errorText)
+          errorMessage = expectedJSON.error || errorMessage
+        } catch {
+          if (response.status === 413) {
+            errorMessage = 'O arquivo PDF é muito grande (ultrapassa o limite de 4MB de upload grátis do Vercel).'
+          } else if (response.status === 504) {
+            errorMessage = 'Vercel Timeout (504): A inteligência artificial demorou mais do que o limite de 10s para ler o PDF.'
+          } else {
+            errorMessage = `Erro ${response.status}: O servidor retornou uma falha fatal. Verifique a chave da API (GOOGLE_API_KEY) nas variáveis de ambiente do Vercel.`
+          }
+        }
+        throw new Error(errorMessage)
       }
 
       toast.success('SUCESSO CRÍTICO: Edital, Disciplinas e Tópicos extraídos perfeitamente pelo Gemini!')
