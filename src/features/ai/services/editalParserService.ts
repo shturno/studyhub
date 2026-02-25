@@ -17,7 +17,7 @@ export async function parsePdfWithGemini(
   mimeType: string = 'application/pdf'
 ): Promise<ParsedEdital> {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' })
 
     const prompt = `
 You are an expert in Brazilian Civil Service Exams (Concursos Públicos).
@@ -59,7 +59,7 @@ Respond ONLY with a valid JSON object following this EXACT structure, and absolu
     const responseText = response.response.text()
 
     // Clean markdown formatting if Gemini forces it
-    const jsonString = responseText.replace(/```json\n?/g, '').replace(/```/g, '').trim()
+    const jsonString = responseText.replaceAll(/```json\n?/g, '').replaceAll('```', '').trim()
     
     return JSON.parse(jsonString) as ParsedEdital
   } catch (error) {
