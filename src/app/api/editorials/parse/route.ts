@@ -3,7 +3,6 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { parsePdfWithGemini } from '@/features/ai/services/editalParserService'
 
-// Extending the limit on Vercel Hobby to the maximum possible (60 seconds)
 export const maxDuration = 60
 
 export async function POST(request: NextRequest) {
@@ -25,7 +24,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verify ownership of contest
     const contest = await prisma.contest.findUnique({
       where: { id: contestId },
     })
@@ -38,16 +36,17 @@ export async function POST(request: NextRequest) {
     if (!fileResponse.ok) {
         throw new Error('Falha ao obter o arquivo da Vercel Blob.')
     }
-    const buffer = await fileResponse.arrayBuffer()
-    const base64Data = Buffer.from(buffer).toString('base64')
-    const mimeType = fileResponse.headers.get('content-type') || 'application/pdf'
+    const arrayBuffer = await fileResponse.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+    
+    const pdfParseModule = await import('pdf-parse')
+    const pdfParse = pdfParseModule.default || pdfParseModule
+    const pdfData = await pdfParse(buffer)
+    const pdfText = pdfData.text
 
-    // 1. Ask Gemini to extract Subjects and Topics from PDF
-    const parsedData = await parsePdfWithGemini(base64Data, mimeType)
+    const parsedData = await parsePdfWithGemini(pdfText)
 
-    // 2. Wrap everything in a Prisma transaction to maintain data integrity
     const result = await prisma.$transaction(async (tx) => {
-      // 2a. Create the EditorialItem
       const editorial = await tx.editorialItem.create({
         data: {
           userId: session.user.id,
@@ -57,9 +56,7 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      // 2b. Insert Subjects, Topics and ContentMappings
       for (const parsedSubject of parsedData.subjects) {
-        // Find existing subject in this contest, or create a new one
         let subject = await tx.subject.findFirst({
           where: { contestId, name: parsedSubject.name },
         })
@@ -73,7 +70,6 @@ export async function POST(request: NextRequest) {
         })
 
         for (const parsedTopic of parsedSubject.topics) {
-          // Find or create topic
           let topic = await tx.topic.findFirst({
             where: { subjectId: subject.id, name: parsedTopic.name },
           })
@@ -85,7 +81,6 @@ export async function POST(request: NextRequest) {
             },
           })
 
-          // Create mapping link for the Alchemist feature
           await tx.contentMapping.create({
             data: {
               editorialItemId: editorial.id,
@@ -99,7 +94,7 @@ export async function POST(request: NextRequest) {
 
       return editorial
     }, {
-      timeout: 30000 // Give the transaction plenty of time for large insert batches
+      timeout: 30000
     })
 
     return NextResponse.json({

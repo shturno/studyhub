@@ -13,8 +13,7 @@ export interface ParsedEdital {
 }
 
 export async function parsePdfWithGemini(
-  base64Data: string,
-  mimeType: string = 'application/pdf'
+  pdfText: string
 ): Promise<ParsedEdital> {
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' })
@@ -48,17 +47,11 @@ Respond ONLY with a valid JSON object following this EXACT structure, and absolu
 
     const response = await model.generateContent([
       prompt,
-      {
-        inlineData: {
-          data: base64Data,
-          mimeType,
-        },
-      },
+      "\n\n--- EDITAL TEXT ---\n" + pdfText
     ])
 
     const responseText = response.response.text()
 
-    // Clean markdown formatting if Gemini forces it
     const jsonString = responseText.replaceAll(/```json\n?/g, '').replaceAll('```', '').trim()
     
     return JSON.parse(jsonString) as ParsedEdital
