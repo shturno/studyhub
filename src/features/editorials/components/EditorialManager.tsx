@@ -10,6 +10,7 @@ import { Plus, Book, UploadCloud, Cpu } from 'lucide-react'
 import { createEditorialItem } from '../actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { upload } from '@vercel/blob/client'
 
 interface EditorialManagerProps {
   contestId: string
@@ -63,11 +64,20 @@ export function EditorialManager({ contestId, onEditorialAdded }: Readonly<Edito
 
     try {
       setIsParsing(true)
+      
+      toast.info('Enviando o PDF para a nuvem de forma segura...', { duration: 5000 })
+      
+      const newBlob = await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: '/api/editorials/upload',
+      })
+
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('fileUrl', newBlob.url)
+      formData.append('fileName', file.name)
       formData.append('contestId', contestId)
 
-      toast.info('IA do Alquimista lendo as centenas de páginas do PDF...', { duration: 5000 })
+      toast.info('IA do Alquimista lendo as centenas de páginas do PDF na Nuvem...', { duration: 5000 })
 
       const response = await fetch('/api/editorials/parse', {
         method: 'POST',
