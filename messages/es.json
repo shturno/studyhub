@@ -134,5 +134,8 @@
       "institutionMin": "La institución debe tener al menos 2 caracteres",
       "roleMin": "El cargo debe tener al menos 2 caracteres"
     }
+  },
+  "Common": {
+    "close": "Cerrar"
   }
 }

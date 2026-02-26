@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { User, Settings, Bell, Save } from 'lucide-react'
-import { updateProfileSettings } from '@/app/(authenticated)/settings/actions'
+import { updateProfileSettings } from '@/app/[locale]/(authenticated)/settings/actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
