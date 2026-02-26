@@ -8,6 +8,7 @@ interface UpdateSettingsParams {
   name: string
   pomodoroDefault: number
   breakDefault: number
+  locale?: string
 }
 
 export async function updateProfileSettings(data: UpdateSettingsParams) {
@@ -17,7 +18,7 @@ export async function updateProfileSettings(data: UpdateSettingsParams) {
       throw new Error('Não autorizado')
     }
 
-    const { name, pomodoroDefault, breakDefault } = data
+    const { name, pomodoroDefault, breakDefault, locale } = data
 
     if (pomodoroDefault < 5 || pomodoroDefault > 120) {
       throw new Error('O tempo de foco deve estar entre 5 e 120 minutos')
@@ -42,6 +43,7 @@ export async function updateProfileSettings(data: UpdateSettingsParams) {
       ...currentSettings,
       pomodoroDefault,
       breakDefault,
+      ...(locale && { locale }),
     }
 
     await prisma.user.update({

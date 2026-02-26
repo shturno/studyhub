@@ -26,11 +26,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode
+  params: { locale: string }
 }>) {
   return (
-    <html lang="pt-BR" className={`dark ${pressStart2P.variable} ${vt323.variable}`} suppressHydrationWarning>
+    <html lang={params.locale} className={`dark ${pressStart2P.variable} ${vt323.variable}`} suppressHydrationWarning>
       <body className="antialiased bg-[#080010] text-[#e0e0ff]">
         <AuthProvider>
           {children}
