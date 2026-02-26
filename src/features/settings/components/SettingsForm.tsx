@@ -3,16 +3,18 @@
 import { useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
-import { User, Settings, Bell, Save } from 'lucide-react'
+import { User, Settings, Bell, Save, Globe } from 'lucide-react'
 import { updateProfileSettings } from '@/app/[locale]/(authenticated)/settings/actions'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
 interface SettingsFormProps {
   initialName: string
   initialEmail: string
   initialPomodoro: number
   initialBreak: number
+  initialLocale: string
 }
 
 export function SettingsForm({
@@ -20,12 +22,15 @@ export function SettingsForm({
   initialEmail,
   initialPomodoro,
   initialBreak,
+  initialLocale,
 }: Readonly<SettingsFormProps>) {
   const router = useRouter()
+  const pathname = usePathname()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [name, setName] = useState(initialName)
   const [pomodoro, setPomodoro] = useState(initialPomodoro)
   const [breakTime, setBreakTime] = useState(initialBreak)
+  const [locale, setLocale] = useState(initialLocale)
 
   const handleSave = async () => {
     try {
@@ -34,7 +39,14 @@ export function SettingsForm({
         name,
         pomodoroDefault: pomodoro,
         breakDefault: breakTime,
+        locale,
       })
+      
+      if (locale !== initialLocale) {
+        const newPath = pathname.replace(`/${initialLocale}/`, `/${locale}/`)
+        router.push(newPath)
+      }
+      
       toast.success('Configurações salvas com sucesso!')
       router.refresh()
     } catch (error) {
@@ -44,11 +56,11 @@ export function SettingsForm({
     }
   }
 
-  // Check if anything changed
   const hasChanges =
     name !== initialName ||
     pomodoro !== initialPomodoro ||
-    breakTime !== initialBreak
+    breakTime !== initialBreak ||
+    locale !== initialLocale
 
   return (
     <div className="space-y-6">
@@ -135,6 +147,31 @@ export function SettingsForm({
             <Save className="w-3 h-3" />
             {isSubmitting ? 'SALVANDO...' : 'SALVAR ALTERACOES'}
           </button>
+        </div>
+      </div>
+
+      <div className="p-5 space-y-5" style={{ border: '2px solid rgba(0,255,65,0.4)', background: '#04000a' }}>
+        <div className="flex items-center gap-3 pb-3" style={{ borderBottom: '1px solid rgba(0,255,65,0.15)' }}>
+          <div className="w-8 h-8 flex items-center justify-center text-[#00ff41]"
+            style={{ border: '2px solid rgba(0,255,65,0.4)' }}>
+            <Globe className="w-4 h-4" />
+          </div>
+          <span className="font-pixel text-[8px] text-[#00ff41]">IDIOMA</span>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="locale" className="font-pixel text-[7px] text-[#7f7f9f]">LANGUAGE / IDIOMA / IDIOMA</Label>
+          <select
+            id="locale"
+            value={locale}
+            onChange={(e) => setLocale(e.target.value)}
+            className="w-full bg-[#020008] border-[#333] border text-[#00ff41] focus-visible:ring-[#00ff41] rounded-none font-mono p-2 cursor-pointer"
+          >
+            <option value="pt">🇧🇷 Português (PT-BR)</option>
+            <option value="en">🇺🇸 English (US)</option>
+            <option value="es">🇪🇸 Español (ES)</option>
+          </select>
+          <p className="text-[#7f7f9f] text-[10px] font-mono mt-1">A interface será exibida no idioma selecionado.</p>
         </div>
       </div>
 

@@ -1,12 +1,21 @@
 import NextAuth from "next-auth"
 import { authConfig } from "@/lib/auth.config"
-
+import createMiddleware from 'next-intl/middleware'
 import { NextResponse } from "next/server"
+import type { NextRequest } from 'next/server'
 
 const { auth } = NextAuth(authConfig)
 
+const intlMiddleware = createMiddleware({
+  locales: ['en', 'pt', 'es'],
+  defaultLocale: 'pt',
+  localePrefix: 'always'
+})
+
 export default auth((req) => {
-    const response = NextResponse.next()
+    const intlResponse = intlMiddleware(req as NextRequest)
+    
+    const response = intlResponse || NextResponse.next()
 
     response.headers.set('X-Frame-Options', 'DENY')
     response.headers.set('X-Content-Type-Options', 'nosniff')
