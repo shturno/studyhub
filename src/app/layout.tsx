@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Press_Start_2P, VT323 } from "next/font/google"
 import { Toaster } from "sonner"
 import { AuthProvider } from "@/components/auth-provider"
+import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 
 const pressStart2P = Press_Start_2P({
@@ -48,6 +49,7 @@ export default function RootLayout({
             }}
           />
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   )
