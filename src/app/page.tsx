@@ -14,17 +14,17 @@ const STARS = Array.from({ length: 80 }, (_, i) => ({
 }))
 
 const SCORE_ENTRIES = [
-  { rank: "1ST", label: "HORAS DE FOCO",       value: "---",  color: "#ffbe0b" },
-  { rank: "2ND", label: "QUESTÕES RESOLVIDAS",  value: "---",  color: "#00ff41" },
-  { rank: "3RD", label: "DIAS DE SEQUÊNCIA",    value: "---",  color: "#ff006e" },
-  { rank: "4TH", label: "MATÉRIAS DOMINADAS",   value: "---",  color: "#00e5ff" },
+  { rank: "1ST", label: "FOCUS HOURS",       value: "---",  color: "#ffbe0b" },
+  { rank: "2ND", label: "QUESTIONS SOLVED",  value: "---",  color: "#00ff41" },
+  { rank: "3RD", label: "STREAK DAYS",       value: "---",  color: "#ff006e" },
+  { rank: "4TH", label: "SUBJECTS MASTERED", value: "---",  color: "#00e5ff" },
 ]
 
 const FEATURES = [
-  { icon: "🧠", title: "TDAH-FRIENDLY", desc: "Sessões curtas, metas claras, sem ruído",   color: "#00ff41" },
-  { icon: "🏆", title: "GAMIFICADO",    desc: "XP, nível, conquistas e ranking real",       color: "#ffbe0b" },
-  { icon: "⚡", title: "IA ADAPTATIVA", desc: "Ciclo de estudos montado por IA",            color: "#ff006e" },
-  { icon: "🗂️", title: "GABARITEIRO",  desc: "Edital, matérias e provas no mesmo lugar",   color: "#00e5ff" },
+  { icon: "🧠", title: "ADHD-FRIENDLY", desc: "Short sessions, clear goals, no noise",       color: "#00ff41" },
+  { icon: "🏆", title: "GAMIFIED",      desc: "XP, levels, achievements, and real ranking",  color: "#ffbe0b" },
+  { icon: "⚡", title: "ADAPTIVE AI",   desc: "AI-generated study cycles",                   color: "#ff006e" },
+  { icon: "🗂️", title: "ALL-IN-ONE",    desc: "Syllabus, subjects, and exams in one place",  color: "#00e5ff" },
 ]
 
 export default function HomePage() {
@@ -176,7 +176,7 @@ export default function HomePage() {
 
             <div className="mt-4 pt-3 text-center" style={{ borderTop: "1px solid rgba(0,255,65,0.2)" }}>
               <span style={{ fontSize: 7, color: "#505060", letterSpacing: 1 }}>
-                ALCANCE ESSES RESULTADOS ESTUDANDO COM A GENTE
+                ACHIEVE THESE RESULTS STUDYING WITH US
               </span>
             </div>
           </div>
@@ -187,7 +187,7 @@ export default function HomePage() {
                 className="transition-all hover:-translate-y-1 active:translate-y-0.5"
                 style={{ fontSize: 10, color: "#000", background: "#00ff41", padding: "14px 32px", letterSpacing: "0.1em", boxShadow: "6px 6px 0 #006b1a, 0 0 24px rgba(0,255,65,0.5)" }}
               >
-                ▶ NOVO JOGO
+                ▶ NEW GAME
               </button>
             </Link>
             <Link href="/login">
@@ -195,7 +195,7 @@ export default function HomePage() {
                 className="transition-all hover:bg-[#00ff41]/10 active:scale-95"
                 style={{ fontSize: 10, color: "#00ff41", border: "2px solid #00ff41", padding: "14px 32px", letterSpacing: "0.1em", boxShadow: "0 0 12px rgba(0,255,65,0.2)" }}
               >
-                ↺ CONTINUAR
+                ↺ CONTINUE
               </button>
             </Link>
           </div>
