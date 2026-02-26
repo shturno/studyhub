@@ -1,0 +1,138 @@
+{
+  "Landing": {
+    "login": "INICIAR SESIÓN",
+    "play": "JUGAR",
+    "title": "STUDY HUB",
+    "subtitle": "PREPARE. LEVEL UP. CONQUER.",
+    "insertCoin": "► INSERTE MONEDA PARA EMPEZAR ◄",
+    "hallOfChampions": "★ SALÓN DE LOS CAMPEONES ★",
+    "newGame": "▶ NUEVO JUEGO",
+    "continue": "↺ CONTINUAR",
+    "achieveResults": "ALCANZA ESTOS RESULTADOS ESTUDIANDO CON NOSOTROS",
+    "copyright": "© 2026 STUDYHUB CORP · VER 1.0.0 · BUILD 001 · TODOS LOS DERECHOS RESERVADOS"
+  },
+  "ScoreEntries": {
+    "focusHours": "HORAS DE ENFOQUE",
+    "questionsSolved": "PREGUNTAS RESUELTAS",
+    "streakDays": "DÍAS DE RACHA",
+    "subjectsMastered": "MATERIAS DOMINADAS"
+  },
+  "Features": {
+    "adhdFriendly": {
+      "title": "AMIGABLE CON TDAH",
+      "desc": "Sesiones cortas, metas claras, sin ruido"
+    },
+    "gamified": {
+      "title": "GAMIFICADO",
+      "desc": "XP, nivel, logros y ranking real"
+    },
+    "adaptiveAi": {
+      "title": "IA ADAPTATIVA",
+      "desc": "Ciclo de estudio generado por IA"
+    },
+    "allInOne": {
+      "title": "TODO-EN-UNO",
+      "desc": "Temario, materias y exámenes en un solo lugar"
+    }
+  },
+  "ContestDetail": {
+    "back": "VOLVER",
+    "mainFocus": "★ ENFOQUE PRINCIPAL",
+    "examDate": "FECHA DEL EXAMEN",
+    "notDefined": "No definida",
+    "subjects": "MATERIAS",
+    "topics": "TEMAS",
+    "editorials": "EDITORIALES",
+    "noEditorialMapped": "NINGÚN EDITORIAL MAPEADO",
+    "noEditorialMappedDescription": "Para generar tu Árbol de Habilidades y comenzar a planificar tus ciclos de estudio, necesitamos extraer las materias y temas de tu editorial. Sube el documento y deja que la Inteligencia Artificial lo mapee por ti.",
+    "skillTree": "ÁRBOL DE HABILIDADES",
+    "skillTreeDescription": "Tu editorial formateado en un árbol de habilidades.",
+    "topicsCount": "temas",
+    "serverErrorTitle": "ERROR CAPTURADO EN EL SERVIDOR DE NEXT.JS (TRY-CATCH)",
+    "serverErrorDescription": "El Backend de Node sufrió un pánico y fue capturado. Por favor, envía una captura de pantalla del código a continuación:",
+    "errorLabel": "ERROR:"
+  },
+  "AppSidebar": {
+    "titleStudy": "STUDY",
+    "titleHub": "HUB",
+    "select": "▼ SELECT ▼",
+    "navDashboard": "PANEL",
+    "navPlanner": "PLANIFICADOR",
+    "navSubjects": "MATERIAS",
+    "navContests": "CONCURSOS",
+    "navAchievements": "LOGROS",
+    "player1": "JUGADOR 1",
+    "config": "⚙ CONFIG",
+    "logout": "✕ SALIR"
+  },
+  "ThemeToggle": {
+    "toggle": "Cambiar tema"
+  },
+  "LoginForm": {
+    "unknownError": "Error desconocido",
+    "errorPrefix": "Error:",
+    "invalidCredentials": "Correo electrónico o contraseña no válidos",
+    "loginSuccess": "¡Inicio de sesión exitoso!",
+    "emailLabel": "CORREO ELECTRÓNICO",
+    "passwordLabel": "CONTRASEÑA",
+    "hidePassword": "Ocultar contraseña",
+    "showPassword": "Mostrar contraseña",
+    "loggingIn": "INICIANDO SESIÓN...",
+    "submit": "► INICIAR SESIÓN"
+  },
+  "RegisterForm": {
+    "passwordsDoNotMatch": "Las contraseñas no coinciden",
+    "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
+    "accountCreationError": "Error al crear la cuenta",
+    "accountCreationSuccess": "¡Cuenta creada! Por favor, inicia sesión.",
+    "unknownError": "Error desconocido",
+    "errorPrefix": "Error:",
+    "nameLabel": "NOMBRE",
+    "namePlaceholder": "Tu nombre",
+    "emailLabel": "CORREO ELECTRÓNICO",
+    "passwordLabel": "CONTRASEÑA",
+    "confirmPasswordLabel": "CONFIRMAR CONTRASEÑA",
+    "hidePassword": "Ocultar contraseña",
+    "showPassword": "Mostrar contraseña",
+    "creating": "CREANDO...",
+    "submit": "► CREAR CUENTA"
+  },
+  "ContestCard": {
+    "removedSuccess": "Concurso eliminado",
+    "unknownError": "Error desconocido",
+    "removeErrorPrefix": "Error al eliminar el concurso:",
+    "mainFocus": "★ ENFOQUE PRINCIPAL",
+    "removeLabel": "Eliminar concurso",
+    "dateNotSet": "Fecha no establecida",
+    "viewButton": "► VER"
+  },
+  "ContestList": {
+    "found": "{count, plural, one {# concurso encontrado} other {# concursos encontrados}}",
+    "fusionLab": "LABORATORIO DE FUSIÓN",
+    "noneFound": "NO SE ENCONTRARON CONCURSOS",
+    "addFirst": "Añade tu primer editorial para organizar tus estudios."
+  },
+  "CreateContestDialog": {
+    "errorPrefix": "Error:",
+    "createSuccess": "¡Concurso creado!",
+    "unexpectedError": "Ocurrió un error inesperado al guardar el concurso.",
+    "trigger": "NUEVO CONCURSO",
+    "title": "AÑADIR CONCURSO",
+    "description": "Registra el editorial en el que estás enfocado.",
+    "nameLabel": "NOMBRE DEL CONCURSO",
+    "namePlaceholder": "Ej: Banco de Brasil 2026",
+    "institutionLabel": "INSTITUCIÓN",
+    "institutionPlaceholder": "Ej: Cesgranrio",
+    "roleLabel": "CARGO",
+    "rolePlaceholder": "Ej: Oficinista",
+    "examDateLabel": "FECHA DEL EXAMEN",
+    "mainFocusLabel": "ENFOQUE PRINCIPAL",
+    "mainFocusDescription": "Establecer como meta principal actual",
+    "submit": "GUARDAR CONCURSO",
+    "validation": {
+      "nameMin": "El nombre debe tener al menos 2 caracteres",
+      "institutionMin": "La institución debe tener al menos 2 caracteres",
+      "roleMin": "El cargo debe tener al menos 2 caracteres"
+    }
+  }
+}

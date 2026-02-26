@@ -1,13 +1,13 @@
 'use client'
 
 import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
 import { Trash2, Calendar, Building2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { deleteContest } from '../actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 interface ContestCardProps {
     readonly contest: {
@@ -23,16 +23,17 @@ interface ContestCardProps {
 
 export function ContestCard({ contest }: ContestCardProps) {
     const router = useRouter()
+    const t = useTranslations('ContestCard')
 
     async function handleDelete() {
         await deleteContest(contest.id)
             .then(() => {
-                toast.success('Concurso removido')
+                toast.success(t('removedSuccess'))
                 router.refresh()
             })
             .catch((err: unknown) => {
-                const message = err instanceof Error ? err.message : 'Erro desconhecido'
-                toast.error(`Erro ao remover concurso: ${message}`)
+                const message = err instanceof Error ? err.message : t('unknownError')
+                toast.error(`${t('removeErrorPrefix')} ${message}`)
             })
     }
 
@@ -43,7 +44,7 @@ export function ContestCard({ contest }: ContestCardProps) {
             
             {contest.isPrimary && (
                 <div className="absolute -top-3 left-4">
-                    <Badge variant="gold">★ FOCO PRINCIPAL</Badge>
+                    <Badge variant="gold">{t('mainFocus')}</Badge>
                 </div>
             )}
 
@@ -64,7 +65,7 @@ export function ContestCard({ contest }: ContestCardProps) {
                 <button
                     onClick={handleDelete}
                     className="opacity-0 group-hover:opacity-100 text-[#555] hover:text-[#ff006e] transition-all p-1"
-                    aria-label="Remover concurso"
+                    aria-label={t('removeLabel')}
                 >
                     <Trash2 className="w-4 h-4" />
                 </button>
@@ -76,16 +77,16 @@ export function ContestCard({ contest }: ContestCardProps) {
                 <div className="flex items-center gap-2 font-mono text-base text-[#7f7f9f]">
                     <Calendar className="w-3.5 h-3.5 text-[#555]" />
                     {contest.examDate ? (
-                        <span>{format(new Date(contest.examDate), "d 'de' MMMM, yyyy", { locale: ptBR })}</span>
+                        <span>{format(new Date(contest.examDate), 'PPP')}</span>
                     ) : (
-                        <span className="text-[#444] italic">Data não definida</span>
+                        <span className="text-[#444] italic">{t('dateNotSet')}</span>
                     )}
                 </div>
 
                 <Link href={`/contests/${contest.slug}`}>
                     <button className="font-pixel text-[7px] text-[#00ff41] px-3 py-1.5 hover:bg-[#00ff41] hover:text-black transition-all"
                         style={{ border: '2px solid rgba(0,255,65,0.5)' }}>
-                        ► VER
+                        {t('viewButton')}
                     </button>
                 </Link>
             </div>

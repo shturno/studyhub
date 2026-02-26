@@ -63,6 +63,7 @@
     "lucide-react": "^0.454.0",
     "next": "^15.1.6",
     "next-auth": "^5.0.0-beta.30",
+    "next-intl": "^4.8.3",
     "next-themes": "latest",
     "pdf-parse": "^2.4.5",
     "react": "18.3.1",

@@ -1,0 +1,141 @@
+{
+  "Landing": {
+    "login": "LOGIN",
+    "play": "JOGAR",
+    "title": "STUDY HUB",
+    "subtitle": "PREPARE. LEVEL UP. CONQUER.",
+    "insertCoin": "► INSIRA FICHA PARA COMEÇAR ◄",
+    "hallOfChampions": "★ HALL DOS CAMPEÕES ★",
+    "newGame": "▶ NOVO JOGO",
+    "continue": "↺ CONTINUAR",
+    "achieveResults": "ALCANCE ESSES RESULTADOS ESTUDANDO COM A GENTE",
+    "copyright": "© 2026 STUDYHUB CORP · VER 1.0.0 · BUILD 001 · TODOS OS DIREITOS RESERVADOS"
+  },
+  "ScoreEntries": {
+    "focusHours": "HORAS DE FOCO",
+    "questionsSolved": "QUESTÕES RESOLVIDAS",
+    "streakDays": "DIAS DE SEQUÊNCIA",
+    "subjectsMastered": "MATÉRIAS DOMINADAS"
+  },
+  "Features": {
+    "adhdFriendly": {
+      "title": "TDAH-FRIENDLY",
+      "desc": "Sessões curtas, metas claras, sem ruído"
+    },
+    "gamified": {
+      "title": "GAMIFICADO",
+      "desc": "XP, nível, conquistas e ranking real"
+    },
+    "adaptiveAi": {
+      "title": "IA ADAPTATIVA",
+      "desc": "Ciclo de estudos montado por IA"
+    },
+    "allInOne": {
+      "title": "GABARITEIRO",
+      "desc": "Edital, matérias e provas no mesmo lugar"
+    }
+  },
+  "ContestDetail": {
+    "back": "VOLTAR",
+    "mainFocus": "★ FOCO PRINCIPAL",
+    "examDate": "DATA DA PROVA",
+    "notDefined": "Não definida",
+    "subjects": "DISCIPLINAS",
+    "topics": "TÓPICOS",
+    "editorials": "EDITAIS",
+    "noEditorialMapped": "NENHUM EDITAL MAPEADO",
+    "noEditorialMappedDescription": "Para gerar sua Skill Tree e começar a planejar seus ciclos de estudos, precisamos extrair as disciplinas e os assuntos do seu edital. Faça o upload do documento e deixe a Inteligência Artificial mapear para você.",
+    "skillTree": "SKILL TREE",
+    "skillTreeDescription": "Seu edital formatado em árvore de habilidades.",
+    "topicsCount": "tópicos",
+    "serverErrorTitle": "ERRO PEGO NO SERVIDOR NEXT.JS (TRY-CATCH)",
+    "serverErrorDescription": "O Backend Node sofreu um panic e foi capturado. Envie a print desse código abaixo:",
+    "errorLabel": "ERRO:"
+  },
+  "AppSidebar": {
+    "titleStudy": "STUDY",
+    "titleHub": "HUB",
+    "select": "▼ SELECT ▼",
+    "navDashboard": "DASHBOARD",
+    "navPlanner": "PLANNER",
+    "navSubjects": "MATERIAS",
+    "navContests": "CONCURSOS",
+    "navAchievements": "CONQUISTAS",
+    "player1": "JOGADOR 1",
+    "config": "⚙ CONFIG",
+    "logout": "✕ SAIR"
+  },
+  "ThemeToggle": {
+    "toggle": "Alternar tema"
+  },
+  "LoginForm": {
+    "unknownError": "Erro desconhecido",
+    "errorPrefix": "Erro:",
+    "invalidCredentials": "Email ou senha inválidos",
+    "loginSuccess": "Login realizado!",
+    "emailLabel": "EMAIL",
+    "passwordLabel": "SENHA",
+    "hidePassword": "Ocultar senha",
+    "showPassword": "Mostrar senha",
+    "loggingIn": "ENTRANDO...",
+    "submit": "► ENTRAR"
+  },
+  "RegisterForm": {
+    "passwordsDoNotMatch": "As senhas não coincidem",
+    "passwordTooShort": "A senha deve ter no mínimo 6 caracteres",
+    "accountCreationError": "Erro ao criar conta",
+    "accountCreationSuccess": "Conta criada! Faça login.",
+    "unknownError": "Erro desconhecido",
+    "errorPrefix": "Erro:",
+    "nameLabel": "NOME",
+    "namePlaceholder": "Seu nome",
+    "emailLabel": "EMAIL",
+    "passwordLabel": "SENHA",
+    "confirmPasswordLabel": "CONFIRMAR SENHA",
+    "hidePassword": "Ocultar senha",
+    "showPassword": "Mostrar senha",
+    "creating": "CRIANDO...",
+    "submit": "► CRIAR CONTA"
+  },
+  "ContestCard": {
+    "removedSuccess": "Concurso removido",
+    "unknownError": "Erro desconhecido",
+    "removeErrorPrefix": "Erro ao remover concurso:",
+    "mainFocus": "★ FOCO PRINCIPAL",
+    "removeLabel": "Remover concurso",
+    "dateNotSet": "Data não definida",
+    "viewButton": "► VER"
+  },
+  "ContestList": {
+    "found": "{count, plural, one {# edital encontrado} other {# editais encontrados}}",
+    "fusionLab": "LABORATÓRIO DE FUSÃO",
+    "noneFound": "NENHUM CONCURSO ENCONTRADO",
+    "addFirst": "Adicione seu primeiro edital para organizar seus estudos."
+  },
+  "CreateContestDialog": {
+    "errorPrefix": "Erro:",
+    "createSuccess": "Concurso criado!",
+    "unexpectedError": "Ocorreu um erro inesperado ao salvar o concurso.",
+    "trigger": "NOVO CONCURSO",
+    "title": "ADICIONAR CONCURSO",
+    "description": "Cadastre o edital que você está focado.",
+    "nameLabel": "NOME DO CONCURSO",
+    "namePlaceholder": "Ex: Banco do Brasil 2026",
+    "institutionLabel": "BANCA",
+    "institutionPlaceholder": "Ex: Cesgranrio",
+    "roleLabel": "CARGO",
+    "rolePlaceholder": "Ex: Escriturário",
+    "examDateLabel": "DATA DA PROVA",
+    "mainFocusLabel": "FOCO PRINCIPAL",
+    "mainFocusDescription": "Definir como meta principal atual",
+    "submit": "SALVAR CONCURSO",
+    "validation": {
+      "nameMin": "Nome deve ter pelo menos 2 caracteres",
+      "institutionMin": "Instituição deve ter pelo menos 2 caracteres",
+      "roleMin": "Cargo deve ter pelo menos 2 caracteres"
+    }
+  },
+  "Common": {
+    "close": "Fechar"
+  }
+}
