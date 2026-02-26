@@ -4,14 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { signOut } from "next-auth/react"
-
-const navItems = [
-    { title: "DASHBOARD", href: "/dashboard", emoji: "🕹" },
-    { title: "PLANNER", href: "/planner", emoji: "📅" },
-    { title: "MATERIAS", href: "/subjects", emoji: "📖" },
-    { title: "CONCURSOS", href: "/contests", emoji: "🎯" },
-    { title: "CONQUISTAS", href: "/gamification", emoji: "🏆" },
-]
+import { useTranslations } from "next-intl"
 
 interface AppSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
     user?: {
@@ -23,6 +16,15 @@ interface AppSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function AppSidebar({ className, user }: AppSidebarProps) {
     const pathname = usePathname()
+    const t = useTranslations('AppSidebar')
+
+    const navItems = [
+        { title: t('navDashboard'), href: "/dashboard", emoji: "🕹" },
+        { title: t('navPlanner'), href: "/planner", emoji: "📅" },
+        { title: t('navSubjects'), href: "/subjects", emoji: "📖" },
+        { title: t('navContests'), href: "/contests", emoji: "🎯" },
+        { title: t('navAchievements'), href: "/gamification", emoji: "🏆" },
+    ]
 
     return (
         <div className={cn("pb-12 h-full overflow-y-auto bg-[#04000a] flex flex-col", className)}
@@ -33,14 +35,14 @@ export function AppSidebar({ className, user }: AppSidebarProps) {
                 <Link href="/dashboard" className="block text-center">
                     <div className="text-[#00ff41] font-pixel text-sm leading-loose"
                         style={{ textShadow: '0 0 10px rgba(0,255,65,0.8), 0 0 20px rgba(0,255,65,0.4)' }}>
-                        STUDY
+                        {t('titleStudy')}
                     </div>
                     <div className="text-[#ff006e] font-pixel text-sm leading-loose"
                         style={{ textShadow: '0 0 10px rgba(255,0,110,0.8), 0 0 20px rgba(255,0,110,0.4)' }}>
-                        HUB
+                        {t('titleHub')}
                     </div>
                     <div className="text-[#00ff41] font-pixel text-[8px] mt-1 animate-blink">
-                        ▼ SELECT ▼
+                        {t('select')}
                     </div>
                 </Link>
             </div>
@@ -76,7 +78,7 @@ export function AppSidebar({ className, user }: AppSidebarProps) {
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-[#00ff41] font-pixel text-[7px] truncate">
-                            {user?.name?.toUpperCase() || 'PLAYER 1'}
+                            {user?.name?.toUpperCase() || t('player1')}
                         </p>
                         <p className="text-[#7f7f9f] font-mono text-sm truncate">
                             {user?.email || ''}
@@ -88,14 +90,14 @@ export function AppSidebar({ className, user }: AppSidebarProps) {
                 <div className="space-y-1">
                     <Link href="/settings" className="block">
                         <div className="text-[#7f7f9f] hover:text-[#00ff41] font-pixel text-[7px] px-2 py-2 hover:bg-[#00ff41]/5 transition-colors">
-                            ⚙ CONFIG
+                            {t('config')}
                         </div>
                     </Link>
                     <button
                         className="w-full text-left text-[#ff006e] hover:text-[#ff006e] font-pixel text-[7px] px-2 py-2 hover:bg-[#ff006e]/5 transition-colors"
                         onClick={() => signOut()}
                     >
-                        ✕ SAIR
+                        {t('logout')}
                     </button>
                 </div>
             </div>

@@ -1,0 +1,141 @@
+{
+  "Landing": {
+    "login": "LOGIN",
+    "play": "PLAY",
+    "title": "STUDY HUB",
+    "subtitle": "PREPARE. LEVEL UP. CONquer.",
+    "insertCoin": "► INSERT COIN TO START ◄",
+    "hallOfChampions": "★ HALL OF CHAMPIONS ★",
+    "newGame": "▶ NEW GAME",
+    "continue": "↺ CONTINUE",
+    "achieveResults": "ACHIEVE THESE RESULTS STUDYING WITH US",
+    "copyright": "© 2026 STUDYHUB CORP · VER 1.0.0 · BUILD 001 · ALL RIGHTS RESERVED"
+  },
+  "ScoreEntries": {
+    "focusHours": "FOCUS HOURS",
+    "questionsSolved": "QUESTIONS SOLVED",
+    "streakDays": "STREAK DAYS",
+    "subjectsMastered": "SUBJECTS MASTERED"
+  },
+  "Features": {
+    "adhdFriendly": {
+      "title": "ADHD-FRIENDLY",
+      "desc": "Short sessions, clear goals, no noise"
+    },
+    "gamified": {
+      "title": "GAMIFIED",
+      "desc": "XP, levels, achievements, and real ranking"
+    },
+    "adaptiveAi": {
+      "title": "ADAPTIVE AI",
+      "desc": "AI-generated study cycles"
+    },
+    "allInOne": {
+      "title": "ALL-IN-ONE",
+      "desc": "Syllabus, subjects, and exams in one place"
+    }
+  },
+  "ContestDetail": {
+    "back": "BACK",
+    "mainFocus": "★ MAIN FOCUS",
+    "examDate": "EXAM DATE",
+    "notDefined": "Not defined",
+    "subjects": "SUBJECTS",
+    "topics": "TOPICS",
+    "editorials": "EDITORIALS",
+    "noEditorialMapped": "NO EDITORIAL MAPPED",
+    "noEditorialMappedDescription": "To generate your Skill Tree and start planning your study cycles, we need to extract the subjects and topics from your editorial. Upload the document and let the Artificial Intelligence map it for you.",
+    "skillTree": "SKILL TREE",
+    "skillTreeDescription": "Your editorial formatted into a skill tree.",
+    "topicsCount": "topics",
+    "serverErrorTitle": "ERROR CAUGHT ON NEXT.JS SERVER (TRY-CATCH)",
+    "serverErrorDescription": "The Node Backend suffered a panic and it was caught. Please send a screenshot of the code below:",
+    "errorLabel": "ERROR:"
+  },
+  "AppSidebar": {
+    "titleStudy": "STUDY",
+    "titleHub": "HUB",
+    "select": "▼ SELECT ▼",
+    "navDashboard": "DASHBOARD",
+    "navPlanner": "PLANNER",
+    "navSubjects": "SUBJECTS",
+    "navContests": "CONTESTS",
+    "navAchievements": "ACHIEVEMENTS",
+    "player1": "PLAYER 1",
+    "config": "⚙ CONFIG",
+    "logout": "✕ LOGOUT"
+  },
+  "ThemeToggle": {
+    "toggle": "Toggle theme"
+  },
+  "LoginForm": {
+    "unknownError": "Unknown error",
+    "errorPrefix": "Error:",
+    "invalidCredentials": "Invalid email or password",
+    "loginSuccess": "Login successful!",
+    "emailLabel": "EMAIL",
+    "passwordLabel": "PASSWORD",
+    "hidePassword": "Hide password",
+    "showPassword": "Show password",
+    "loggingIn": "LOGGING IN...",
+    "submit": "► LOGIN"
+  },
+  "RegisterForm": {
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordTooShort": "Password must be at least 6 characters long",
+    "accountCreationError": "Error creating account",
+    "accountCreationSuccess": "Account created! Please login.",
+    "unknownError": "Unknown error",
+    "errorPrefix": "Error:",
+    "nameLabel": "NAME",
+    "namePlaceholder": "Your name",
+    "emailLabel": "EMAIL",
+    "passwordLabel": "PASSWORD",
+    "confirmPasswordLabel": "CONFIRM PASSWORD",
+    "hidePassword": "Hide password",
+    "showPassword": "Show password",
+    "creating": "CREATING...",
+    "submit": "► CREATE ACCOUNT"
+  },
+  "ContestCard": {
+    "removedSuccess": "Contest removed",
+    "unknownError": "Unknown error",
+    "removeErrorPrefix": "Error removing contest:",
+    "mainFocus": "★ MAIN FOCUS",
+    "removeLabel": "Remove contest",
+    "dateNotSet": "Date not set",
+    "viewButton": "► VIEW"
+  },
+  "ContestList": {
+    "found": "{count, plural, one {# contest found} other {# contests found}}",
+    "fusionLab": "FUSION LABORATORY",
+    "noneFound": "NO CONTESTS FOUND",
+    "addFirst": "Add your first editorial to organize your studies."
+  },
+  "CreateContestDialog": {
+    "errorPrefix": "Error:",
+    "createSuccess": "Contest created!",
+    "unexpectedError": "An unexpected error occurred while saving the contest.",
+    "trigger": "NEW CONTEST",
+    "title": "ADD CONTEST",
+    "description": "Register the editorial you are focused on.",
+    "nameLabel": "CONTEST NAME",
+    "namePlaceholder": "Ex: Bank of Brazil 2026",
+    "institutionLabel": "INSTITUTION",
+    "institutionPlaceholder": "Ex: Cesgranrio",
+    "roleLabel": "ROLE",
+    "rolePlaceholder": "Ex: Clerk",
+    "examDateLabel": "EXAM DATE",
+    "mainFocusLabel": "MAIN FOCUS",
+    "mainFocusDescription": "Set as current main goal",
+    "submit": "SAVE CONTEST",
+    "validation": {
+      "nameMin": "Name must be at least 2 characters",
+      "institutionMin": "Institution must be at least 2 characters",
+      "roleMin": "Role must be at least 2 characters"
+    }
+  },
+  "Common": {
+    "close": "Close"
+  }
+}

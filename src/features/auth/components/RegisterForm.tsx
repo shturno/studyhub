@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export function RegisterForm() {
     const router = useRouter()
+    const t = useTranslations('RegisterForm')
     const [isLoading, setIsLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -19,11 +21,11 @@ export function RegisterForm() {
         e.preventDefault()
 
         if (formData.password !== formData.confirmPassword) {
-            toast.error('As senhas não coincidem')
+            toast.error(t('passwordsDoNotMatch'))
             return
         }
         if (formData.password.length < 6) {
-            toast.error('A senha deve ter no mínimo 6 caracteres')
+            toast.error(t('passwordTooShort'))
             return
         }
 
@@ -37,15 +39,15 @@ export function RegisterForm() {
             .then(async (response) => {
                 const data = await response.json() as { error?: string }
                 if (!response.ok) {
-                    toast.error(data.error ?? 'Erro ao criar conta')
+                    toast.error(data.error ?? t('accountCreationError'))
                 } else {
-                    toast.success('Conta criada! Faça login.')
+                    toast.success(t('accountCreationSuccess'))
                     router.push('/login')
                 }
             })
             .catch((err: unknown) => {
-                const message = err instanceof Error ? err.message : 'Erro desconhecido'
-                toast.error(`Erro: ${message}`)
+                const message = err instanceof Error ? err.message : t('unknownError')
+                toast.error(`${t('errorPrefix')} ${message}`)
             })
 
         setIsLoading(false)
@@ -55,8 +57,8 @@ export function RegisterForm() {
         <form onSubmit={handleSubmit} className="space-y-4">
             
             <div className="space-y-2">
-                <label htmlFor="name" className="font-pixel text-[7px] text-[#ff006e] block">NOME</label>
-                <Input id="name" type="text" placeholder="Seu nome" value={formData.name}
+                <label htmlFor="name" className="font-pixel text-[7px] text-[#ff006e] block">{t('nameLabel')}</label>
+                <Input id="name" type="text" placeholder={t('namePlaceholder')} value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     disabled={isLoading} autoComplete="name"
                     style={{ borderColor: 'rgba(255,0,110,0.4)' }}
@@ -67,7 +69,7 @@ export function RegisterForm() {
 
             
             <div className="space-y-2">
-                <label htmlFor="email" className="font-pixel text-[7px] text-[#ff006e] block">EMAIL</label>
+                <label htmlFor="email" className="font-pixel text-[7px] text-[#ff006e] block">{t('emailLabel')}</label>
                 <Input id="email" type="email" placeholder="seu@email.com" value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required disabled={isLoading} autoComplete="email"
@@ -79,7 +81,7 @@ export function RegisterForm() {
 
             
             <div className="space-y-2">
-                <label htmlFor="password" className="font-pixel text-[7px] text-[#ff006e] block">SENHA</label>
+                <label htmlFor="password" className="font-pixel text-[7px] text-[#ff006e] block">{t('passwordLabel')}</label>
                 <div className="relative">
                     <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••"
                         value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -90,7 +92,7 @@ export function RegisterForm() {
                     />
                     <button type="button" onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-[#555] hover:text-[#ff006e] transition-colors"
-                        aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}>
+                        aria-label={showPassword ? t('hidePassword') : t('showPassword')}>
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                 </div>
@@ -98,7 +100,7 @@ export function RegisterForm() {
 
             
             <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="font-pixel text-[7px] text-[#ff006e] block">CONFIRMAR SENHA</label>
+                <label htmlFor="confirmPassword" className="font-pixel text-[7px] text-[#ff006e] block">{t('confirmPasswordLabel')}</label>
                 <div className="relative">
                     <Input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} placeholder="••••••••"
                         value={formData.confirmPassword} onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
@@ -109,7 +111,7 @@ export function RegisterForm() {
                     />
                     <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-[#555] hover:text-[#ff006e] transition-colors"
-                        aria-label={showConfirmPassword ? "Ocultar senha" : "Mostrar senha"}>
+                        aria-label={showConfirmPassword ? t('hidePassword') : t('showPassword')}>
                         {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                 </div>
@@ -120,8 +122,8 @@ export function RegisterForm() {
                 className="w-full font-pixel text-[10px] text-black bg-[#ff006e] h-12 flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ boxShadow: '4px 4px 0px #6b0030, 0 0 15px rgba(255,0,110,0.3)' }}>
                 {isLoading ? (
-                    <><Loader2 className="h-4 w-4 animate-spin" /> CRIANDO...</>
-                ) : '► CRIAR CONTA'}
+                    <><Loader2 className="h-4 w-4 animate-spin" /> {t('creating')}</>
+                ) : t('submit')}
             </button>
         </form>
     )
