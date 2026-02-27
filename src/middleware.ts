@@ -3,11 +3,12 @@ import { authConfig } from "@/lib/auth.config"
 import createMiddleware from 'next-intl/middleware'
 import { NextResponse } from "next/server"
 import type { NextRequest } from 'next/server'
+import { locales } from '@/i18n/request'
 
 const { auth } = NextAuth(authConfig)
 
 const intlMiddleware = createMiddleware({
-  locales: ['en', 'pt', 'es'],
+  locales,
   defaultLocale: 'pt',
   localePrefix: 'always'
 })

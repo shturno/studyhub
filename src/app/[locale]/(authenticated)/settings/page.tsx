@@ -3,7 +3,8 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { SettingsForm } from "@/features/settings/components/SettingsForm"
 
-export default async function SettingsPage({ params }: { params: { locale: string } }) {
+export default async function SettingsPage({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params
     const session = await auth()
 
     if (!session?.user?.id) {
@@ -23,7 +24,7 @@ export default async function SettingsPage({ params }: { params: { locale: strin
     const settings = typeof user.settings === 'object' && user.settings !== null ? user.settings as Record<string, unknown> : {}
     const pomodoroDefault = Number(settings.pomodoroDefault) || 25
     const breakDefault = Number(settings.breakDefault) || 5
-    const userLocale = (settings.locale as string) || params.locale || 'pt'
+    const userLocale = (settings.locale as string) || locale || 'pt'
 
     return (
         <div className="min-h-screen bg-[#080010] p-4 md:p-8 max-w-3xl mx-auto space-y-6">
