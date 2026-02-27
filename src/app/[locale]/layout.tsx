@@ -4,7 +4,6 @@ import { Press_Start_2P, VT323 } from "next/font/google"
 import { Toaster } from "sonner"
 import { AuthProvider } from "@/components/auth-provider"
 import { NextIntlClientProvider } from 'next-intl'
-import { getMessages } from 'next-intl/server'
 import "./globals.css"
 
 const pressStart2P = Press_Start_2P({
@@ -34,12 +33,11 @@ export default async function RootLayout({
   params: Promise<{ locale: string }>
 }>) {
   const { locale } = await params
-  const messages = await getMessages()
-  
+
   return (
     <html lang={locale} className={`dark ${pressStart2P.variable} ${vt323.variable}`} suppressHydrationWarning>
       <body className="antialiased bg-[#080010] text-[#e0e0ff]">
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider>
           <AuthProvider>
             {children}
             <Toaster
