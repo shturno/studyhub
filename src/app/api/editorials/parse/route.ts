@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { parsePdfWithGemini } from '@/features/ai/services/editalParserService'
@@ -96,6 +97,10 @@ export async function POST(request: NextRequest) {
     }, {
       timeout: 30000
     })
+
+    // Invalidar cache da página de detalhes do concurso
+    revalidatePath(`/[locale]/(authenticated)/contests/[slug]`)
+    revalidatePath('/')
 
     return NextResponse.json({
       success: true,
