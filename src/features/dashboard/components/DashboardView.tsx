@@ -9,6 +9,7 @@ import type { DashboardData } from '../services/dashboardService'
 interface DashboardViewProps {
     readonly data: DashboardData
     readonly contests?: { id: string; name: string; slug: string; [key: string]: unknown }[]
+    readonly activeContestId?: string
 }
 
 export function DashboardView({ data, contests = [] }: DashboardViewProps) {
