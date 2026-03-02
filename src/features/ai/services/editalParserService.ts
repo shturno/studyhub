@@ -18,7 +18,7 @@ export async function parsePdfWithGemini(
   try {
     console.log(`[Gemini Parse] PDF text size: ${pdfText.length} characters`)
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
     const prompt = `
 You are an expert in Brazilian Civil Service Exams (Concursos Públicos).
