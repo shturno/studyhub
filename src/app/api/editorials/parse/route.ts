@@ -7,24 +7,9 @@ import { parsePdfWithGemini } from '@/features/ai/services/editalParserService'
 export const maxDuration = 60
 
 async function extractPdfText(arrayBuffer: ArrayBuffer): Promise<string> {
-  const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs')
-  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise
-  let pdfText = ''
-
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i)
-    const textContent = await page.getTextContent()
-    pdfText += textContent.items
-      .map((item: Record<string, unknown>) => {
-        if ('str' in item && typeof item.str === 'string') {
-          return item.str
-        }
-        return ''
-      })
-      .join(' ') + '\n'
-  }
-
-  return pdfText
+  const { extractText } = await import('unpdf')
+  const result = await extractText(new Uint8Array(arrayBuffer))
+  return result.text.join('\n')
 }
 
 export async function POST(request: NextRequest) {
