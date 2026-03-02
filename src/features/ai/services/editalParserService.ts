@@ -16,6 +16,8 @@ export async function parsePdfWithGemini(
   pdfText: string
 ): Promise<ParsedEdital> {
   try {
+    console.log(`[Gemini Parse] PDF text size: ${pdfText.length} characters`)
+
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' })
 
     const prompt = `
@@ -45,18 +47,30 @@ Respond ONLY with a valid JSON object following this EXACT structure, and absolu
 }
 `
 
+    console.log(`[Gemini Parse] Sending request to Gemini 1.5 Flash`)
     const response = await model.generateContent([
       prompt,
       "\n\n--- EDITAL TEXT ---\n" + pdfText
     ])
 
     const responseText = response.response.text()
+    console.log(`[Gemini Parse] Received response: ${responseText.length} characters`)
+    console.log(`[Gemini Parse] Raw response (first 500 chars): ${responseText.substring(0, 500)}`)
 
     const jsonString = responseText.replaceAll(/```json\n?/g, '').replaceAll('```', '').trim()
-    
-    return JSON.parse(jsonString) as ParsedEdital
+    console.log(`[Gemini Parse] Cleaned JSON string (first 500 chars): ${jsonString.substring(0, 500)}`)
+
+    const parsedData = JSON.parse(jsonString) as ParsedEdital
+    console.log(`[Gemini Parse] ✅ Successfully parsed ${parsedData.subjects.length} subjects`)
+
+    return parsedData
   } catch (error) {
-    console.error('Error parsing edital with Gemini:', error)
-    throw new Error('Falha ao processar o Edital com a IA. O arquivo pode ser muito grande ou ilegível.')
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error('[Gemini Parse] ❌ ERROR:', {
+      message: errorMessage,
+      type: error instanceof Error ? error.constructor.name : 'Unknown',
+      timestamp: new Date().toISOString(),
+    })
+    throw new Error(`Falha ao processar o Edital com a IA: ${errorMessage}`)
   }
 }
