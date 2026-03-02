@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { parsePdfWithGemini } from '@/features/ai/services/editalParserService'
+import * as pdfjsLib from 'pdfjs-dist'
 
 export const maxDuration = 60
 
@@ -38,21 +39,22 @@ export async function POST(request: NextRequest) {
         throw new Error('Falha ao obter o arquivo da Vercel Blob.')
     }
     const arrayBuffer = await fileResponse.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
-    
-    // Use pdfjs-dist para extrair texto do PDF
-    const pdfjsLib = await import('pdfjs-dist')
-    const pdfjs = pdfjsLib.default || pdfjsLib
-    
-    // Extrair texto do PDF
-    const pdfDocument = await pdfjs.getDocument({ data: new Uint8Array(buffer) }).promise
+
+    // Extrair texto do PDF usando pdfjs-dist
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
     let pdfText = ''
-    
-    for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
-      const page = await pdfDocument.getPage(pageNum)
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i)
       const textContent = await page.getTextContent()
-      const items = textContent.items as Array<{ str: string }>
-      pdfText += items.map(item => item.str).join(' ') + ' '
+      pdfText += textContent.items
+        .map((item) => {
+          if ('str' in item) {
+            return item.str
+          }
+          return ''
+        })
+        .join(' ') + '\n'
     }
 
     const parsedData = await parsePdfWithGemini(pdfText)
