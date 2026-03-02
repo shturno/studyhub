@@ -40,10 +40,20 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await fileResponse.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
     
-    const pdfParseModule = await import('pdf-parse')
-    const pdfParse = pdfParseModule.default || pdfParseModule
-    const pdfData = await pdfParse(buffer)
-    const pdfText = pdfData.text
+    // Use pdfjs-dist para extrair texto do PDF
+    const pdfjsLib = await import('pdfjs-dist')
+    const pdfjs = pdfjsLib.default || pdfjsLib
+    
+    // Extrair texto do PDF
+    const pdfDocument = await pdfjs.getDocument({ data: new Uint8Array(buffer) }).promise
+    let pdfText = ''
+    
+    for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
+      const page = await pdfDocument.getPage(pageNum)
+      const textContent = await page.getTextContent()
+      const items = textContent.items as Array<{ str: string }>
+      pdfText += items.map(item => item.str).join(' ') + ' '
+    }
 
     const parsedData = await parsePdfWithGemini(pdfText)
 
