@@ -7,7 +7,6 @@ import { User, Settings, Bell, Save, Globe } from 'lucide-react'
 import { updateProfileSettings } from '@/app/[locale]/(authenticated)/settings/actions'
 import { toast } from 'sonner'
 import { useRouter, usePathname } from 'next/navigation'
-import { useTranslations } from 'next-intl'
 
 interface SettingsFormProps {
   initialName: string

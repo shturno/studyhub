@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { Play, Pause, RotateCcw, Trophy, ArrowLeft } from 'lucide-react'
 import { useStudyTimer } from '@/features/timer/hooks/useStudyTimer'
 import { cn } from '@/lib/utils'
@@ -155,11 +156,11 @@ export function TimerDisplay({ topicId, topicName, subjectName, onComplete }: Ti
                             <Trophy className="w-5 h-5" />
                             STAGE CLEAR!
                         </div>
-                        <a href="/dashboard"
+                        <Link href="/dashboard"
                             className="font-pixel text-[7px] text-[#7f7f9f] hover:text-[#00ff41] flex items-center gap-2 transition-colors">
                             <ArrowLeft className="w-3 h-3" />
                             VOLTAR AO HUB
-                        </a>
+                        </Link>
                     </div>
                 )}
             </div>
