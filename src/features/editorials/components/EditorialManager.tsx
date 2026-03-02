@@ -67,10 +67,14 @@ export function EditorialManager({ contestId, onEditorialAdded }: Readonly<Edito
       
       toast.info('Enviando o PDF para a nuvem de forma segura...', { duration: 5000 })
       
-      const newBlob = await upload(file.name, file, {
+      // Adicionar timestamp para garantir nome único
+      const timestamp = Date.now()
+      const fileExtension = file.name.split('.').pop()
+      const uniqueFileName = `edital-${timestamp}.${fileExtension}`
+      
+      const newBlob = await upload(uniqueFileName, file, {
         access: 'public',
         handleUploadUrl: '/api/editorials/upload',
-        
       })
 
       const formData = new FormData()
