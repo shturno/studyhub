@@ -3,9 +3,29 @@ import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { parsePdfWithGemini } from '@/features/ai/services/editalParserService'
-import * as pdfjsLib from 'pdfjs-dist'
 
 export const maxDuration = 60
+
+async function extractPdfText(arrayBuffer: ArrayBuffer): Promise<string> {
+  const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs')
+  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise
+  let pdfText = ''
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i)
+    const textContent = await page.getTextContent()
+    pdfText += textContent.items
+      .map((item: Record<string, unknown>) => {
+        if ('str' in item && typeof item.str === 'string') {
+          return item.str
+        }
+        return ''
+      })
+      .join(' ') + '\n'
+  }
+
+  return pdfText
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,21 +61,7 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await fileResponse.arrayBuffer()
 
     // Extrair texto do PDF usando pdfjs-dist
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
-    let pdfText = ''
-
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i)
-      const textContent = await page.getTextContent()
-      pdfText += textContent.items
-        .map((item) => {
-          if ('str' in item) {
-            return item.str
-          }
-          return ''
-        })
-        .join(' ') + '\n'
-    }
+    const pdfText = await extractPdfText(arrayBuffer)
 
     const parsedData = await parsePdfWithGemini(pdfText)
 
