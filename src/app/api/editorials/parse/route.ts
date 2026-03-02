@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { parsePdfWithGemini } from '@/features/ai/services/editalParserService'
+import { extractSyllabusContent } from '@/features/ai/services/textPreprocessor'
 
 export const maxDuration = 60
 
@@ -57,13 +58,50 @@ export async function POST(request: NextRequest) {
         throw new Error(`Falha ao obter arquivo: status ${fileResponse.status}`)
     }
     const arrayBuffer = await fileResponse.arrayBuffer()
-    console.log(`[Editorial Parse] Arquivo obtido com sucesso: ${(arrayBuffer.byteLength / 1024).toFixed(2)} KB`)
+    const fileSizeKB = arrayBuffer.byteLength / 1024
+    console.log(`[Editorial Parse] Arquivo obtido com sucesso: ${fileSizeKB.toFixed(2)} KB`)
+
+    // Validar tamanho do arquivo (limite: 50MB)
+    const MAX_FILE_SIZE_MB = 50
+    if (fileSizeKB > MAX_FILE_SIZE_MB * 1024) {
+      console.warn(`[Editorial Parse] Arquivo excede limite: ${fileSizeKB.toFixed(2)} KB > ${MAX_FILE_SIZE_MB * 1024} KB`)
+      return NextResponse.json(
+        { error: `Arquivo muito grande. Máximo permitido: ${MAX_FILE_SIZE_MB}MB` },
+        { status: 413 }
+      )
+    }
 
     // Extrair texto do PDF usando unpdf
     const pdfText = await extractPdfText(arrayBuffer)
 
-    console.log(`[Editorial Parse] Enviando texto para Gemini para parsing`)
-    const parsedData = await parsePdfWithGemini(pdfText)
+    // Preprocessar texto: extrair apenas conteúdo do edital relevante
+    console.log('[Editorial Parse] Iniciando preprocessamento de texto')
+    const preprocessed = await extractSyllabusContent(pdfText)
+    const cleanedText = preprocessed.content
+
+    if (preprocessed.wasFiltered) {
+      console.log(
+        `[Editorial Parse] ✓ Texto filtrado: ${preprocessed.originalSize} → ${preprocessed.filteredSize} bytes (${preprocessed.reductionPercentage.toFixed(1)}% redução)`
+      )
+    } else {
+      console.log('[Editorial Parse] ⚠ Preprocessamento: nenhum marcador encontrado, usando texto completo')
+    }
+
+    // Validar tamanho do texto extraído após filtragem (Gemini 1.5 Flash: ~1M tokens, estimando ~4 chars = 1 token)
+    const MAX_TEXT_SIZE_KB = 500
+    let textForGemini = cleanedText
+    const textSizeKB = cleanedText.length / 1024
+
+    if (textSizeKB > MAX_TEXT_SIZE_KB) {
+      // Tentar truncar para manter a primeira parte (onde o conteúdo programático geralmente está)
+      textForGemini = cleanedText.substring(0, MAX_TEXT_SIZE_KB * 1024)
+      console.warn(
+        `[Editorial Parse] Texto excede limite (${textSizeKB.toFixed(2)} KB), truncando para ${(textForGemini.length / 1024).toFixed(2)} KB`
+      )
+    }
+
+    console.log(`[Editorial Parse] Enviando texto para Gemini para parsing (${(textForGemini.length / 1024).toFixed(2)} KB)`)
+    const parsedData = await parsePdfWithGemini(textForGemini)
     console.log(`[Editorial Parse] Gemini parsing completo: ${parsedData.subjects.length} subjects encontrados`)
 
     console.log(`[Editorial Parse] Iniciando transação de banco de dados`)
