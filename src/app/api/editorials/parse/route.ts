@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       console.log('[Editorial Parse] ⚠ Preprocessamento: nenhum marcador encontrado, usando texto completo')
     }
 
-    // Validar tamanho do texto extraído após filtragem (Gemini 1.5 Flash: ~1M tokens, estimando ~4 chars = 1 token)
+    // Validar tamanho do texto extraído após filtragem (Gemini 2.5 Flash: ~1M tokens, estimando ~4 chars = 1 token)
     const MAX_TEXT_SIZE_KB = 500
     let textForGemini = cleanedText
     const textSizeKB = cleanedText.length / 1024
