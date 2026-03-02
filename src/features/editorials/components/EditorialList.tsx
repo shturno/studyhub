@@ -48,7 +48,7 @@ export function EditorialList({ editorials, onSelectEdito }: EditorialListProps)
       await deleteEditorialItem(id)
       toast.success('Edital removido com sucesso')
       router.refresh()
-    } catch (error) {
+    } catch {
       toast.error('Erro ao remover edital')
     }
     setDeleteId(null)

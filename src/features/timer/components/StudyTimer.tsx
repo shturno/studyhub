@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Play, Pause, Square, RotateCcw } from "lucide-react"
@@ -31,7 +31,7 @@ export function StudyTimer({ lessonId, lessonTitle, onSessionComplete }: StudyTi
 
   const progress = ((totalSessionTime - timeLeft) / totalSessionTime) * 100
 
-  const saveSession = async (studiedMinutes: number) => {
+  const saveSession = useCallback(async (studiedMinutes: number) => {
     if (studiedMinutes <= 0) return
     await fetch(`/api/lessons/${lessonId}/study-logs`, {
       method: "POST",
@@ -45,7 +45,7 @@ export function StudyTimer({ lessonId, lessonTitle, onSessionComplete }: StudyTi
         onSessionComplete?.()
       })
       .catch(() => toast({ title: "Erro ao salvar sessão", variant: "destructive" }))
-  }
+  }, [lessonId, toast, onSessionComplete])
 
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
@@ -69,7 +69,7 @@ export function StudyTimer({ lessonId, lessonTitle, onSessionComplete }: StudyTi
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [isRunning, timeLeft])
+  }, [isRunning, timeLeft, totalSessionTime, saveSession])
 
   const handleStop = async () => {
     setIsRunning(false)
