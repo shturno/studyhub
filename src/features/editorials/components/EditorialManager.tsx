@@ -70,7 +70,7 @@ export function EditorialManager({ contestId, onEditorialAdded }: Readonly<Edito
       const newBlob = await upload(file.name, file, {
         access: 'public',
         handleUploadUrl: '/api/editorials/upload',
-        addRandomSuffix: true,
+        
       })
 
       const formData = new FormData()
