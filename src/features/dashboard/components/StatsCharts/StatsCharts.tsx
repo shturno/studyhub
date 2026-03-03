@@ -15,7 +15,7 @@ import { useStatsCharts } from "./useStatsCharts";
 import { COLORS } from "./types";
 
 export function StatsCharts() {
-  const { stats, loading } = useStatsCharts();
+  const { stats, loading, error } = useStatsCharts();
 
   if (loading) {
     return (
@@ -30,6 +30,28 @@ export function StatsCharts() {
             }}
           >
             <Loader2 className="h-6 w-6 text-[#00ff41] animate-spin" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {[0, 1].map((i) => (
+          <div
+            key={i}
+            className="p-6 flex flex-col items-center justify-center h-64"
+            style={{
+              border: "2px solid rgba(255,0,110,0.2)",
+              background: "#04000a",
+            }}
+          >
+            <div className="text-3xl mb-2">⚠️</div>
+            <div className="text-center font-mono text-sm text-[#ff006e]">
+              Erro ao carregar dados
+            </div>
           </div>
         ))}
       </div>

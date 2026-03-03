@@ -5,7 +5,10 @@ export async function GET() {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 },
+      );
     }
 
     return NextResponse.json({
@@ -15,7 +18,11 @@ export async function GET() {
       weeklyStats: [],
       trackDistribution: [],
     });
-  } catch {
-    return new NextResponse("Internal Server Error", { status: 500 });
+  } catch (error) {
+    console.error("Stats API error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

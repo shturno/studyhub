@@ -248,11 +248,8 @@ export default async function ContestDetailPage(props: ContestDetailPageProps) {
           className="w-full bg-black p-4 rounded overflow-auto text-left font-mono text-xs max-h-[400px]"
           style={{ border: "1px solid #333" }}
         >
-          <p className="font-bold text-[#ff006e]">
-            {t("errorLabel")} {err?.message || String(error)}
-          </p>
-          <p className="text-[#00ff41] mt-2 whitespace-pre-wrap">
-            {err?.stack}
+          <p className="text-[#999]">
+            {t("serverErrorDescription")}
           </p>
         </div>
       </div>

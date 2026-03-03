@@ -1,32 +1,44 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import type { Lesson } from "@/features/study-cycle/types";
 
 export function useLessonPanel(lessonId: string | null, open: boolean) {
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     if (lessonId && open) {
       setLoading(true);
+      setError(false);
       fetch(`/api/lessons/${lessonId}`)
         .then((res) => res.json() as Promise<Lesson>)
         .then((data) => {
           setLesson(data);
           setLoading(false);
         })
-        .catch(() => {
+        .catch((err) => {
+          console.error("Failed to load lesson:", err);
+          setError(true);
           setLoading(false);
+          toast.error("Erro ao carregar lição");
         });
     }
   }, [lessonId, open]);
 
   const refreshLesson = async () => {
     if (lessonId) {
-      const res = await fetch(`/api/lessons/${lessonId}`);
-      const data = (await res.json()) as Lesson;
-      setLesson(data);
+      try {
+        const res = await fetch(`/api/lessons/${lessonId}`);
+        if (!res.ok) throw new Error("Failed to refresh lesson");
+        const data = (await res.json()) as Lesson;
+        setLesson(data);
+      } catch (err) {
+        console.error("Failed to refresh lesson:", err);
+        toast.error("Erro ao atualizar lição");
+      }
     }
   };
 
@@ -50,6 +62,7 @@ export function useLessonPanel(lessonId: string | null, open: boolean) {
   return {
     lesson,
     loading,
+    error,
     totalStudyTime,
     studySessionsCount,
     statusLabel,

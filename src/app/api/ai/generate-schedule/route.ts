@@ -59,12 +59,13 @@ export async function POST(request: NextRequest) {
       priorities,
     });
   } catch (error) {
+    console.error("[Generate Schedule] Error:", error);
+    const errorDetails = error instanceof Error ? error.message : "Unknown error";
+    console.error(`[Generate Schedule] Details: ${errorDetails}`);
+
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to generate schedule",
+        error: "Failed to generate schedule",
       },
       { status: 500 },
     );
