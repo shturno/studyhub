@@ -17,9 +17,11 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
     setCurrentMonth,
     sessionsByMonth,
     sessionsByWeek,
+    sessionsByDateComplete,
     sessionsForDay,
     totalDays,
     totalHours,
+    sessionsByDate,
   } = usePlannerCalendar(sessions);
 
   const selectedDateStr = selectedDate
@@ -74,17 +76,34 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
               onMonthChange={setCurrentMonth}
               disabled={(date) => {
                 const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-                return !sessionsByMonth
-                  .flat()
-                  .some((m) =>
-                    m?.[1]?.some(
-                      (d: { dateStr: string; sessions: PlannedSession[] }) =>
-                        d.dateStr === dateStr,
-                    ),
-                  );
+                return !sessionsByDate.has(dateStr);
               }}
               className="w-full"
             />
+            {Array.from(sessionsByDate.entries()).map(([dateStr, sessions]) => {
+              const date = new Date(dateStr + "T12:00:00");
+              if (
+                date.getMonth() !== currentMonth.getMonth() ||
+                date.getFullYear() !== currentMonth.getFullYear()
+              ) {
+                return null;
+              }
+              const hours =
+                sessions.reduce((sum, s) => sum + s.duration, 0) / 60;
+              return (
+                <div
+                  key={dateStr}
+                  className="text-center text-[10px] font-pixel text-[#00ff41] mt-1"
+                  style={{
+                    position: "absolute",
+                    pointerEvents: "none",
+                  }}
+                >
+                  <div>{sessions.length}</div>
+                  <div>{hours.toFixed(1)}h</div>
+                </div>
+              );
+            })}
           </div>
 
           {selectedDateStr && (
@@ -116,7 +135,7 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
         </div>
 
         <div className="space-y-2">
-          <div className="flex gap-2 mb-3">
+          <div className="flex gap-2 mb-3 flex-wrap">
             <Button
               size="sm"
               variant={viewMode === "semanal" ? "default" : "outline"}
@@ -132,6 +151,14 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
               className="text-xs"
             >
               MENSAL
+            </Button>
+            <Button
+              size="sm"
+              variant={viewMode === "completo" ? "default" : "outline"}
+              onClick={() => setViewMode("completo")}
+              className="text-xs"
+            >
+              CRONOGRAMA
             </Button>
           </div>
 
@@ -153,7 +180,10 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
                         key={entry.dateStr}
                         className="px-4 py-1 text-xs font-mono text-[#7f7f9f]"
                       >
-                        {entry.dateStr}: {entry.sessions.length} sessões
+                        <div className="flex justify-between">
+                          <span>{entry.dateStr}</span>
+                          <span>{entry.sessions.length} sessões</span>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -170,11 +200,51 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
                         key={entry.dateStr}
                         className="px-4 py-1 text-xs font-mono text-[#7f7f9f]"
                       >
-                        {entry.dateStr}: {entry.sessions.length} sessões
+                        <div className="flex justify-between">
+                          <span>{entry.dateStr}</span>
+                          <span>{entry.sessions.length} sessões</span>
+                        </div>
                       </div>
                     ))}
                   </div>
                 ))
+              : null}
+            {viewMode === "completo" && sessionsByDateComplete.length > 0
+              ? sessionsByDateComplete.map((entry) => {
+                  const hours =
+                    entry.sessions.reduce((sum, s) => sum + s.duration, 0) / 60;
+                  return (
+                    <div
+                      key={entry.dateStr}
+                      className="border-b border-[#00ff41]/10 px-4 py-3"
+                    >
+                      <div className="font-pixel text-[7px] text-[#00ff41] mb-2">
+                        {new Date(
+                          entry.dateStr + "T12:00:00",
+                        ).toLocaleDateString("pt-BR")}
+                      </div>
+                      <div className="space-y-1">
+                        {entry.sessions.map((s) => (
+                          <div
+                            key={s.id}
+                            className="text-xs font-mono text-[#7f7f9f] ml-2"
+                          >
+                            <div className="text-[#e0e0ff]">
+                              {s.lessonTitle}
+                            </div>
+                            <div className="text-[#555]">
+                              {s.trackName} • {s.duration}min
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="text-xs font-mono text-[#00ff41] mt-2 pt-2 border-t border-[#00ff41]/10">
+                        Total: {entry.sessions.length} sessões (
+                        {hours.toFixed(1)}h)
+                      </div>
+                    </div>
+                  );
+                })
               : null}
           </div>
         </div>

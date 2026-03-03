@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import type { PlannerData } from "@/features/study-cycle/types";
+import type { PlannerData, Lesson, Track } from "@/features/study-cycle/types";
 
 export async function getPlannerData(): Promise<PlannerData> {
   const session = await auth();
@@ -36,23 +36,27 @@ export async function getPlannerData(): Promise<PlannerData> {
 
   for (const contest of contests) {
     for (const subject of contest.subjects) {
-      const trackLessons = subject.topics.map((topic) => ({
+      const track: Track = {
+        id: subject.id,
+        name: subject.name,
+        lessons: [],
+      };
+
+      const trackLessons: Lesson[] = subject.topics.map((topic) => ({
         id: topic.id,
         title: topic.name,
-        trackName: subject.name,
         trackId: subject.id,
+        track,
         status: completedTopicIds.has(topic.id)
           ? ("DONE" as const)
           : ("NOT_STARTED" as const),
         estimated: 30,
+        studyLogs: [],
       }));
 
-      tracks.push({
-        id: subject.id,
-        name: subject.name,
-        lessons: trackLessons,
-      });
+      track.lessons = trackLessons;
 
+      tracks.push(track);
       availableLessons.push(...trackLessons);
     }
   }
