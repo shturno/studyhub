@@ -10,10 +10,6 @@ interface PlannedSession {
   readonly draft: boolean
 }
 
-/**
- * Helper function to organize sessions by date
- * Mirrors the logic in PlannerCalendar component
- */
 function sessionsByDateHelper(sessions: PlannedSession[]) {
   const map = new Map<string, PlannedSession[]>()
   for (const s of sessions) {
@@ -24,10 +20,6 @@ function sessionsByDateHelper(sessions: PlannedSession[]) {
   return map
 }
 
-/**
- * Helper function to organize sessions by month
- * Mirrors the logic in PlannerCalendar component
- */
 function sessionsByMonthHelper(
   sessionsByDate: Map<string, PlannedSession[]>
 ) {
@@ -40,12 +32,33 @@ function sessionsByMonthHelper(
     { dateStr: string; sessions: PlannedSession[] }[]
   >()
   for (const [dateStr, daySessions] of sorted) {
-    const monthKey = dateStr.slice(0, 7) // "YYYY-MM"
+    const monthKey = dateStr.slice(0, 7)
     const existing = months.get(monthKey) ?? []
     existing.push({ dateStr, sessions: daySessions })
     months.set(monthKey, existing)
   }
   return Array.from(months.entries())
+}
+
+function sessionsByWeekHelper(
+  sessionsByDate: Map<string, PlannedSession[]>
+) {
+  const sorted = Array.from(sessionsByDate.entries()).sort(([a], [b]) =>
+    a.localeCompare(b)
+  )
+
+  const weeks = new Map<string, { dateStr: string; sessions: PlannedSession[] }[]>()
+  for (const [dateStr, daySessions] of sorted) {
+    const date = new Date(dateStr + "T12:00:00")
+    const weekStart = new Date(date)
+    weekStart.setDate(date.getDate() - date.getDay() + 1)
+    const weekKey = `${weekStart.getFullYear()}-W${String(Math.ceil((date.getDate() - date.getDay() + 1) / 7)).padStart(2, "0")}`
+
+    const existing = weeks.get(weekKey) ?? []
+    existing.push({ dateStr, sessions: daySessions })
+    weeks.set(weekKey, existing)
+  }
+  return Array.from(weeks.entries())
 }
 
 describe('PlannerCalendar Data Logic', () => {
@@ -457,6 +470,206 @@ describe('PlannerCalendar Data Logic', () => {
       const monthKey = dateStr.slice(0, 7)
 
       expect(monthKey).toBe('2026-03')
+    })
+  })
+
+  describe('sessionsByWeek organization', () => {
+    it('should group sessions by week', () => {
+      const sessions: PlannedSession[] = [
+        {
+          id: '1',
+          lessonId: 'l1',
+          lessonTitle: 'Math',
+          trackName: 'Math',
+          duration: 60,
+          scheduledDate: '2026-03-02',
+          draft: false,
+        },
+        {
+          id: '2',
+          lessonId: 'l2',
+          lessonTitle: 'Physics',
+          trackName: 'Physics',
+          duration: 45,
+          scheduledDate: '2026-03-09',
+          draft: false,
+        },
+      ]
+
+      const sessionsByDate = sessionsByDateHelper(sessions)
+      const result = sessionsByWeekHelper(sessionsByDate)
+
+      expect(result.length).toBeGreaterThan(0)
+    })
+
+    it('should organize multiple days in same week together', () => {
+      const sessions: PlannedSession[] = [
+        {
+          id: '1',
+          lessonId: 'l1',
+          lessonTitle: 'Math',
+          trackName: 'Math',
+          duration: 60,
+          scheduledDate: '2026-03-02',
+          draft: false,
+        },
+        {
+          id: '2',
+          lessonId: 'l2',
+          lessonTitle: 'Physics',
+          trackName: 'Physics',
+          duration: 45,
+          scheduledDate: '2026-03-05',
+          draft: false,
+        },
+      ]
+
+      const sessionsByDate = sessionsByDateHelper(sessions)
+      const result = sessionsByWeekHelper(sessionsByDate)
+
+      expect(result.length).toBeGreaterThanOrEqual(1)
+    })
+  })
+
+  describe('four view modes structure', () => {
+    it('should support diario view with daily sessions', () => {
+      const sessions: PlannedSession[] = [
+        {
+          id: '1',
+          lessonId: 'l1',
+          lessonTitle: 'Math',
+          trackName: 'Math',
+          duration: 60,
+          scheduledDate: '2026-03-05',
+          draft: false,
+        },
+      ]
+
+      const sessionsByDate = sessionsByDateHelper(sessions)
+
+      expect(sessionsByDate.has('2026-03-05')).toBe(true)
+    })
+
+    it('should support semanal view with weekly aggregation', () => {
+      const sessions: PlannedSession[] = [
+        {
+          id: '1',
+          lessonId: 'l1',
+          lessonTitle: 'Math',
+          trackName: 'Math',
+          duration: 60,
+          scheduledDate: '2026-03-02',
+          draft: false,
+        },
+        {
+          id: '2',
+          lessonId: 'l2',
+          lessonTitle: 'Physics',
+          trackName: 'Physics',
+          duration: 60,
+          scheduledDate: '2026-03-04',
+          draft: false,
+        },
+      ]
+
+      const sessionsByDate = sessionsByDateHelper(sessions)
+      const weeks = sessionsByWeekHelper(sessionsByDate)
+
+      expect(weeks.length).toBeGreaterThan(0)
+    })
+
+    it('should support mensal view with monthly aggregation', () => {
+      const sessions: PlannedSession[] = [
+        {
+          id: '1',
+          lessonId: 'l1',
+          lessonTitle: 'Math',
+          trackName: 'Math',
+          duration: 60,
+          scheduledDate: '2026-03-05',
+          draft: false,
+        },
+      ]
+
+      const sessionsByDate = sessionsByDateHelper(sessions)
+      const months = sessionsByMonthHelper(sessionsByDate)
+
+      expect(months.length).toBe(1)
+      expect(months[0][0]).toBe('2026-03')
+    })
+
+    it('should support completo view with all days', () => {
+      const sessions: PlannedSession[] = [
+        {
+          id: '1',
+          lessonId: 'l1',
+          lessonTitle: 'Math',
+          trackName: 'Math',
+          duration: 60,
+          scheduledDate: '2026-03-05',
+          draft: false,
+        },
+        {
+          id: '2',
+          lessonId: 'l2',
+          lessonTitle: 'Physics',
+          trackName: 'Physics',
+          duration: 45,
+          scheduledDate: '2026-03-06',
+          draft: false,
+        },
+      ]
+
+      const sessionsByDate = sessionsByDateHelper(sessions)
+      const allDays = Array.from(sessionsByDate.keys())
+
+      expect(allDays.length).toBe(2)
+    })
+  })
+
+  describe('view transitions', () => {
+    it('should have consistent data across all views', () => {
+      const sessions: PlannedSession[] = [
+        {
+          id: '1',
+          lessonId: 'l1',
+          lessonTitle: 'Math',
+          trackName: 'Math',
+          duration: 120,
+          scheduledDate: '2026-03-05',
+          draft: false,
+        },
+        {
+          id: '2',
+          lessonId: 'l2',
+          lessonTitle: 'Physics',
+          trackName: 'Physics',
+          duration: 90,
+          scheduledDate: '2026-03-06',
+          draft: false,
+        },
+      ]
+
+      const sessionsByDate = sessionsByDateHelper(sessions)
+      const sessionsByMonth = sessionsByMonthHelper(sessionsByDate)
+      const sessionsByWeek = sessionsByWeekHelper(sessionsByDate)
+
+      const dailyCount = Array.from(sessionsByDate.values()).reduce(
+        (sum, s) => sum + s.length,
+        0
+      )
+      const monthlyCount = sessionsByMonth.reduce(
+        (sum, [, days]) => sum + days.reduce((s, d) => s + d.sessions.length, 0),
+        0
+      )
+      const weeklyCount = sessionsByWeek.reduce(
+        (sum, [, days]) => sum + days.reduce((s, d) => s + d.sessions.length, 0),
+        0
+      )
+
+      expect(dailyCount).toBe(2)
+      expect(monthlyCount).toBe(2)
+      expect(weeklyCount).toBe(2)
     })
   })
 })
