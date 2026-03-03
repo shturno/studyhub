@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   CommandDialog,
   CommandEmpty,
@@ -9,47 +9,62 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
-import { BookOpen, FileText } from "lucide-react"
-import type { Track, Lesson } from "@/features/study-cycle/types"
+} from "@/components/ui/command";
+import { BookOpen, FileText } from "lucide-react";
+import type { Track, Lesson } from "@/features/study-cycle/types";
 
 interface QuickSearchProps {
-  readonly open: boolean
-  readonly onOpenChange: (open: boolean) => void
-  readonly tracks: Track[]
-  readonly lessons: Lesson[]
+  readonly open: boolean;
+  readonly onOpenChange: (open: boolean) => void;
+  readonly tracks: Track[];
+  readonly lessons: Lesson[];
 }
 
-export function QuickSearch({ open, onOpenChange, tracks, lessons }: QuickSearchProps) {
-  const router = useRouter()
-  const [search, setSearch] = useState("")
+export function QuickSearch({
+  open,
+  onOpenChange,
+  tracks,
+  lessons,
+}: QuickSearchProps) {
+  const router = useRouter();
+  const [search, setSearch] = useState("");
 
-  const filteredTracks = tracks.filter((track) => track.name.toLowerCase().includes(search.toLowerCase()))
+  const filteredTracks = tracks.filter((track) =>
+    track.name.toLowerCase().includes(search.toLowerCase()),
+  );
 
   const filteredLessons = lessons.filter((lesson) =>
-    lesson.title.toLowerCase().includes(search.toLowerCase())
-  )
+    lesson.title.toLowerCase().includes(search.toLowerCase()),
+  );
 
-  const handleSelect = (type: "track" | "lesson", id: string, trackId?: string) => {
-    onOpenChange(false)
-    setSearch("")
+  const handleSelect = (
+    type: "track" | "lesson",
+    id: string,
+    trackId?: string,
+  ) => {
+    onOpenChange(false);
+    setSearch("");
 
     if (type === "track") {
-      router.push(`/tracks/${id}`)
+      router.push(`/tracks/${id}`);
     } else if (type === "lesson" && trackId) {
-      router.push(`/tracks/${trackId}`)
+      router.push(`/tracks/${trackId}`);
     }
-  }
+  };
 
   useEffect(() => {
     if (!open) {
-      setSearch("")
+      setSearch("");
     }
-  }, [open])
+  }, [open]);
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <CommandInput placeholder="Buscar trilhas e lições..." value={search} onValueChange={setSearch} />
+      <CommandInput
+        placeholder="Buscar trilhas e lições..."
+        value={search}
+        onValueChange={setSearch}
+      />
       <CommandList>
         <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
 
@@ -71,27 +86,35 @@ export function QuickSearch({ open, onOpenChange, tracks, lessons }: QuickSearch
         {filteredLessons.length > 0 && (
           <CommandGroup heading="Lições">
             {filteredLessons.map((lesson) => {
-              const track = tracks.find((t) => t.id === lesson.trackId)
+              const track = tracks.find((t) => t.id === lesson.trackId);
               return (
                 <CommandItem
                   key={lesson.id}
-                  onSelect={() => handleSelect("lesson", lesson.id, lesson.trackId)}
+                  onSelect={() =>
+                    handleSelect("lesson", lesson.id, lesson.trackId)
+                  }
                   className="flex items-center gap-2"
                 >
                   <FileText className="h-4 w-4 text-[#7b61ff]" />
                   <div className="flex-1 min-w-0">
                     <div className="font-mono text-base">{lesson.title}</div>
-                    {track && <div className="font-mono text-sm text-[#555]">{track.name}</div>}
+                    {track && (
+                      <div className="font-mono text-sm text-[#555]">
+                        {track.name}
+                      </div>
+                    )}
                   </div>
-                  {lesson.status === 'DONE' && (
-                    <span className="font-pixel text-[7px] text-[#00ff41]">✓</span>
+                  {lesson.status === "DONE" && (
+                    <span className="font-pixel text-[7px] text-[#00ff41]">
+                      ✓
+                    </span>
                   )}
                 </CommandItem>
-              )
+              );
             })}
           </CommandGroup>
         )}
       </CommandList>
     </CommandDialog>
-  )
+  );
 }

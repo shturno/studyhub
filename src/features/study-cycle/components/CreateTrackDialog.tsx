@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -11,29 +11,29 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/hooks/use-toast"
-import { Loader2 } from "lucide-react"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 interface CreateTrackDialogProps {
-  readonly children: React.ReactNode
+  readonly children: React.ReactNode;
 }
 
 export function CreateTrackDialog({ children }: CreateTrackDialogProps) {
-  const [open, setOpen] = useState(false)
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
-  const { toast } = useToast()
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
 
     await fetch("/api/tracks", {
       method: "POST",
@@ -42,23 +42,24 @@ export function CreateTrackDialog({ children }: CreateTrackDialogProps) {
     })
       .then(async (response) => {
         if (!response.ok) {
-          const err = await response.json() as { error?: string }
-          throw new Error(err.error ?? "Erro ao criar trilha")
+          const err = (await response.json()) as { error?: string };
+          throw new Error(err.error ?? "Erro ao criar trilha");
         }
-        const track = await response.json() as { id: string }
-        toast({ title: "Trilha criada!" })
-        setOpen(false)
-        setName("")
-        setDescription("")
-        router.refresh()
-        router.push(`/tracks/${track.id}`)
+        const track = (await response.json()) as { id: string };
+        toast({ title: "Trilha criada!" });
+        setOpen(false);
+        setName("");
+        setDescription("");
+        router.refresh();
+        router.push(`/tracks/${track.id}`);
       })
       .catch((err: unknown) => {
-        const message = err instanceof Error ? err.message : "Erro ao criar trilha"
-        toast({ title: "Erro", description: message, variant: "destructive" })
+        const message =
+          err instanceof Error ? err.message : "Erro ao criar trilha";
+        toast({ title: "Erro", description: message, variant: "destructive" });
       })
-      .finally(() => setIsLoading(false))
-  }
+      .finally(() => setIsLoading(false));
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -66,7 +67,9 @@ export function CreateTrackDialog({ children }: CreateTrackDialogProps) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>NOVA TRILHA</DialogTitle>
-          <DialogDescription>Crie uma nova trilha para organizar suas lições.</DialogDescription>
+          <DialogDescription>
+            Crie uma nova trilha para organizar suas lições.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -91,15 +94,27 @@ export function CreateTrackDialog({ children }: CreateTrackDialogProps) {
             />
           </div>
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={isLoading}
+            >
               CANCELAR
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />CRIANDO...</> : "CRIAR TRILHA"}
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  CRIANDO...
+                </>
+              ) : (
+                "CRIAR TRILHA"
+              )}
             </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

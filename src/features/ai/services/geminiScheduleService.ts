@@ -1,85 +1,86 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
-import { StudyAreaPriority } from '@/features/editorials/services/contentCrossingService'
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { StudyAreaPriority } from "@/features/editorials/services/contentCrossingService";
 
 export interface ScheduleRequest {
-  contestName: string
-  priorities: StudyAreaPriority[]
-  weeklyAvailableHours: number
-  examDate: Date
-  focusAreas?: string[]
+  contestName: string;
+  priorities: StudyAreaPriority[];
+  weeklyAvailableHours: number;
+  examDate: Date;
+  focusAreas?: string[];
 }
 
 export interface GeneratedScheduleSession {
-  day: string
-  timeSlot: string
-  topics: string[]
-  duration: number
-  focus: string
-  reason: string
+  day: string;
+  timeSlot: string;
+  topics: string[];
+  duration: number;
+  focus: string;
+  reason: string;
 }
 
 export interface WeeklyScheduleSummary {
-  week: number
-  startDate: string
-  endDate: string
-  totalHours: number
-  topics: string[]
-  focus: string
-  keyActivities: string[]
+  week: number;
+  startDate: string;
+  endDate: string;
+  totalHours: number;
+  topics: string[];
+  focus: string;
+  keyActivities: string[];
 }
 
 export interface MonthlyScheduleSummary {
-  month: string
-  totalHours: number
-  topics: string[]
+  month: string;
+  totalHours: number;
+  topics: string[];
   weeklyBreakdown: {
-    week: number
-    hours: number
-    focus: string
-  }[]
-  milestones: string[]
+    week: number;
+    hours: number;
+    focus: string;
+  }[];
+  milestones: string[];
 }
 
 export interface GeneratedSchedule {
-  weeks: number
-  totalHours: number
-  dailySessions: GeneratedScheduleSession[]
-  weeklySummary: WeeklyScheduleSummary[]
-  monthlySummary: MonthlyScheduleSummary[]
+  weeks: number;
+  totalHours: number;
+  dailySessions: GeneratedScheduleSession[];
+  weeklySummary: WeeklyScheduleSummary[];
+  monthlySummary: MonthlyScheduleSummary[];
   fullScheduleOverview: {
-    totalDaysOfStudy: number
-    averageDailyHours: number
-    peakIntensityWeek: number
+    totalDaysOfStudy: number;
+    averageDailyHours: number;
+    peakIntensityWeek: number;
     topicsCoverage: {
-      topic: string
-      sessions: number
-      totalHours: number
-      priority: 'high' | 'medium' | 'low'
-    }[]
-  }
-  keyMilestones: string[]
-  tips: string[]
+      topic: string;
+      sessions: number;
+      totalHours: number;
+      priority: "high" | "medium" | "low";
+    }[];
+  };
+  keyMilestones: string[];
+  tips: string[];
 }
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '')
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || "");
 
 export async function generateScheduleWithGemini(
-  request: ScheduleRequest
+  request: ScheduleRequest,
 ): Promise<GeneratedSchedule> {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prioritiesText = request.priorities
       .map(
         (p) =>
-          `- ${p.topicName}: ${p.priority} priority (${p.recommendedHours}h/semana) - ${p.reason}`
+          `- ${p.topicName}: ${p.priority} priority (${p.recommendedHours}h/semana) - ${p.reason}`,
       )
-      .join('\n')
+      .join("\n");
 
     const daysUntilExam = Math.ceil(
-      (request.examDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-    )
-    const weeksUntilExam = Math.ceil(daysUntilExam / 7)
+      (request.examDate.getTime() - new Date().getTime()) /
+        (1000 * 60 * 60 * 24),
+    );
+    const weeksUntilExam = Math.ceil(daysUntilExam / 7);
 
     const prompt = `
 You are an expert study planner helping a Brazilian civil service exam candidate prepare for "${request.contestName}".
@@ -90,7 +91,7 @@ ${prioritiesText}
 ## Study Parameters:
 - Available hours per week: ${request.weeklyAvailableHours}
 - Time until exam: ${weeksUntilExam} weeks (${daysUntilExam} days)
-- Exam date: ${request.examDate.toLocaleDateString('pt-BR')}
+- Exam date: ${request.examDate.toLocaleDateString("pt-BR")}
 
 ## Critical Rules:
 1. **URGENCY SCALING**: As time decreases, increase focus on HIGH priority topics exponentially
@@ -184,36 +185,36 @@ Provide the schedule in this JSON format:
 - Monthly summary: aggregate weeks into months showing milestones
 - Full overview: statistics on total days, peak weeks, and per-topic coverage
 - Dates must be in YYYY-MM-DD format
-`
+`;
 
-    const result = await model.generateContent(prompt)
-    const responseText = result.response.text()
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();
 
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/)
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      throw new Error('No JSON found in Gemini response')
+      throw new Error("No JSON found in Gemini response");
     }
 
-    const schedule = JSON.parse(jsonMatch[0]) as GeneratedSchedule
-    return schedule
+    const schedule = JSON.parse(jsonMatch[0]) as GeneratedSchedule;
+    return schedule;
   } catch (error) {
-    console.error('Error generating schedule with Gemini:', error)
-    throw new Error('Failed to generate schedule. Please try again.')
+    console.error("Error generating schedule with Gemini:", error);
+    throw new Error("Failed to generate schedule. Please try again.");
   }
 }
 
 export async function getStudyRecommendations(
   contestName: string,
   priorities: StudyAreaPriority[],
-  coverage: number
+  coverage: number,
 ): Promise<string[]> {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prioritiesText = priorities
       .slice(0, 10)
       .map((p) => `- ${p.topicName} (${p.priority})`)
-      .join('\n')
+      .join("\n");
 
     const prompt = `
 As an expert study advisor for Brazilian civil service exams, provide 3-5 specific, actionable study recommendations for someone preparing for "${contestName}".
@@ -225,40 +226,40 @@ ${prioritiesText}
 
 Provide practical, implementable recommendations that leverage the identified priority topics and address any gaps.
 Return as a JSON array of strings.
-`
+`;
 
-    const result = await model.generateContent(prompt)
-    const responseText = result.response.text()
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();
 
-    const jsonMatch = responseText.match(/\[[\s\S]*\]/)
+    const jsonMatch = responseText.match(/\[[\s\S]*\]/);
     if (!jsonMatch) {
       return [
-        'Focus on high-priority topics first',
-        'Practice with past exam questions',
-        'Create a study group for complex topics',
-      ]
+        "Focus on high-priority topics first",
+        "Practice with past exam questions",
+        "Create a study group for complex topics",
+      ];
     }
 
-    return JSON.parse(jsonMatch[0])
+    return JSON.parse(jsonMatch[0]);
   } catch (error) {
-    console.error('Error getting recommendations:', error)
+    console.error("Error getting recommendations:", error);
     return [
-      'Focus on high-priority topics first',
-      'Practice with past exam questions',
-      'Create a study group for complex topics',
-    ]
+      "Focus on high-priority topics first",
+      "Practice with past exam questions",
+      "Create a study group for complex topics",
+    ];
   }
 }
 
 export async function analyzeCoverageAndSuggest(
   contestName: string,
   coverage: number,
-  gaps: string[]
+  gaps: string[],
 ): Promise<string> {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const gapsText = gaps.slice(0, 10).join(', ')
+    const gapsText = gaps.slice(0, 10).join(", ");
 
     const prompt = `
 Analyze this study preparation status for "${contestName}" civil service exam:
@@ -266,12 +267,12 @@ Analyze this study preparation status for "${contestName}" civil service exam:
 - Content gaps to address: ${gapsText}
 
 Provide a brief (2-3 sentences) assessment and next steps to fill gaps.
-`
+`;
 
-    const result = await model.generateContent(prompt)
-    return result.response.text()
+    const result = await model.generateContent(prompt);
+    return result.response.text();
   } catch (error) {
-    console.error('Error analyzing coverage:', error)
-    return `Your current coverage is at ${coverage}%. Focus on the remaining topics by using targeted study materials.`
+    console.error("Error analyzing coverage:", error);
+    return `Your current coverage is at ${coverage}%. Focus on the remaining topics by using targeted study materials.`;
   }
 }

@@ -1,26 +1,26 @@
 export interface EditorialItem {
-  id: string
-  userId: string
-  contestId: string
-  title: string
-  description?: string | null
-  url?: string | null
-  uploadedAt: Date
-  contentMappings?: ContentMapping[]
+  id: string;
+  userId: string;
+  contestId: string;
+  title: string;
+  description?: string | null;
+  url?: string | null;
+  uploadedAt: Date;
+  contentMappings?: ContentMapping[];
 }
 
 export interface ContentMapping {
-  id: string
-  editorialItemId: string
-  topicId: string
-  contentSummary?: string | null
-  relevance: number
+  id: string;
+  editorialItemId: string;
+  topicId: string;
+  contentSummary?: string | null;
+  relevance: number;
 }
 
 export interface EditorialWithMappings extends EditorialItem {
-  contentMappings: ContentMapping[]
+  contentMappings: ContentMapping[];
   contest: {
-    id: string
-    name: string
-  }
+    id: string;
+    name: string;
+  };
 }

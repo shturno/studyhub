@@ -1,29 +1,31 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export interface ParsedSubject {
-  name: string
-  topics: { name: string; description?: string }[]
+  name: string;
+  topics: { name: string; description?: string }[];
 }
 
 export interface ParsedEdital {
-  title: string
-  subjects: ParsedSubject[]
+  title: string;
+  subjects: ParsedSubject[];
 }
 
 export async function parsePdfWithGemini(
   pdfText: string,
-  role?: string
+  role?: string,
 ): Promise<ParsedEdital> {
   try {
-    console.log(`[Gemini Parse] PDF text size: ${pdfText.length} characters, role: ${role || 'not specified'}`)
+    console.log(
+      `[Gemini Parse] PDF text size: ${pdfText.length} characters, role: ${role || "not specified"}`,
+    );
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const roleInstruction = role
       ? `IMPORTANT: Extract the syllabus SPECIFICALLY for the role/job: "${role}". If this role has a dedicated syllabus in the edital, extract it. Do not extract generic or other roles' syllabuses.`
-      : 'If the edital has multiple roles/jobs (Cargos), try to extract the syllabus for the most prominent one or a general common core, but be thorough.'
+      : "If the edital has multiple roles/jobs (Cargos), try to extract the syllabus for the most prominent one or a general common core, but be thorough.";
 
     const prompt = `
 You are an expert in Brazilian Civil Service Exams (Concursos Públicos).
@@ -50,32 +52,43 @@ Respond ONLY with a valid JSON object following this EXACT structure, and absolu
     }
   ]
 }
-`
+`;
 
-    console.log(`[Gemini Parse] Sending request to Gemini 1.5 Flash`)
+    console.log(`[Gemini Parse] Sending request to Gemini 1.5 Flash`);
     const response = await model.generateContent([
       prompt,
-      "\n\n--- EDITAL TEXT ---\n" + pdfText
-    ])
+      "\n\n--- EDITAL TEXT ---\n" + pdfText,
+    ]);
 
-    const responseText = response.response.text()
-    console.log(`[Gemini Parse] Received response: ${responseText.length} characters`)
-    console.log(`[Gemini Parse] Raw response (first 500 chars): ${responseText.substring(0, 500)}`)
+    const responseText = response.response.text();
+    console.log(
+      `[Gemini Parse] Received response: ${responseText.length} characters`,
+    );
+    console.log(
+      `[Gemini Parse] Raw response (first 500 chars): ${responseText.substring(0, 500)}`,
+    );
 
-    const jsonString = responseText.replaceAll(/```json\n?/g, '').replaceAll('```', '').trim()
-    console.log(`[Gemini Parse] Cleaned JSON string (first 500 chars): ${jsonString.substring(0, 500)}`)
+    const jsonString = responseText
+      .replaceAll(/```json\n?/g, "")
+      .replaceAll("```", "")
+      .trim();
+    console.log(
+      `[Gemini Parse] Cleaned JSON string (first 500 chars): ${jsonString.substring(0, 500)}`,
+    );
 
-    const parsedData = JSON.parse(jsonString) as ParsedEdital
-    console.log(`[Gemini Parse] ✅ Successfully parsed ${parsedData.subjects.length} subjects`)
+    const parsedData = JSON.parse(jsonString) as ParsedEdital;
+    console.log(
+      `[Gemini Parse] ✅ Successfully parsed ${parsedData.subjects.length} subjects`,
+    );
 
-    return parsedData
+    return parsedData;
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    console.error('[Gemini Parse] ❌ ERROR:', {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("[Gemini Parse] ❌ ERROR:", {
       message: errorMessage,
-      type: error instanceof Error ? error.constructor.name : 'Unknown',
+      type: error instanceof Error ? error.constructor.name : "Unknown",
       timestamp: new Date().toISOString(),
-    })
-    throw new Error(`Falha ao processar o Edital com a IA: ${errorMessage}`)
+    });
+    throw new Error(`Falha ao processar o Edital com a IA: ${errorMessage}`);
   }
 }

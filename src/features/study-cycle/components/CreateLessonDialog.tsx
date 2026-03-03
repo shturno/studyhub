@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -11,39 +11,42 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/hooks/use-toast"
-import { Loader2 } from "lucide-react"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 interface CreateLessonDialogProps {
-  readonly children: React.ReactNode
-  readonly trackId: string
+  readonly children: React.ReactNode;
+  readonly trackId: string;
 }
 
-export function CreateLessonDialog({ children, trackId }: CreateLessonDialogProps) {
-  const [open, setOpen] = useState(false)
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const [externalUrl, setExternalUrl] = useState("")
-  const [estimated, setEstimated] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
-  const { toast } = useToast()
+export function CreateLessonDialog({
+  children,
+  trackId,
+}: CreateLessonDialogProps) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [externalUrl, setExternalUrl] = useState("");
+  const [estimated, setEstimated] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
 
   const resetForm = () => {
-    setTitle("")
-    setDescription("")
-    setExternalUrl("")
-    setEstimated("")
-  }
+    setTitle("");
+    setDescription("");
+    setExternalUrl("");
+    setEstimated("");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
 
     await fetch(`/api/tracks/${trackId}/lessons`, {
       method: "POST",
@@ -57,20 +60,21 @@ export function CreateLessonDialog({ children, trackId }: CreateLessonDialogProp
     })
       .then(async (response) => {
         if (!response.ok) {
-          const err = await response.json() as { error?: string }
-          throw new Error(err.error ?? "Erro ao criar lição")
+          const err = (await response.json()) as { error?: string };
+          throw new Error(err.error ?? "Erro ao criar lição");
         }
-        toast({ title: "Lição criada!" })
-        setOpen(false)
-        resetForm()
-        router.refresh()
+        toast({ title: "Lição criada!" });
+        setOpen(false);
+        resetForm();
+        router.refresh();
       })
       .catch((err: unknown) => {
-        const message = err instanceof Error ? err.message : "Erro ao criar lição"
-        toast({ title: "Erro", description: message, variant: "destructive" })
+        const message =
+          err instanceof Error ? err.message : "Erro ao criar lição";
+        toast({ title: "Erro", description: message, variant: "destructive" });
       })
-      .finally(() => setIsLoading(false))
-  }
+      .finally(() => setIsLoading(false));
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -78,7 +82,9 @@ export function CreateLessonDialog({ children, trackId }: CreateLessonDialogProp
       <DialogContent>
         <DialogHeader>
           <DialogTitle>NOVA LICAO</DialogTitle>
-          <DialogDescription>Adicione uma nova lição à sua trilha.</DialogDescription>
+          <DialogDescription>
+            Adicione uma nova lição à sua trilha.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -126,15 +132,27 @@ export function CreateLessonDialog({ children, trackId }: CreateLessonDialogProp
             />
           </div>
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={isLoading}
+            >
               CANCELAR
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />CRIANDO...</> : "CRIAR LICAO"}
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  CRIANDO...
+                </>
+              ) : (
+                "CRIAR LICAO"
+              )}
             </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

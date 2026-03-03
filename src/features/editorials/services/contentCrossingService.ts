@@ -1,28 +1,28 @@
-import { prisma } from '@/lib/prisma'
+import { prisma } from "@/lib/prisma";
 
 export interface ContentOverlap {
-  topicId: string
-  topicName: string
-  editorialsCount: number
-  mappingsCount: number
-  averageRelevance: number
-  editorialTitles: string[]
+  topicId: string;
+  topicName: string;
+  editorialsCount: number;
+  mappingsCount: number;
+  averageRelevance: number;
+  editorialTitles: string[];
 }
 
 export interface StudyAreaPriority {
-  topicId: string
-  topicName: string
-  subjectId?: string
-  subjectName?: string
-  priority: 'high' | 'medium' | 'low'
-  reason: string
-  recommendedHours: number
-  coveragePercent?: number
+  topicId: string;
+  topicName: string;
+  subjectId?: string;
+  subjectName?: string;
+  priority: "high" | "medium" | "low";
+  reason: string;
+  recommendedHours: number;
+  coveragePercent?: number;
 }
 
 export async function analyzeContentCrossings(
   contestId: string,
-  userId: string
+  userId: string,
 ): Promise<ContentOverlap[]> {
   const contentMappings = await prisma.contentMapping.findMany({
     where: {
@@ -45,58 +45,63 @@ export async function analyzeContentCrossings(
         },
       },
     },
-  })
+  });
 
   interface TopicEntry {
-    topicId: string
-    topicName: string
-    editorials: Map<string, string>
-    relevances: number[]
+    topicId: string;
+    topicName: string;
+    editorials: Map<string, string>;
+    relevances: number[];
   }
-  const topicMap = new Map<string, TopicEntry>()
+  const topicMap = new Map<string, TopicEntry>();
 
   for (const mapping of contentMappings) {
-    const key = mapping.topicId
+    const key = mapping.topicId;
     if (!topicMap.has(key)) {
       topicMap.set(key, {
         topicId: mapping.topic.id,
         topicName: mapping.topic.name,
         editorials: new Map<string, string>(),
         relevances: [],
-      })
+      });
     }
 
-    const entry = topicMap.get(key)
+    const entry = topicMap.get(key);
     if (entry) {
-      entry.editorials.set(mapping.editorialItem.id, mapping.editorialItem.title)
-      entry.relevances.push(mapping.relevance)
+      entry.editorials.set(
+        mapping.editorialItem.id,
+        mapping.editorialItem.title,
+      );
+      entry.relevances.push(mapping.relevance);
     }
   }
 
-  const results: ContentOverlap[] = Array.from(topicMap.values()).map((entry) => ({
-    topicId: entry.topicId,
-    topicName: entry.topicName,
-    editorialsCount: entry.editorials.size,
-    mappingsCount: entry.relevances.length,
-    averageRelevance: Math.round(
-      entry.relevances.reduce((a: number, b: number) => a + b, 0) / entry.relevances.length
-    ),
-    editorialTitles: Array.from(entry.editorials.values()),
-  }))
+  const results: ContentOverlap[] = Array.from(topicMap.values()).map(
+    (entry) => ({
+      topicId: entry.topicId,
+      topicName: entry.topicName,
+      editorialsCount: entry.editorials.size,
+      mappingsCount: entry.relevances.length,
+      averageRelevance: Math.round(
+        entry.relevances.reduce((a: number, b: number) => a + b, 0) /
+          entry.relevances.length,
+      ),
+      editorialTitles: Array.from(entry.editorials.values()),
+    }),
+  );
 
   return results.sort(
     (a, b) =>
       b.editorialsCount - a.editorialsCount ||
-      b.averageRelevance - a.averageRelevance
-  )
+      b.averageRelevance - a.averageRelevance,
+  );
 }
 
 export async function generateStudyPriorities(
   contestId: string,
   userId: string,
-  weeklyHours: number = 40
+  weeklyHours: number = 40,
 ): Promise<StudyAreaPriority[]> {
-
   const contentMappings = await prisma.contentMapping.findMany({
     where: {
       editorialItem: {
@@ -122,24 +127,24 @@ export async function generateStudyPriorities(
         },
       },
     },
-  })
+  });
 
   if (contentMappings.length === 0) {
-    return []
+    return [];
   }
 
   interface PriorityTopicEntry {
-    topicId: string
-    topicName: string
-    subjectId: string
-    subjectName: string
-    editorials: Set<string>
-    relevances: number[]
+    topicId: string;
+    topicName: string;
+    subjectId: string;
+    subjectName: string;
+    editorials: Set<string>;
+    relevances: number[];
   }
-  const topicMap = new Map<string, PriorityTopicEntry>()
+  const topicMap = new Map<string, PriorityTopicEntry>();
 
   for (const mapping of contentMappings) {
-    const key = mapping.topicId
+    const key = mapping.topicId;
     if (!topicMap.has(key)) {
       topicMap.set(key, {
         topicId: mapping.topic.id,
@@ -148,13 +153,13 @@ export async function generateStudyPriorities(
         subjectName: mapping.topic.subject.name,
         editorials: new Set<string>(),
         relevances: [],
-      })
+      });
     }
 
-    const entry = topicMap.get(key)
+    const entry = topicMap.get(key);
     if (entry) {
-      entry.editorials.add(mapping.editorialItem.id)
-      entry.relevances.push(mapping.relevance)
+      entry.editorials.add(mapping.editorialItem.id);
+      entry.relevances.push(mapping.relevance);
     }
   }
 
@@ -163,39 +168,41 @@ export async function generateStudyPriorities(
       ...entry,
       editorialCount: entry.editorials.size,
       averageRelevance: Math.round(
-        entry.relevances.reduce((a: number, b: number) => a + b, 0) / entry.relevances.length
+        entry.relevances.reduce((a: number, b: number) => a + b, 0) /
+          entry.relevances.length,
       ),
     }))
     .sort((a, b) => {
-      if (b.editorialCount !== a.editorialCount) return b.editorialCount - a.editorialCount
-      return b.averageRelevance - a.averageRelevance
-    })
+      if (b.editorialCount !== a.editorialCount)
+        return b.editorialCount - a.editorialCount;
+      return b.averageRelevance - a.averageRelevance;
+    });
 
-  const priorities: StudyAreaPriority[] = []
-  const totalTopics = sortedTopics.length
+  const priorities: StudyAreaPriority[] = [];
+  const totalTopics = sortedTopics.length;
 
   for (let i = 0; i < sortedTopics.length; i++) {
-    const topic = sortedTopics[i]
-    const percentile = (i + 1) / totalTopics
+    const topic = sortedTopics[i];
+    const percentile = (i + 1) / totalTopics;
 
-    let priority: 'high' | 'medium' | 'low'
-    let hoursMultiplier: number
+    let priority: "high" | "medium" | "low";
+    let hoursMultiplier: number;
 
     if (percentile <= 0.25) {
-      priority = 'high'
-      hoursMultiplier = 0.4
+      priority = "high";
+      hoursMultiplier = 0.4;
     } else if (percentile <= 0.65) {
-      priority = 'medium'
-      hoursMultiplier = 0.25
+      priority = "medium";
+      hoursMultiplier = 0.25;
     } else {
-      priority = 'low'
-      hoursMultiplier = 0.1
+      priority = "low";
+      hoursMultiplier = 0.1;
     }
 
     const reason =
       topic.editorialCount > 1
         ? `Presente em ${topic.editorialCount} editais (${topic.averageRelevance}% relevância)`
-        : `Alta relevância (${topic.averageRelevance}% relevância)`
+        : `Alta relevância (${topic.averageRelevance}% relevância)`;
 
     priorities.push({
       topicId: topic.topicId,
@@ -206,21 +213,22 @@ export async function generateStudyPriorities(
       reason,
       recommendedHours: Math.round(weeklyHours * hoursMultiplier),
       coveragePercent: topic.averageRelevance,
-    })
+    });
   }
 
-  return priorities
+  return priorities;
 }
 
 export async function identifyContentGaps(
   contestId: string,
-  userId: string
-): Promise<{
-  topicId: string
-  topicName: string
-  subjectName: string
-}[]> {
-
+  userId: string,
+): Promise<
+  {
+    topicId: string;
+    topicName: string;
+    subjectName: string;
+  }[]
+> {
   const allTopics = await prisma.topic.findMany({
     where: {
       subject: {
@@ -241,7 +249,7 @@ export async function identifyContentGaps(
         },
       },
     },
-  })
+  });
 
   const gaps = allTopics
     .filter((topic) => topic.contentMappings.length === 0)
@@ -249,19 +257,19 @@ export async function identifyContentGaps(
       topicId: topic.id,
       topicName: topic.name,
       subjectName: topic.subject.name,
-    }))
+    }));
 
-  return gaps.sort((a, b) => a.subjectName.localeCompare(b.subjectName))
+  return gaps.sort((a, b) => a.subjectName.localeCompare(b.subjectName));
 }
 
 export async function calculateCoveragePercentage(
   contestId: string,
-  userId: string
+  userId: string,
 ): Promise<{
-  coverage: number
-  totalTopics: number
-  coveredTopics: number
-  gaps: number
+  coverage: number;
+  totalTopics: number;
+  coveredTopics: number;
+  gaps: number;
 }> {
   const allTopics = await prisma.topic.findMany({
     where: {
@@ -269,7 +277,7 @@ export async function calculateCoveragePercentage(
         contestId,
       },
     },
-  })
+  });
 
   const coveredTopics = await prisma.topic.findMany({
     where: {
@@ -284,16 +292,17 @@ export async function calculateCoveragePercentage(
         },
       },
     },
-  })
+  });
 
-  const totalTopics = allTopics.length
-  const covered = coveredTopics.length
-  const coverage = totalTopics > 0 ? Math.round((covered / totalTopics) * 100) : 0
+  const totalTopics = allTopics.length;
+  const covered = coveredTopics.length;
+  const coverage =
+    totalTopics > 0 ? Math.round((covered / totalTopics) * 100) : 0;
 
   return {
     coverage,
     totalTopics,
     coveredTopics: covered,
     gaps: totalTopics - covered,
-  }
+  };
 }
