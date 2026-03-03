@@ -1,29 +1,26 @@
 import { prisma } from "@/lib/prisma";
+import { type ContentOverlap, type StudyAreaPriority } from "@/features/editorials/types";
 
-export interface ContentOverlap {
+interface MappingsByTopic {
   topicId: string;
   topicName: string;
-  editorialsCount: number;
-  mappingsCount: number;
-  averageRelevance: number;
-  editorialTitles: string[];
+  editorials: Map<string, string>;
+  relevances: number[];
 }
 
-export interface StudyAreaPriority {
+interface PriorityTopicEntry {
   topicId: string;
   topicName: string;
-  subjectId?: string;
-  subjectName?: string;
-  priority: "high" | "medium" | "low";
-  reason: string;
-  recommendedHours: number;
-  coveragePercent?: number;
+  subjectId: string;
+  subjectName: string;
+  editorials: Set<string>;
+  relevances: number[];
 }
 
-export async function analyzeContentCrossings(
+async function groupMappingsByTopic(
   contestId: string,
   userId: string,
-): Promise<ContentOverlap[]> {
+): Promise<Map<string, MappingsByTopic>> {
   const contentMappings = await prisma.contentMapping.findMany({
     where: {
       editorialItem: {
@@ -47,13 +44,7 @@ export async function analyzeContentCrossings(
     },
   });
 
-  interface TopicEntry {
-    topicId: string;
-    topicName: string;
-    editorials: Map<string, string>;
-    relevances: number[];
-  }
-  const topicMap = new Map<string, TopicEntry>();
+  const topicMap = new Map<string, MappingsByTopic>();
 
   for (const mapping of contentMappings) {
     const key = mapping.topicId;
@@ -66,15 +57,22 @@ export async function analyzeContentCrossings(
       });
     }
 
-    const entry = topicMap.get(key);
-    if (entry) {
-      entry.editorials.set(
-        mapping.editorialItem.id,
-        mapping.editorialItem.title,
-      );
-      entry.relevances.push(mapping.relevance);
-    }
+    const entry = topicMap.get(key)!;
+    entry.editorials.set(
+      mapping.editorialItem.id,
+      mapping.editorialItem.title,
+    );
+    entry.relevances.push(mapping.relevance);
   }
+
+  return topicMap;
+}
+
+export async function analyzeContentCrossings(
+  contestId: string,
+  userId: string,
+): Promise<ContentOverlap[]> {
+  const topicMap = await groupMappingsByTopic(contestId, userId);
 
   const results: ContentOverlap[] = Array.from(topicMap.values()).map(
     (entry) => ({
@@ -133,14 +131,6 @@ export async function generateStudyPriorities(
     return [];
   }
 
-  interface PriorityTopicEntry {
-    topicId: string;
-    topicName: string;
-    subjectId: string;
-    subjectName: string;
-    editorials: Set<string>;
-    relevances: number[];
-  }
   const topicMap = new Map<string, PriorityTopicEntry>();
 
   for (const mapping of contentMappings) {
@@ -156,11 +146,9 @@ export async function generateStudyPriorities(
       });
     }
 
-    const entry = topicMap.get(key);
-    if (entry) {
-      entry.editorials.add(mapping.editorialItem.id);
-      entry.relevances.push(mapping.relevance);
-    }
+    const entry = topicMap.get(key)!;
+    entry.editorials.add(mapping.editorialItem.id);
+    entry.relevances.push(mapping.relevance);
   }
 
   const sortedTopics = Array.from(topicMap.values())

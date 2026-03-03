@@ -38,8 +38,7 @@ export function ContentCrossingView({
         const multipleCrossings = data.filter((c) => c.editorialCount > 1);
         setCrossings(multipleCrossings);
       } catch (error) {
-        console.error("Error loading crossings:", error);
-      } finally {
+              } finally {
         setLoading(false);
       }
     }

@@ -16,7 +16,6 @@ export async function GET() {
       trackDistribution: [],
     });
   } catch (error) {
-    console.error("Erro ao buscar stats:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+        return new NextResponse("Internal Server Error", { status: 500 });
   }
 }

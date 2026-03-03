@@ -10,9 +10,7 @@ export default function ErrorBoundary({
   readonly error: Error & { digest?: string };
   readonly reset: () => void;
 }) {
-  useEffect(() => {
-    console.error("NEXT.JS FATAL EXCEPTION INTERCEPTED:", error);
-  }, [error]);
+  useEffect(() => {}, [error]);
 
   return (
     <div

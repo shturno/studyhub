@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
 
 export interface EditorialItemInput {
   contestId: string;
@@ -30,14 +29,12 @@ export interface EditorialItemWithMappings {
 }
 
 export async function createEditorialItem(
+  userId: string,
   input: EditorialItemInput,
 ): Promise<EditorialItemWithMappings> {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
-
   const editorialItem = await prisma.editorialItem.create({
     data: {
-      userId: session.user.id,
+      userId,
       contestId: input.contestId,
       title: input.title,
       description: input.description,
@@ -65,15 +62,13 @@ export async function createEditorialItem(
 }
 
 export async function getEditorialItems(
+  userId: string,
   contestId: string,
 ): Promise<EditorialItemWithMappings[]> {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
-
   const items = await prisma.editorialItem.findMany({
     where: {
       contestId,
-      userId: session.user.id,
+      userId,
     },
     include: {
       contentMappings: {
@@ -100,17 +95,15 @@ export async function getEditorialItems(
 }
 
 export async function deleteEditorialItem(
+  userId: string,
   editorialItemId: string,
 ): Promise<void> {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
-
   const item = await prisma.editorialItem.findUnique({
     where: { id: editorialItemId },
     select: { userId: true },
   });
 
-  if (item?.userId !== session.user.id) {
+  if (item?.userId !== userId) {
     throw new Error("Unauthorized");
   }
 
@@ -120,6 +113,7 @@ export async function deleteEditorialItem(
 }
 
 export async function mapContentToTopics(
+  userId: string,
   editorialItemId: string,
   mappings: Array<{
     topicId: string;
@@ -127,15 +121,12 @@ export async function mapContentToTopics(
     relevance: number;
   }>,
 ): Promise<void> {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
-
   const item = await prisma.editorialItem.findUnique({
     where: { id: editorialItemId },
     select: { userId: true },
   });
 
-  if (item?.userId !== session.user.id) {
+  if (item?.userId !== userId) {
     throw new Error("Unauthorized");
   }
 
@@ -165,9 +156,6 @@ export async function getContentMappingsBetweenEditorials(
     editorial2Relevance: number;
   }>
 > {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
-
   const mappings1 = await prisma.contentMapping.findMany({
     where: { editorialItemId: editorialId1 },
     select: { topicId: true, relevance: true },

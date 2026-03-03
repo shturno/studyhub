@@ -86,8 +86,7 @@ export function ContentMapper({
       router.refresh();
     } catch (error) {
       toast.error("Erro ao mapear conteúdo");
-      console.error(error);
-    } finally {
+          } finally {
       setLoading(false);
     }
   }

@@ -1,39 +1,6 @@
-import { prisma } from "@/lib/prisma";
-
-export interface PlannerData {
-  primaryContestId?: string;
-  tracks: Array<{
-    id: string;
-    name: string;
-    lessons: Array<{
-      id: string;
-      title: string;
-      trackName: string;
-      trackId: string;
-      status: "NOT_STARTED" | "IN_PROGRESS" | "DONE";
-      estimated: number | null;
-    }>;
-  }>;
-  availableLessons: Array<{
-    id: string;
-    title: string;
-    trackName: string;
-    trackId: string;
-    status: "NOT_STARTED" | "IN_PROGRESS" | "DONE";
-    estimated: number | null;
-  }>;
-  plannedSessions: Array<{
-    id: string;
-    lessonId: string;
-    lessonTitle: string;
-    trackName: string;
-    duration: number;
-    scheduledDate: string;
-    draft: boolean;
-  }>;
-}
-
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import type { PlannerData } from "@/features/study-cycle/types";
 
 export async function getPlannerData(): Promise<PlannerData> {
   const session = await auth();

@@ -59,8 +59,7 @@ export async function POST(request: NextRequest) {
       priorities,
     });
   } catch (error) {
-    console.error("Error generating schedule:", error);
-    return NextResponse.json(
+        return NextResponse.json(
       {
         error:
           error instanceof Error
