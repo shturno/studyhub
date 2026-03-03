@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSessionModal } from "@/features/timer/context/SessionModalContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { type TrackOption, type LessonOption } from "./types";
 
 export function useSessionModalForm() {
@@ -17,7 +17,6 @@ export function useSessionModalForm() {
   const [scheduledDate, setScheduledDate] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { toast } = useToast();
 
   useEffect(() => {
     if (isOpen) {
@@ -30,10 +29,10 @@ export function useSessionModalForm() {
           }
         })
         .catch(() => {
-          toast({ title: "Erro ao carregar trilhas", variant: "destructive" });
+          toast.error("Erro ao carregar trilhas");
         });
     }
-  }, [isOpen, trackId, toast]);
+  }, [isOpen, trackId]);
 
   useEffect(() => {
     if (selectedTrackId) {
@@ -46,10 +45,10 @@ export function useSessionModalForm() {
           }
         })
         .catch(() => {
-          toast({ title: "Erro ao carregar lições", variant: "destructive" });
+          toast.error("Erro ao carregar lições");
         });
     }
-  }, [selectedTrackId, lessonId, toast]);
+  }, [selectedTrackId, lessonId]);
 
   const resetForm = () => {
     setSelectedTrackId("");
@@ -67,10 +66,7 @@ export function useSessionModalForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedLessonId || !duration) {
-      toast({
-        title: "Selecione uma lição e defina a duração",
-        variant: "destructive",
-      });
+      toast.error("Selecione uma lição e defina a duração");
       return;
     }
 
@@ -89,7 +85,7 @@ export function useSessionModalForm() {
     })
       .then(async (response) => {
         if (!response.ok) throw new Error("Erro ao criar sessão");
-        toast({ title: "Sessão criada!" });
+        toast.success("Sessão criada!");
         closeModal();
         resetForm();
         router.refresh();
@@ -97,7 +93,7 @@ export function useSessionModalForm() {
       .catch((err: unknown) => {
         const message =
           err instanceof Error ? err.message : "Erro desconhecido";
-        toast({ title: "Erro", description: message, variant: "destructive" });
+        toast.error("Erro", { description: message });
       });
 
     setLoading(false);

@@ -37,7 +37,7 @@ const items = [
 ] as const;
 
 export function StatsOverview() {
-  const { stats, loading } = useStatsOverview();
+  const { stats, loading, error } = useStatsOverview();
 
   if (loading) {
     return (
@@ -51,6 +51,25 @@ export function StatsOverview() {
               background: "#04000a",
             }}
           />
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        {SKELETON_IDS.map((id) => (
+          <div
+            key={id}
+            className="p-5 h-24 flex flex-col items-center justify-center"
+            style={{
+              border: "2px solid rgba(255,0,110,0.15)",
+              background: "#04000a",
+            }}
+          >
+            <div className="text-[#ff006e] text-xs font-mono">Erro ao carregar</div>
+          </div>
         ))}
       </div>
     );

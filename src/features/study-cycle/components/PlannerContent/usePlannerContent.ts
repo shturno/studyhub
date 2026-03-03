@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import { useSessionModal } from "@/features/timer/context/SessionModalContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   savePlannedSession,
   removePlannedSession,
@@ -19,7 +19,6 @@ export function usePlannerContent(data: {
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
   const [isScheduleGeneratorOpen, setIsScheduleGeneratorOpen] = useState(false);
   const { openModal } = useSessionModal();
-  const { toast } = useToast();
 
   const handleDragStart = (event: DragStartEvent) => {
     const lesson = availableLessons.find((l) => l.id === event.active.id);
@@ -53,19 +52,14 @@ export function usePlannerContent(data: {
           date: newSession.scheduledDate,
           duration: newSession.duration,
         });
-        toast({
-          title: "Sessão agendada!",
+        toast.success("Sessão agendada!", {
           description: `${lesson.title} salvo no planner`,
         });
       } catch (err: unknown) {
         setPlannedSessions((prev) => prev.filter((s) => s.id !== tempId));
         const message =
           err instanceof Error ? err.message : "Erro desconhecido";
-        toast({
-          title: "Erro ao salvar",
-          description: message,
-          variant: "destructive",
-        });
+        toast.error("Erro ao salvar", { description: message });
       }
     }
   };
@@ -76,15 +70,11 @@ export function usePlannerContent(data: {
 
     try {
       await removePlannedSession(sessionId);
-      toast({ title: "Sessão removida" });
+      toast.success("Sessão removida");
     } catch (err: unknown) {
       setPlannedSessions(previousSessions);
       const message = err instanceof Error ? err.message : "Erro desconhecido";
-      toast({
-        title: "Erro ao remover",
-        description: message,
-        variant: "destructive",
-      });
+      toast.error("Erro ao remover", { description: message });
     }
   };
 

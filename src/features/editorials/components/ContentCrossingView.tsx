@@ -25,6 +25,7 @@ export function ContentCrossingView({
 }: Readonly<ContentCrossingViewProps>) {
   const [crossings, setCrossings] = useState<Crossing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     if (editorialCount < 2) {
@@ -38,8 +39,10 @@ export function ContentCrossingView({
 
         const multipleCrossings = data.filter((c) => c.editorialsCount > 1);
         setCrossings(multipleCrossings);
-      } catch {
-        // Error loading crossings, will show empty state
+        setError(false);
+      } catch (err) {
+        console.error("Failed to load content crossings:", err);
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -71,6 +74,20 @@ export function ContentCrossingView({
             CARREGANDO...
           </p>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 px-4 border border-[#ff006e]/50 border-dashed bg-[#ff006e]/5">
+        <AlertCircle className="w-8 h-8 text-[#ff006e] mb-4" />
+        <h3 className="font-pixel text-[8px] text-[#ff006e] mb-2">
+          ERRO AO CARREGAR
+        </h3>
+        <p className="font-mono text-[#7f7f9f] text-xs text-center">
+          Não foi possível carregar os cruzamentos. Tente novamente mais tarde.
+        </p>
       </div>
     );
   }

@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export function useExportButton() {
   const [isExporting, setIsExporting] = useState(false);
-  const { toast } = useToast();
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -22,13 +21,11 @@ export function useExportButton() {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        toast({ title: "Exportação concluída!" });
+        toast.success("Exportação concluída!");
       })
       .catch(() => {
-        toast({
-          title: "Erro na exportação",
+        toast.error("Erro na exportação", {
           description: "Não foi possível exportar os dados.",
-          variant: "destructive",
         });
       })
       .finally(() => setIsExporting(false));

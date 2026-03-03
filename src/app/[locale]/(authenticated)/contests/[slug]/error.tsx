@@ -10,7 +10,9 @@ export default function ErrorBoundary({
   readonly error: Error & { digest?: string };
   readonly reset: () => void;
 }) {
-  useEffect(() => {}, [error]);
+  useEffect(() => {
+    console.error("[Contest Error]", error.message, error.digest);
+  }, [error]);
 
   return (
     <div
@@ -30,15 +32,12 @@ export default function ErrorBoundary({
         className="w-full bg-black p-4 rounded overflow-auto text-left font-mono text-xs max-h-[300px]"
         style={{ border: "1px solid #333" }}
       >
-        <p className="font-bold text-[#ff006e]">Message: {error.message}</p>
         {error.digest && (
-          <p className="text-[#00ff41] mt-1">Digest: {error.digest}</p>
+          <p className="text-[#00ff41]">Error ID: {error.digest}</p>
         )}
-        {error.stack && (
-          <p className="text-[#7f7f9f] mt-4 whitespace-pre-wrap">
-            {error.stack}
-          </p>
-        )}
+        <p className="text-[#999] mt-2">
+          Por favor, tente novamente ou entre em contato com o suporte.
+        </p>
       </div>
 
       <button

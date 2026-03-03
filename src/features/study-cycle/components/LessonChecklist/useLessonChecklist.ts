@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export function useLessonChecklist() {
   const [updatingLessons, setUpdatingLessons] = useState<Set<string>>(
@@ -11,7 +11,6 @@ export function useLessonChecklist() {
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const router = useRouter();
-  const { toast } = useToast();
 
   const updateLessonStatus = async (
     lessonId: string,
@@ -27,10 +26,10 @@ export function useLessonChecklist() {
       .then((response) => {
         if (!response.ok) throw new Error("Erro ao atualizar");
         router.refresh();
-        toast({ title: "Status atualizado!" });
+        toast.success("Status atualizado!");
       })
       .catch(() => {
-        toast({ title: "Erro ao atualizar status", variant: "destructive" });
+        toast.error("Erro ao atualizar status");
       })
       .finally(() => {
         setUpdatingLessons((prev) => {

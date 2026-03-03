@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export function useCreateLessonDialog(trackId: string) {
   const [open, setOpen] = useState(false);
@@ -12,7 +12,6 @@ export function useCreateLessonDialog(trackId: string) {
   const [estimated, setEstimated] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { toast } = useToast();
 
   const resetForm = () => {
     setTitle("");
@@ -40,7 +39,7 @@ export function useCreateLessonDialog(trackId: string) {
           const err = (await response.json()) as { error?: string };
           throw new Error(err.error ?? "Erro ao criar lição");
         }
-        toast({ title: "Lição criada!" });
+        toast.success("Lição criada!");
         setOpen(false);
         resetForm();
         router.refresh();
@@ -48,7 +47,7 @@ export function useCreateLessonDialog(trackId: string) {
       .catch((err: unknown) => {
         const message =
           err instanceof Error ? err.message : "Erro ao criar lição";
-        toast({ title: "Erro", description: message, variant: "destructive" });
+        toast.error("Erro", { description: message });
       })
       .finally(() => setIsLoading(false));
   };

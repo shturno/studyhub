@@ -55,9 +55,13 @@ export async function POST(request: Request): Promise<NextResponse> {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     console.error(`[Editorial Upload] Error details: ${errorMessage}`);
 
+    const isAuthError = errorMessage.includes("Unauthorized") || errorMessage.includes("Authentication");
+    const status = isAuthError ? 401 : 500;
+    const clientError = isAuthError ? "Unauthorized" : "Failed to process upload";
+
     return NextResponse.json(
-      { error: errorMessage },
-      { status: 400 },
+      { error: clientError },
+      { status },
     );
   }
 }

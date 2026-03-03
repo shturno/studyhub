@@ -64,6 +64,7 @@ export function useSmartScheduleGenerator(
       setIsSavingSchedule(true);
 
       let successCount = 0;
+      let failCount = 0;
       for (const session of generatedSchedule.schedule.dailySessions) {
         try {
           const dateStr = session.day.split(" ")[0];
@@ -85,12 +86,21 @@ export function useSmartScheduleGenerator(
             });
             successCount++;
           }
-        } catch {}
+        } catch (err) {
+          failCount++;
+          console.error("Failed to save planned session:", err);
+        }
       }
 
-      toast.success(
-        `✅ ${successCount} sessões importadas do cronograma completo para o Planner!`,
-      );
+      if (failCount > 0) {
+        toast.warning(
+          `${successCount} sessões salvas, ${failCount} falharam`,
+        );
+      } else {
+        toast.success(
+          `✅ ${successCount} sessões importadas do cronograma completo para o Planner!`,
+        );
+      }
       onOpenChange(false);
       setGeneratedSchedule(null);
       setExamDate("");

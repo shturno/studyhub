@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export function useStudyTimer(
   lessonId: string,
@@ -12,7 +12,6 @@ export function useStudyTimer(
   const [sessionMinutes, setSessionMinutes] = useState(0);
   const [totalSessionTime, setTotalSessionTime] = useState(25 * 60);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const { toast } = useToast();
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -33,14 +32,14 @@ export function useStudyTimer(
         .then((res) => {
           if (!res.ok) throw new Error();
           setSessionMinutes((prev) => prev + studiedMinutes);
-          toast({ title: "Sessão salva!" });
+          toast.success("Sessão salva!");
           onSessionComplete?.();
         })
         .catch(() =>
-          toast({ title: "Erro ao salvar sessão", variant: "destructive" }),
+          toast.error("Erro ao salvar sessão"),
         );
     },
-    [lessonId, toast, onSessionComplete],
+    [lessonId, onSessionComplete],
   );
 
   useEffect(() => {

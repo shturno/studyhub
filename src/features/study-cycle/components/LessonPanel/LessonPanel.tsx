@@ -23,6 +23,7 @@ export function LessonPanel({
   const {
     lesson,
     loading,
+    error,
     totalStudyTime,
     studySessionsCount,
     statusLabel,
@@ -30,7 +31,7 @@ export function LessonPanel({
     refreshLesson,
   } = useLessonPanel(lessonId, open);
 
-  if (!lesson && !loading) return null;
+  if (!lesson && !loading && !error) return null;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -44,6 +45,18 @@ export function LessonPanel({
               <Loader2 className="animate-spin h-8 w-8 text-[#00ff41] mx-auto mb-4" />
               <div className="font-mono text-base text-[#555]">
                 Carregando lição...
+              </div>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="text-4xl mb-4">⚠️</div>
+              <div className="font-mono text-base text-[#ff006e] mb-2">
+                Erro ao carregar lição
+              </div>
+              <div className="text-sm text-[#888]">
+                Tente recarregar a página ou contate o suporte.
               </div>
             </div>
           </div>
