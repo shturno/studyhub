@@ -46,20 +46,19 @@ export function usePlannerContent(data: {
       };
       setPlannedSessions((prev) => [...prev, newSession]);
 
-      try {
-        await savePlannedSession({
-          lessonId: lesson.id,
-          date: newSession.scheduledDate,
-          duration: newSession.duration,
-        });
+      const result = await savePlannedSession({
+        lessonId: lesson.id,
+        date: newSession.scheduledDate,
+        duration: newSession.duration,
+      });
+
+      if (!result.success) {
+        setPlannedSessions((prev) => prev.filter((s) => s.id !== tempId));
+        toast.error("Erro ao salvar", { description: result.error });
+      } else {
         toast.success("Sessão agendada!", {
           description: `${lesson.title} salvo no planner`,
         });
-      } catch (err: unknown) {
-        setPlannedSessions((prev) => prev.filter((s) => s.id !== tempId));
-        const message =
-          err instanceof Error ? err.message : "Erro desconhecido";
-        toast.error("Erro ao salvar", { description: message });
       }
     }
   };
@@ -68,13 +67,12 @@ export function usePlannerContent(data: {
     const previousSessions = [...plannedSessions];
     setPlannedSessions((prev) => prev.filter((s) => s.id !== sessionId));
 
-    try {
-      await removePlannedSession(sessionId);
-      toast.success("Sessão removida");
-    } catch (err: unknown) {
+    const result = await removePlannedSession(sessionId);
+    if (!result.success) {
       setPlannedSessions(previousSessions);
-      const message = err instanceof Error ? err.message : "Erro desconhecido";
-      toast.error("Erro ao remover", { description: message });
+      toast.error("Erro ao remover", { description: result.error });
+    } else {
+      toast.success("Sessão removida");
     }
   };
 

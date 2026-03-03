@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
+import { ok, err, type ActionResult } from "@/lib/result";
 import {
   createEditorialItem as createEditorialItemService,
   getEditorialItems,
@@ -15,44 +16,83 @@ export async function createEditorialItem(data: {
   title: string;
   description?: string;
   url?: string;
-}): Promise<EditorialWithMappings> {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+}): Promise<ActionResult<EditorialWithMappings>> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return err("Não autorizado");
 
-  const editorial = await createEditorialItemService(session.user.id, data);
+    const editorial = await createEditorialItemService(session.user.id, data);
 
-  return {
-    ...editorial,
-    contest: { id: data.contestId, name: "" },
-  };
+    return ok({
+      ...editorial,
+      contest: { id: data.contestId, name: "" },
+    });
+  } catch (error) {
+    console.error("createEditorialItem error:", error);
+    return err("Erro ao criar edital");
+  }
 }
 
 export async function getEditorialsForContest(
   contestId: string,
-): Promise<EditorialWithMappings[]> {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+): Promise<ActionResult<EditorialWithMappings[]>> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return err("Não autorizado");
 
-  const editorials = await getEditorialItems(session.user.id, contestId);
+    const editorials = await getEditorialItems(session.user.id, contestId);
 
-  return editorials.map((e) => ({
-    ...e,
-    contest: { id: contestId, name: "" },
-  }));
+    return ok(
+      editorials.map((e) => ({
+        ...e,
+        contest: { id: contestId, name: "" },
+      })),
+    );
+  } catch (error) {
+    console.error("getEditorialsForContest error:", error);
+    return err("Erro ao carregar editais");
+  }
 }
 
-export async function deleteEditorialItem(editorialId: string): Promise<void> {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+export async function deleteEditorialItem(
+  editorialId: string,
+): Promise<ActionResult<void>> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return err("Não autorizado");
 
-  await deleteEditorialItemService(session.user.id, editorialId);
+    await deleteEditorialItemService(session.user.id, editorialId);
+    return ok(undefined);
+  } catch (error) {
+    console.error("deleteEditorialItem error:", error);
+    return err("Erro ao deletar edital");
+  }
 }
 
-export async function getContentCrossings(contestId: string) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+export async function getContentCrossings(
+  contestId: string,
+): Promise<
+  ActionResult<
+    Array<{
+      topicId: string;
+      topicName: string;
+      editorialsCount: number;
+      mappingsCount: number;
+      averageRelevance: number;
+      editorialTitles: string[];
+    }>
+  >
+> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return err("Não autorizado");
 
-  return analyzeContentCrossings(contestId, session.user.id);
+    const crossings = await analyzeContentCrossings(contestId, session.user.id);
+    return ok(crossings);
+  } catch (error) {
+    console.error("getContentCrossings error:", error);
+    return err("Erro ao carregar cruzamentos");
+  }
 }
 
 export async function mapContentAction(
@@ -62,9 +102,15 @@ export async function mapContentAction(
     contentSummary?: string | null;
     relevance: number;
   }>,
-) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+): Promise<ActionResult<void>> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return err("Não autorizado");
 
-  return mapContentToTopics(session.user.id, editorialItemId, mappings);
+    await mapContentToTopics(session.user.id, editorialItemId, mappings);
+    return ok(undefined);
+  } catch (error) {
+    console.error("mapContentAction error:", error);
+    return err("Erro ao mapear conteúdo");
+  }
 }

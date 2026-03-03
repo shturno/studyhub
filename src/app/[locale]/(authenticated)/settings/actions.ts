@@ -3,6 +3,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { ok, err, type ActionResult } from "@/lib/result";
 
 interface UpdateSettingsParams {
   name: string;
@@ -11,20 +12,22 @@ interface UpdateSettingsParams {
   locale?: string;
 }
 
-export async function updateProfileSettings(data: UpdateSettingsParams) {
+export async function updateProfileSettings(
+  data: UpdateSettingsParams,
+): Promise<ActionResult<void>> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      throw new Error("Não autorizado");
+      return err("Não autorizado");
     }
 
     const { name, pomodoroDefault, breakDefault, locale } = data;
 
     if (pomodoroDefault < 5 || pomodoroDefault > 120) {
-      throw new Error("O tempo de foco deve estar entre 5 e 120 minutos");
+      return err("O tempo de foco deve estar entre 5 e 120 minutos");
     }
     if (breakDefault < 1 || breakDefault > 60) {
-      throw new Error("O tempo de pausa deve estar entre 1 e 60 minutos");
+      return err("O tempo de pausa deve estar entre 1 e 60 minutos");
     }
 
     const user = await prisma.user.findUnique({
@@ -32,7 +35,7 @@ export async function updateProfileSettings(data: UpdateSettingsParams) {
     });
 
     if (!user) {
-      throw new Error("Usuário não encontrado");
+      return err("Usuário não encontrado");
     }
 
     const currentSettings =
@@ -56,11 +59,12 @@ export async function updateProfileSettings(data: UpdateSettingsParams) {
     });
 
     revalidatePath("/settings");
-    return { success: true };
+    return ok(undefined);
   } catch (error) {
+    console.error("updateProfileSettings error:", error);
     if (error instanceof Error) {
-      throw new Error(error.message);
+      return err(error.message);
     }
-    throw new Error("Erro ao atualizar configurações");
+    return err("Erro ao atualizar configurações");
   }
 }

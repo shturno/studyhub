@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { studySessionSchema } from "@/lib/schemas";
+import { ok, err, type ActionResult } from "@/lib/result";
 import {
   calculateXP,
   calculateLevel,
@@ -26,79 +27,93 @@ export interface SaveStudySessionResult {
 
 export async function saveStudySession(
   data: SaveStudySessionInput,
-): Promise<SaveStudySessionResult> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized");
-  }
+): Promise<ActionResult<SaveStudySessionResult>> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return err("Não autorizado");
+    }
 
-  const parsed = studySessionSchema.parse(data);
-  const userId = session.user.id;
+    const parsed = studySessionSchema.safeParse(data);
+    if (!parsed.success) {
+      return err(parsed.error.errors[0]?.message || "Dados inválidos");
+    }
 
-  const xpEarned = calculateXP(parsed.minutes);
+    const userId = session.user.id;
+    const xpEarned = calculateXP(parsed.data.minutes);
 
-  const newSession = await prisma.studySession.create({
-    data: {
-      userId,
-      topicId: parsed.topicId,
-      minutes: parsed.minutes,
-      xpEarned,
-      difficulty: parsed.difficulty,
-    },
-  });
-
-  const user = await prisma.user.update({
-    where: { id: userId },
-    data: {
-      xp: { increment: xpEarned },
-    },
-  });
-
-  const newLevel = calculateLevel(user.xp);
-  const leveledUp = newLevel > user.level;
-
-  if (leveledUp) {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { level: newLevel },
+    const newSession = await prisma.studySession.create({
+      data: {
+        userId,
+        topicId: parsed.data.topicId,
+        minutes: parsed.data.minutes,
+        xpEarned,
+        difficulty: parsed.data.difficulty,
+      },
     });
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        xp: { increment: xpEarned },
+      },
+    });
+
+    const newLevel = calculateLevel(user.xp);
+    const leveledUp = newLevel > user.level;
+
+    if (leveledUp) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { level: newLevel },
+      });
+    }
+
+    const xpToNextLevel = getXPForNextLevel(user.xp, newLevel);
+
+    revalidatePath("/dashboard");
+
+    return ok({
+      sessionId: newSession.id,
+      xpEarned,
+      newLevel,
+      leveledUp,
+      xpToNextLevel,
+    });
+  } catch (error) {
+    console.error("saveStudySession error:", error);
+    return err("Erro ao salvar sessão");
   }
-
-  const xpToNextLevel = getXPForNextLevel(user.xp, newLevel);
-
-  revalidatePath("/dashboard");
-
-  return {
-    sessionId: newSession.id,
-    xpEarned,
-    newLevel,
-    leveledUp,
-    xpToNextLevel,
-  };
 }
 
 export async function updateSessionDifficulty(
   sessionId: string,
   difficulty: number,
-) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized");
+): Promise<ActionResult<void>> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return err("Não autorizado");
+    }
+
+    const studySession = await prisma.studySession.findUnique({
+      where: { id: sessionId },
+      select: { userId: true },
+    });
+
+    if (!studySession || studySession.userId !== session.user.id) {
+      return err("Não autorizado");
+    }
+
+    await prisma.studySession.update({
+      where: { id: sessionId },
+      data: { difficulty },
+    });
+
+    revalidatePath("/dashboard");
+    return ok(undefined);
+  } catch (error) {
+    console.error("updateSessionDifficulty error:", error);
+    return err("Erro ao atualizar dificuldade");
   }
-
-  const studySession = await prisma.studySession.findUnique({
-    where: { id: sessionId },
-    select: { userId: true },
-  });
-
-  if (studySession?.userId !== session.user.id) {
-    throw new Error("Unauthorized");
-  }
-
-  await prisma.studySession.update({
-    where: { id: sessionId },
-    data: { difficulty },
-  });
-
-  revalidatePath("/dashboard");
 }

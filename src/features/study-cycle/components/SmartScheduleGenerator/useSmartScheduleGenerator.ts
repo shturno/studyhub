@@ -66,29 +66,30 @@ export function useSmartScheduleGenerator(
       let successCount = 0;
       let failCount = 0;
       for (const session of generatedSchedule.schedule.dailySessions) {
-        try {
-          const dateStr = session.day.split(" ")[0];
+        const dateStr = session.day.split(" ")[0];
 
-          const topicName = session.topics[0];
-          let priority = generatedSchedule.priorities?.find(
-            (p) => p.topicName === topicName,
-          );
+        const topicName = session.topics[0];
+        let priority = generatedSchedule.priorities?.find(
+          (p) => p.topicName === topicName,
+        );
 
-          if (!priority && generatedSchedule.priorities?.length) {
-            priority = generatedSchedule.priorities[0];
-          }
+        if (!priority && generatedSchedule.priorities?.length) {
+          priority = generatedSchedule.priorities[0];
+        }
 
-          if (priority) {
-            await savePlannedSession({
-              lessonId: priority.topicId,
-              date: dateStr,
-              duration: session.duration,
-            });
+        if (priority) {
+          const result = await savePlannedSession({
+            lessonId: priority.topicId,
+            date: dateStr,
+            duration: session.duration,
+          });
+
+          if (result.success) {
             successCount++;
+          } else {
+            failCount++;
+            console.error("Failed to save planned session:", result.error);
           }
-        } catch (err) {
-          failCount++;
-          console.error("Failed to save planned session:", err);
         }
       }
 

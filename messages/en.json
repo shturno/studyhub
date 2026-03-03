@@ -137,5 +137,87 @@
   },
   "Common": {
     "close": "Close"
+  },
+  "Errors": {
+    "unauthorized": "Session expired. Please log in again.",
+    "networkError": "No connection to server. Check your internet.",
+    "unknownError": "Unexpected error. Please try again.",
+    "serverError": "Internal server error.",
+    "fileTooLarge": "File too large. Maximum allowed: 50MB",
+    "validationError": "Please check the provided data"
+  },
+  "EditorialManager": {
+    "fillAllFields": "Fill in role, pages, and select a file",
+    "invalidPageFormat": "Invalid page format (e.g., 1-5, 10, 15-20)",
+    "extractSuccess": "Topics extracted! Now configure your availability.",
+    "parseError": "Error processing the editorial",
+    "fillDailyHours": "Please specify study hours per day",
+    "scheduleGenerated": "Schedule generated! Review before importing.",
+    "scheduleError": "Could not generate schedule",
+    "noSessionsToImport": "No sessions to import",
+    "importSuccess": "{count} sessions imported!",
+    "importPartial": "{success} sessions saved, {failed} failed",
+    "importError": "Error importing schedule"
+  },
+  "SmartScheduleGenerator": {
+    "selectExamDate": "Select the exam date",
+    "scheduleGenerated": "Schedule generated!",
+    "noSessions": "Schedule has no sessions. Try again.",
+    "importSuccess": "{count} sessions imported to Planner!",
+    "importError": "Error importing schedule"
+  },
+  "Timer": {
+    "sessionSaved": "Session completed! +{xp} XP",
+    "saveError": "Error saving session"
+  },
+  "Planner": {
+    "sessionScheduled": "Session scheduled!",
+    "saveError": "Error saving",
+    "sessionRemoved": "Session removed",
+    "removeError": "Error removing"
+  },
+  "StudyCycle": {
+    "trackCreated": "Track created!",
+    "trackError": "Error creating track",
+    "lessonCreated": "Lesson created!",
+    "lessonError": "Error creating lesson",
+    "checklistUpdated": "Status updated!",
+    "checklistError": "Error updating status",
+    "exportSuccess": "Export completed!",
+    "exportError": "Export error"
+  },
+  "SessionModal": {
+    "tracksError": "Error loading tracks",
+    "lessonsError": "Error loading lessons",
+    "selectLesson": "Select a lesson and set duration",
+    "sessionCreated": "Session created!",
+    "createError": "Error creating session"
+  },
+  "Materials": {
+    "titleRequired": "Enter a title for the material",
+    "added": "Material added",
+    "addError": "Error adding material",
+    "removed": "Material removed",
+    "removeError": "Error removing material"
+  },
+  "Settings": {
+    "saved": "Settings saved successfully!",
+    "saveError": "Error saving settings"
+  },
+  "Editorials": {
+    "added": "Editorial added successfully!",
+    "addError": "Error adding editorial",
+    "removed": "Editorial removed successfully",
+    "removeError": "Error removing editorial",
+    "topicsRequired": "Select at least one topic",
+    "mappingSuccess": "{count} topics mapped successfully!",
+    "mappingError": "Error mapping content"
+  },
+  "Fusion": {
+    "minContests": "Laboratory needs at least 2 editorials to merge!",
+    "success": "Cosmic Power Achieved!",
+    "successDescription": "Super-Cycle created successfully.",
+    "error": "Merge failed.",
+    "errorDescription": "Try again or select other contests."
   }
 }

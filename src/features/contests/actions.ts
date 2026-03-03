@@ -3,6 +3,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { ok, err, type ActionResult } from "@/lib/result";
 
 export async function getContests() {
   const session = await auth();
@@ -65,16 +66,26 @@ export async function createContest(data: {
   }
 }
 
-export async function deleteContest(id: string) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+import { ok, err, type ActionResult } from "@/lib/result";
 
-  await prisma.contest.delete({
-    where: {
-      id,
-      userId: session.user.id,
-    },
-  });
+export async function deleteContest(
+  id: string,
+): Promise<ActionResult<void>> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return err("Não autorizado");
 
-  revalidatePath("/contests");
+    await prisma.contest.delete({
+      where: {
+        id,
+        userId: session.user.id,
+      },
+    });
+
+    revalidatePath("/contests");
+    return ok(undefined);
+  } catch (error) {
+    console.error("deleteContest error:", error);
+    return err("Erro ao deletar concurso");
+  }
 }
