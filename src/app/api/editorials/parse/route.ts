@@ -259,6 +259,7 @@ export async function POST(request: NextRequest) {
       );
       console.log(
         `[Editorial Parse] Prioridades geradas: ${priorities.length} tópicos`,
+        priorities.map((p) => ({ topicId: p.topicId, topicName: p.topicName })),
       );
 
       if (priorities.length > 0) {
@@ -285,7 +286,11 @@ export async function POST(request: NextRequest) {
           examDate: effectiveExamDate,
         });
         console.log(
-          `[Editorial Parse] Cronograma gerado: ${schedule.weeks} semanas, ${schedule.totalHours}h total`,
+          `[Editorial Parse] Cronograma gerado: ${schedule.weeks} semanas, ${schedule.totalHours}h total, ${schedule.dailySessions?.length || 0} sessões diárias`,
+          {
+            dailySessionsCount: schedule.dailySessions?.length,
+            firstDailySession: schedule.dailySessions?.[0],
+          },
         );
       }
     } catch (scheduleError) {

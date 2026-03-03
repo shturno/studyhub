@@ -155,7 +155,6 @@ export function EditorialManager({
         );
         setGeneratedSchedule({ ...data.schedule, priorities: data.priorities });
 
-        // Show warning if default exam date was used
         if (data.usedDefaultExamDate) {
           toast.info(
             "Data da prova não informada. Cronograma gerado com base em 6 meses.",
@@ -196,17 +195,19 @@ export function EditorialManager({
     try {
       setIsSavingSchedule(true);
 
-      // Import all generated daily sessions
       let successCount = 0;
       for (const session of generatedSchedule.dailySessions) {
         try {
-          // Extract date from day string format "2026-03-04 (Wednesday)"
           const dateStr = session.day.split(" ")[0];
 
-          // Find the topic ID from priorities using lesson title
-          const priority = generatedSchedule.priorities?.find(
-            (p) => p.topicName === session.topics[0],
+          const topicName = session.topics[0];
+          let priority = generatedSchedule.priorities?.find(
+            (p) => p.topicName === topicName,
           );
+
+          if (!priority && generatedSchedule.priorities?.length) {
+            priority = generatedSchedule.priorities[0];
+          }
 
           if (priority) {
             await savePlannedSession({
@@ -216,13 +217,7 @@ export function EditorialManager({
             });
             successCount++;
           }
-        } catch (sessionError) {
-          console.warn(
-            `Failed to import session for ${session.day}:`,
-            sessionError,
-          );
-          // Continue with next session
-        }
+        } catch {}
       }
 
       toast.success(
@@ -308,7 +303,6 @@ export function EditorialManager({
 
           <div className="p-6 space-y-6">
             {generatedSchedule ? (
-              // Schedule preview
               <div className="space-y-4">
                 <div
                   className="p-4"
@@ -431,7 +425,6 @@ export function EditorialManager({
                 </div>
               </div>
             ) : (
-              // Upload form
               <>
                 <Label className="font-pixel text-[10px] text-[#00ff41] flex items-center gap-2">
                   <Cpu className="w-4 h-4" /> OPÇÃO RECOMENDADA: SCANNER IA
