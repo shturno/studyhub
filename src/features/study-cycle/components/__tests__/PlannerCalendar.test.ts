@@ -407,7 +407,6 @@ describe("PlannerCalendar Data Logic", () => {
 
     it("should calculate statistics from multiple months", () => {
       const sessions: PlannedSession[] = [
-
         {
           id: "1",
           lessonId: "l1",

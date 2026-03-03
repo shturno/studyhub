@@ -18,8 +18,9 @@ export async function POST(request: Request): Promise<NextResponse> {
           maximumSizeInBytes: 50 * 1024 * 1024,
         };
       },
-      onUploadCompleted: async ({ blob }) => {
-              },
+      onUploadCompleted: async () => {
+        // Upload completed, file is handled by Vercel Blob
+      },
     });
 
     return NextResponse.json(jsonResponse);

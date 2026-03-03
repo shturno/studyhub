@@ -6,13 +6,17 @@ import { toast } from "sonner";
 import { savePlannedSession } from "@/features/study-cycle/actions";
 import type { ScheduleData } from "./types";
 
-export function useSmartScheduleGenerator(contestId: string, onOpenChange: (open: boolean) => void) {
+export function useSmartScheduleGenerator(
+  contestId: string,
+  onOpenChange: (open: boolean) => void,
+) {
   const router = useRouter();
   const [examDate, setExamDate] = useState("");
   const [weeklyHours, setWeeklyHours] = useState("40");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSavingSchedule, setIsSavingSchedule] = useState(false);
-  const [generatedSchedule, setGeneratedSchedule] = useState<ScheduleData | null>(null);
+  const [generatedSchedule, setGeneratedSchedule] =
+    useState<ScheduleData | null>(null);
 
   const handleGenerateSchedule = async () => {
     if (!examDate) {
@@ -81,9 +85,7 @@ export function useSmartScheduleGenerator(contestId: string, onOpenChange: (open
             });
             successCount++;
           }
-        } catch {
-
-        }
+        } catch {}
       }
 
       toast.success(

@@ -19,8 +19,16 @@ import { useCreateTrackDialog } from "./useCreateTrackDialog";
 import type { CreateTrackDialogProps } from "./types";
 
 export function CreateTrackDialog({ children }: CreateTrackDialogProps) {
-  const { open, setOpen, name, setName, description, setDescription, isLoading, handleSubmit } =
-    useCreateTrackDialog();
+  const {
+    open,
+    setOpen,
+    name,
+    setName,
+    description,
+    setDescription,
+    isLoading,
+    handleSubmit,
+  } = useCreateTrackDialog();
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

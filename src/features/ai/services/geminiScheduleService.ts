@@ -1,5 +1,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { type ScheduleRequest, type GeneratedSchedule } from "@/features/ai/types";
+import {
+  type ScheduleRequest,
+  type GeneratedSchedule,
+} from "@/features/ai/types";
 import { type StudyAreaPriority } from "@/features/editorials/types";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -138,7 +141,7 @@ Provide the schedule in this JSON format:
 
     const schedule = JSON.parse(jsonMatch[0]) as GeneratedSchedule;
     return schedule;
-  } catch (error) {
+  } catch {
     throw new Error("Failed to generate schedule. Please try again.");
   }
 }
@@ -181,7 +184,7 @@ Return as a JSON array of strings.
     }
 
     return JSON.parse(jsonMatch[0]);
-  } catch (error) {
+  } catch {
     return [
       "Focus on high-priority topics first",
       "Practice with past exam questions",
@@ -210,7 +213,7 @@ Provide a brief (2-3 sentences) assessment and next steps to fill gaps.
 
     const result = await model.generateContent(prompt);
     return result.response.text();
-  } catch (error) {
+  } catch {
     return `Your current coverage is at ${coverage}%. Focus on the remaining topics by using targeted study materials.`;
   }
 }

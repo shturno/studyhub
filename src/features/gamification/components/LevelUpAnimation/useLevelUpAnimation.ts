@@ -3,10 +3,7 @@
 import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 
-export function useLevelUpAnimation(
-  show: boolean,
-  onComplete?: () => void,
-) {
+export function useLevelUpAnimation(show: boolean, onComplete?: () => void) {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {

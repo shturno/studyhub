@@ -13,9 +13,10 @@ interface ContentCrossingViewProps {
 interface Crossing {
   topicId: string;
   topicName: string;
-  mappingCount: number;
-  editorialCount: number;
-  relevanceScore: number;
+  editorialsCount: number;
+  mappingsCount: number;
+  averageRelevance: number;
+  editorialTitles: string[];
 }
 
 export function ContentCrossingView({
@@ -35,10 +36,11 @@ export function ContentCrossingView({
       try {
         const data = await getContentCrossings(contestId);
 
-        const multipleCrossings = data.filter((c) => c.editorialCount > 1);
+        const multipleCrossings = data.filter((c) => c.editorialsCount > 1);
         setCrossings(multipleCrossings);
-      } catch (error) {
-              } finally {
+      } catch {
+        // Error loading crossings, will show empty state
+      } finally {
         setLoading(false);
       }
     }
@@ -108,14 +110,14 @@ export function ContentCrossingView({
                     variant="outline"
                     className="border-[#ff006e]/50 text-[#ff006e] bg-[#ff006e]/10 font-mono text-xs rounded-none"
                   >
-                    {crossing.editorialCount} edital
-                    {crossing.editorialCount === 1 ? "" : "is"}
+                    {crossing.editorialsCount} edital
+                    {crossing.editorialsCount === 1 ? "" : "is"}
                   </Badge>
                   <Badge
                     variant="outline"
                     className="border-[#00ff41]/50 text-[#00ff41] bg-[#00ff41]/10 font-mono text-xs rounded-none"
                   >
-                    {crossing.mappingCount} maps
+                    {crossing.mappingsCount} maps
                   </Badge>
                 </div>
               </div>
@@ -124,7 +126,7 @@ export function ContentCrossingView({
                   className="text-2xl font-pixel text-[#00ff41]"
                   style={{ textShadow: "0 0 10px rgba(0,255,65,0.4)" }}
                 >
-                  {crossing.relevanceScore}%
+                  {crossing.averageRelevance}%
                 </div>
                 <p className="font-mono text-[10px] text-[#555] mt-1">
                   RELEVÂNCIA

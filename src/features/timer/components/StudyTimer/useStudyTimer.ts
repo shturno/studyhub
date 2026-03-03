@@ -3,7 +3,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 
-export function useStudyTimer(lessonId: string, onSessionComplete?: () => void) {
+export function useStudyTimer(
+  lessonId: string,
+  onSessionComplete?: () => void,
+) {
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [sessionMinutes, setSessionMinutes] = useState(0);

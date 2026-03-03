@@ -30,7 +30,8 @@ export function useLessonPanel(lessonId: string | null, open: boolean) {
     }
   };
 
-  const totalStudyTime = lesson?.studyLogs.reduce((sum, log) => sum + log.minutes, 0) ?? 0;
+  const totalStudyTime =
+    lesson?.studyLogs.reduce((sum, log) => sum + log.minutes, 0) ?? 0;
   const studySessionsCount = lesson?.studyLogs.length ?? 0;
 
   const statusLabel =

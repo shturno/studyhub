@@ -16,7 +16,7 @@ export function usePlannerContent(data: {
 }) {
   const [availableLessons] = useState(data.availableLessons);
   const [plannedSessions, setPlannedSessions] = useState(data.plannedSessions);
-  const [, setActiveLesson] = useState<Lesson | null>(null);
+  const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
   const [isScheduleGeneratorOpen, setIsScheduleGeneratorOpen] = useState(false);
   const { openModal } = useSessionModal();
   const { toast } = useToast();
@@ -40,7 +40,7 @@ export function usePlannerContent(data: {
         id: tempId,
         lessonId: lesson.id,
         lessonTitle: lesson.title,
-        trackName: lesson.trackName,
+        trackName: lesson.track?.name ?? "",
         duration: lesson.estimated ?? 25,
         scheduledDate: new Date().toISOString().split("T")[0],
         draft: true,

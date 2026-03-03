@@ -42,5 +42,14 @@ export function useCreateTrackDialog() {
       .finally(() => setIsLoading(false));
   };
 
-  return { open, setOpen, name, setName, description, setDescription, isLoading, handleSubmit };
+  return {
+    open,
+    setOpen,
+    name,
+    setName,
+    description,
+    setDescription,
+    isLoading,
+    handleSubmit,
+  };
 }

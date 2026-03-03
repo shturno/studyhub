@@ -60,8 +60,8 @@ export async function createContest(data: {
     revalidatePath("/contests");
     revalidatePath("/dashboard");
     return { success: true };
-  } catch (error) {
-        return { error: "Erro interno ao salvar no banco de dados." };
+  } catch {
+    return { error: "Erro interno ao salvar no banco de dados." };
   }
 }
 

@@ -59,7 +59,11 @@ export function LessonPanel({
             </SheetHeader>
 
             <div className="flex gap-2">
-              <Badge variant={statusVariant as "default" | "secondary" | "outline"}>{statusLabel}</Badge>
+              <Badge
+                variant={statusVariant as "default" | "secondary" | "outline"}
+              >
+                {statusLabel}
+              </Badge>
               <Badge variant="outline">{studySessionsCount} sessões</Badge>
             </div>
 
@@ -76,12 +80,12 @@ export function LessonPanel({
             {lesson.externalUrl && (
               <>
                 <Separator />
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  asChild
-                >
-                  <a href={lesson.externalUrl} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" className="w-full" asChild>
+                  <a
+                    href={lesson.externalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <ExternalLink className="w-4 h-4 mr-2" />
                     Abrir recurso externo
                   </a>
@@ -136,7 +140,9 @@ export function LessonPanel({
                         <span className="text-[#888]">
                           {new Date(log.createdAt).toLocaleDateString("pt-BR")}
                         </span>
-                        <span className="text-[#00ff41]">{log.minutes} min</span>
+                        <span className="text-[#00ff41]">
+                          {log.minutes} min
+                        </span>
                       </div>
                     ))}
                   </div>
