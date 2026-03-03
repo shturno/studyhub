@@ -3,16 +3,62 @@ import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { parsePdfWithGemini } from '@/features/ai/services/editalParserService'
-import { extractSyllabusContent } from '@/features/ai/services/textPreprocessor'
 
 export const maxDuration = 60
 
-async function extractPdfText(arrayBuffer: ArrayBuffer): Promise<string> {
-  console.log(`[PDF Extract] Starting text extraction from buffer (${(arrayBuffer.byteLength / 1024).toFixed(2)} KB)`)
-  const { extractText } = await import('unpdf')
-  const result = await extractText(new Uint8Array(arrayBuffer))
-  const extractedText = result.text.join('\n')
-  console.log(`[PDF Extract] Successfully extracted text: ${extractedText.length} characters from ${result.totalPages} pages`)
+function parsePageRanges(rangesStr: string): number[] {
+  const pages = new Set<number>()
+  const parts = rangesStr.split(',').map(s => s.trim())
+
+  for (const part of parts) {
+    if (part.includes('-')) {
+      const [start, end] = part.split('-').map(s => Number(s.trim()))
+      if (!isNaN(start) && !isNaN(end) && start > 0 && end > 0) {
+        for (let i = start; i <= end; i++) {
+          pages.add(i)
+        }
+      }
+    } else {
+      const n = Number(part)
+      if (!isNaN(n) && n > 0) {
+        pages.add(n)
+      }
+    }
+  }
+
+  return Array.from(pages).sort((a, b) => a - b)
+}
+
+async function extractSelectedPages(arrayBuffer: ArrayBuffer, pageNumbers: number[]): Promise<string> {
+  console.log(`[PDF Extract] Extracting pages: ${pageNumbers.join(', ')}`)
+
+  const { getDocumentProxy } = await import('unpdf')
+  const pdf = await getDocumentProxy(new Uint8Array(arrayBuffer))
+
+  console.log(`[PDF Extract] PDF has ${pdf.numPages} total pages`)
+
+  const texts: string[] = []
+  for (const pageNum of pageNumbers) {
+    if (pageNum < 1 || pageNum > pdf.numPages) {
+      console.warn(`[PDF Extract] Page ${pageNum} is out of bounds (1-${pdf.numPages})`)
+      continue
+    }
+
+    const page = await pdf.getPage(pageNum)
+    const content = await page.getTextContent()
+    const pageText = content.items
+      .filter((item: unknown) => (item as { str?: string }).str != null)
+      .map((item: unknown) => {
+        const i = item as { str: string; hasEOL?: boolean }
+        return i.str + (i.hasEOL ? '\n' : '')
+      })
+      .join('')
+
+    texts.push(pageText)
+  }
+
+  const extractedText = texts.join('\n\n')
+  console.log(`[PDF Extract] Successfully extracted text from ${pageNumbers.length} pages: ${extractedText.length} characters`)
   return extractedText
 }
 
@@ -31,13 +77,14 @@ export async function POST(request: NextRequest) {
     const fileUrl = formData.get('fileUrl') as string | null
     const fileName = formData.get('fileName') as string | null
     const contestId = formData.get('contestId') as string | null
+    const pageRanges = formData.get('pageRanges') as string | null
 
-    console.log(`[Editorial Parse] fileName: ${fileName}, contestId: ${contestId}`)
+    console.log(`[Editorial Parse] fileName: ${fileName}, contestId: ${contestId}, pageRanges: ${pageRanges}`)
 
-    if (!fileUrl || !contestId) {
+    if (!fileUrl || !contestId || !pageRanges) {
       console.error('[Editorial Parse] Parâmetros obrigatórios faltando')
       return NextResponse.json(
-        { error: 'fileUrl and contestId are required' },
+        { error: 'fileUrl, contestId, and pageRanges are required' },
         { status: 400 }
       )
     }
@@ -55,7 +102,7 @@ export async function POST(request: NextRequest) {
     console.log(`[Editorial Parse] Buscando arquivo da URL`)
     const fileResponse = await fetch(fileUrl)
     if (!fileResponse.ok) {
-        throw new Error(`Falha ao obter arquivo: status ${fileResponse.status}`)
+      throw new Error(`Falha ao obter arquivo: status ${fileResponse.status}`)
     }
     const arrayBuffer = await fileResponse.arrayBuffer()
     const fileSizeKB = arrayBuffer.byteLength / 1024
@@ -71,37 +118,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Extrair texto do PDF usando unpdf
-    const pdfText = await extractPdfText(arrayBuffer)
-
-    // Preprocessar texto: extrair apenas conteúdo do edital relevante
-    console.log('[Editorial Parse] Iniciando preprocessamento de texto')
-    const preprocessed = await extractSyllabusContent(pdfText)
-    const cleanedText = preprocessed.content
-
-    if (preprocessed.wasFiltered) {
-      console.log(
-        `[Editorial Parse] ✓ Texto filtrado: ${preprocessed.originalSize} → ${preprocessed.filteredSize} bytes (${preprocessed.reductionPercentage.toFixed(1)}% redução)`
-      )
-    } else {
-      console.log('[Editorial Parse] ⚠ Preprocessamento: nenhum marcador encontrado, usando texto completo')
-    }
-
-    // Validar tamanho do texto extraído após filtragem (Gemini 2.5 Flash: ~1M tokens, estimando ~4 chars = 1 token)
-    const MAX_TEXT_SIZE_KB = 500
-    let textForGemini = cleanedText
-    const textSizeKB = cleanedText.length / 1024
-
-    if (textSizeKB > MAX_TEXT_SIZE_KB) {
-      // Tentar truncar para manter a primeira parte (onde o conteúdo programático geralmente está)
-      textForGemini = cleanedText.substring(0, MAX_TEXT_SIZE_KB * 1024)
-      console.warn(
-        `[Editorial Parse] Texto excede limite (${textSizeKB.toFixed(2)} KB), truncando para ${(textForGemini.length / 1024).toFixed(2)} KB`
+    // Parsear o string de pageRanges em array de números
+    const pageNumbers = parsePageRanges(pageRanges)
+    if (pageNumbers.length === 0) {
+      console.error('[Editorial Parse] Nenhuma página válida fornecida')
+      return NextResponse.json(
+        { error: 'No valid page numbers provided' },
+        { status: 400 }
       )
     }
 
-    console.log(`[Editorial Parse] Enviando texto para Gemini para parsing (${(textForGemini.length / 1024).toFixed(2)} KB)`)
-    const parsedData = await parsePdfWithGemini(textForGemini)
+    // Extrair apenas as páginas selecionadas do PDF
+    const pdfText = await extractSelectedPages(arrayBuffer, pageNumbers)
+
+    console.log(`[Editorial Parse] Enviando texto para Gemini para parsing (${(pdfText.length / 1024).toFixed(2)} KB)`)
+    const parsedData = await parsePdfWithGemini(pdfText)
     console.log(`[Editorial Parse] Gemini parsing completo: ${parsedData.subjects.length} subjects encontrados`)
 
     console.log(`[Editorial Parse] Iniciando transação de banco de dados`)
