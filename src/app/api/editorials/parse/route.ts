@@ -4,7 +4,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { parsePdfWithGemini } from '@/features/ai/services/editalParserService'
 import { generateScheduleWithGemini } from '@/features/ai/services/geminiScheduleService'
-import { generateStudyPriorities } from '@/features/editorials/services/contentCrossingService'
+import { generateStudyPriorities, type StudyAreaPriority } from '@/features/editorials/services/contentCrossingService'
 
 export const maxDuration = 60
 
@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
     // Generate study priorities and schedule if enabled
     console.log(`[Editorial Parse] Iniciando geração de cronograma`)
     let schedule = null
-    let priorities = []
+    let priorities: StudyAreaPriority[] = []
     let usedDefaultExamDate = false
 
     try {

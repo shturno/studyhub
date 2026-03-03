@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast"
 import { DraggableLesson } from "@/features/study-cycle/components/DraggableLesson"
 import { DroppableArea } from "@/features/study-cycle/components/DroppableArea"
 import { SmartScheduleGenerator } from "@/features/study-cycle/components/SmartScheduleGenerator"
+import { PlannerCalendar } from "@/features/study-cycle/components/PlannerCalendar"
 import { Calendar, Clock, BookOpen, Plus, Target, Brain } from "lucide-react"
 import { savePlannedSession, removePlannedSession } from "@/features/study-cycle/actions"
 
@@ -246,7 +247,7 @@ export function PlannerContent({ data, contestId }: PlannerContentProps) {
           </div>
         </div>
 
-        
+
         <DragOverlay>
           {activeLesson ? (
             <div className="p-3" style={{ border: '2px solid #00ff41', background: '#04000a', boxShadow: '4px 4px 0 #006b1a' }}>
@@ -256,6 +257,8 @@ export function PlannerContent({ data, contestId }: PlannerContentProps) {
           ) : null}
         </DragOverlay>
       </DndContext>
+
+      <PlannerCalendar sessions={plannedSessions} />
 
       {contestId && (
         <SmartScheduleGenerator
