@@ -84,9 +84,9 @@ export function ContentMapper({
       setSelectedTopics([]);
       onClose?.();
       router.refresh();
-    } catch (error) {
+    } catch {
       toast.error("Erro ao mapear conteúdo");
-          } finally {
+    } finally {
       setLoading(false);
     }
   }

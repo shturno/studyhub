@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  DndContext,
-  DragOverlay,
-  closestCenter,
-} from "@dnd-kit/core";
+import { DndContext, DragOverlay, closestCenter } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -214,7 +210,7 @@ export function PlannerContent({ data, contestId }: PlannerContentProps) {
                 {activeLesson.title}
               </div>
               <div className="font-mono text-sm text-[#7f7f9f]">
-                {activeLesson.trackName}
+                {activeLesson.track?.name}
               </div>
             </div>
           ) : null}

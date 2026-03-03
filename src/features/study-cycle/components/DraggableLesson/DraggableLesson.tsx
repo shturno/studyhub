@@ -8,10 +8,12 @@ import { cn } from "@/lib/utils";
 interface Lesson {
   readonly id: string;
   readonly title: string;
-  readonly trackName: string;
   readonly trackId: string;
   readonly status: "NOT_STARTED" | "IN_PROGRESS" | "DONE";
   readonly estimated: number | null;
+  readonly track?: {
+    readonly name: string;
+  };
 }
 
 interface DraggableLessonProps {
@@ -60,7 +62,7 @@ export function DraggableLesson({ lesson }: DraggableLessonProps) {
             {lesson.title}
           </div>
           <div className="font-mono text-sm text-[#7f7f9f] truncate">
-            {lesson.trackName}
+            {lesson.track?.name}
           </div>
           <div className="flex items-center justify-between mt-2">
             <Badge

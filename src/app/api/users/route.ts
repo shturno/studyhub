@@ -48,8 +48,8 @@ export async function POST(request: Request) {
       },
       { status: 201 },
     );
-  } catch (error) {
-        return NextResponse.json(
+  } catch {
+    return NextResponse.json(
       { error: "Erro ao criar usuário" },
       { status: 500 },
     );

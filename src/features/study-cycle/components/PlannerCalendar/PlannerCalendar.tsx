@@ -76,7 +76,12 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
                 const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
                 return !sessionsByMonth
                   .flat()
-                  .some((m) => m?.[1]?.some((d: { dateStr: string; sessions: PlannedSession[] }) => d.dateStr === dateStr));
+                  .some((m) =>
+                    m?.[1]?.some(
+                      (d: { dateStr: string; sessions: PlannedSession[] }) =>
+                        d.dateStr === dateStr,
+                    ),
+                  );
               }}
               className="w-full"
             />

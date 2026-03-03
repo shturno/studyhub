@@ -1,5 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { type ContentOverlap, type StudyAreaPriority } from "@/features/editorials/types";
+import {
+  type ContentOverlap,
+  type StudyAreaPriority,
+} from "@/features/editorials/types";
 
 interface MappingsByTopic {
   topicId: string;
@@ -58,10 +61,7 @@ async function groupMappingsByTopic(
     }
 
     const entry = topicMap.get(key)!;
-    entry.editorials.set(
-      mapping.editorialItem.id,
-      mapping.editorialItem.title,
-    );
+    entry.editorials.set(mapping.editorialItem.id, mapping.editorialItem.title);
     entry.relevances.push(mapping.relevance);
   }
 

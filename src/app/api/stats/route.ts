@@ -15,7 +15,7 @@ export async function GET() {
       weeklyStats: [],
       trackDistribution: [],
     });
-  } catch (error) {
-        return new NextResponse("Internal Server Error", { status: 500 });
+  } catch {
+    return new NextResponse("Internal Server Error", { status: 500 });
   }
 }

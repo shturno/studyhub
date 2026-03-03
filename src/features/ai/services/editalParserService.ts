@@ -17,7 +17,6 @@ export async function parsePdfWithGemini(
   role?: string,
 ): Promise<ParsedEdital> {
   try {
-
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const roleInstruction = role
@@ -51,7 +50,7 @@ Respond ONLY with a valid JSON object following this EXACT structure, and absolu
 }
 `;
 
-        const response = await model.generateContent([
+    const response = await model.generateContent([
       prompt,
       "\n\n--- EDITAL TEXT ---\n" + pdfText,
     ]);
@@ -68,6 +67,6 @@ Respond ONLY with a valid JSON object following this EXACT structure, and absolu
     return parsedData;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-        throw new Error(`Falha ao processar o Edital com a IA: ${errorMessage}`);
+    throw new Error(`Falha ao processar o Edital com a IA: ${errorMessage}`);
   }
 }

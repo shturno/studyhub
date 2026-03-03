@@ -65,9 +65,9 @@ export function CreateEditorialDialog({
       setOpen(false);
       form.reset();
       router.refresh();
-    } catch (error) {
+    } catch {
       toast.error("Erro ao adicionar edital");
-          }
+    }
   }
 
   return (

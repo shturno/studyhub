@@ -36,7 +36,6 @@ async function extractSelectedPages(
   arrayBuffer: ArrayBuffer,
   pageNumbers: number[],
 ): Promise<string> {
-
   const { getDocumentProxy } = await import("unpdf");
   const pdf = await getDocumentProxy(new Uint8Array(arrayBuffer));
 
@@ -65,7 +64,6 @@ async function extractSelectedPages(
 
 export async function POST(request: NextRequest) {
   try {
-
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -120,7 +118,7 @@ export async function POST(request: NextRequest) {
 
     const pdfText = await extractSelectedPages(arrayBuffer, pageNumbers);
 
-        const parsedData = await parsePdfWithGemini(pdfText, role);
+    const parsedData = await parsePdfWithGemini(pdfText, role);
     const result = await prisma.$transaction(
       async (tx) => {
         const editorial = await tx.editorialItem.create({
@@ -133,7 +131,6 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        let totalTopicsCreated = 0;
         for (const parsedSubject of parsedData.subjects) {
           let subject = await tx.subject.findFirst({
             where: { contestId, name: parsedSubject.name },
@@ -173,7 +170,6 @@ export async function POST(request: NextRequest) {
                 relevance: 50,
               },
             });
-            totalTopicsCreated++;
           }
         }
 
@@ -190,7 +186,6 @@ export async function POST(request: NextRequest) {
     let usedDefaultExamDate = false;
 
     try {
-
       priorities = await generateStudyPriorities(
         contestId,
         session.user.id,
@@ -198,7 +193,6 @@ export async function POST(request: NextRequest) {
       );
 
       if (priorities.length > 0) {
-
         const effectiveExamDate = examDate
           ? new Date(examDate)
           : new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000);
@@ -207,19 +201,14 @@ export async function POST(request: NextRequest) {
           usedDefaultExamDate = true;
         }
 
-                schedule = await generateScheduleWithGemini({
+        schedule = await generateScheduleWithGemini({
           contestName: contest.name,
           priorities,
           weeklyAvailableHours: 40,
           examDate: effectiveExamDate,
         });
       }
-    } catch (scheduleError) {
-      const errorMsg =
-        scheduleError instanceof Error
-          ? scheduleError.message
-          : "Unknown error";
-
+    } catch {
       schedule = null;
     }
     return NextResponse.json({
@@ -230,14 +219,10 @@ export async function POST(request: NextRequest) {
       priorities,
       usedDefaultExamDate,
     });
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to parse edital";
-    const errorStack = error instanceof Error ? error.stack : "No stack trace";
-
+  } catch {
     return NextResponse.json(
       {
-        error: errorMessage,
+        error: "Failed to parse edital",
       },
       { status: 500 },
     );

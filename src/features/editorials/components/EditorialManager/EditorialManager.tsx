@@ -246,8 +246,9 @@ export function EditorialManager({
                   MARCOS IMPORTANTES
                 </div>
                 <ul className="space-y-2">
-                  {generatedSchedule.keyMilestones!.slice(0, 3).map(
-                    (milestone: string) => (
+                  {generatedSchedule
+                    .keyMilestones!.slice(0, 3)
+                    .map((milestone: string) => (
                       <li
                         key={milestone.slice(0, 30)}
                         className="font-mono text-sm text-[#7f7f9f] flex items-start gap-2"
@@ -255,8 +256,7 @@ export function EditorialManager({
                         <ArrowRight className="w-4 h-4 text-[#00ff41] flex-shrink-0 mt-0.5" />
                         {milestone}
                       </li>
-                    ),
-                  )}
+                    ))}
                 </ul>
               </div>
             )}

@@ -32,14 +32,12 @@ describe("xpCalculator", () => {
     });
 
     it("should return correct level for threshold XP", () => {
-
       expect(calculateLevel(100)).toBe(2);
 
       expect(calculateLevel(300)).toBe(3);
     });
 
     it("should return correct level for XP between thresholds", () => {
-
       expect(calculateLevel(200)).toBe(2);
 
       expect(calculateLevel(450)).toBe(3);
@@ -58,7 +56,6 @@ describe("xpCalculator", () => {
 
   describe("getXPForNextLevel", () => {
     it("should calculate XP needed for next level", () => {
-
       expect(getXPForNextLevel(0, 1)).toBe(100);
 
       expect(getXPForNextLevel(100, 2)).toBe(200);
@@ -74,12 +71,10 @@ describe("xpCalculator", () => {
 
   describe("getLevelProgress", () => {
     it("should return 0 at start of level", () => {
-
       expect(getLevelProgress(100, 2)).toBe(0);
     });
 
     it("should return 100 at max level", () => {
-
       const maxLevel = LEVEL_THRESHOLDS.length;
       expect(getLevelProgress(LEVEL_THRESHOLDS[maxLevel - 1], maxLevel)).toBe(
         100,
@@ -87,7 +82,6 @@ describe("xpCalculator", () => {
     });
 
     it("should return progress between thresholds", () => {
-
       expect(getLevelProgress(200, 2)).toBe(50);
     });
 
@@ -99,7 +93,6 @@ describe("xpCalculator", () => {
     });
 
     it("should floor progress to integer", () => {
-
       expect(getLevelProgress(150, 2)).toBe(25);
 
       expect(getLevelProgress(175, 2)).toBe(37);
@@ -108,7 +101,6 @@ describe("xpCalculator", () => {
 
   describe("Level progression", () => {
     it("should progress through levels with consistent gaming", () => {
-
       let totalXP = 0;
       let currentLevel = 1;
 

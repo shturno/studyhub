@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Trophy,
-  Zap,
-  BookOpen,
-  Clock,
-  ArrowUpRight,
-} from "lucide-react";
+import { Trophy, Zap, BookOpen, Clock, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";

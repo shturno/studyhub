@@ -115,8 +115,9 @@ export function useEditorialManager(
       for (const session of generatedSchedule.dailySessions) {
         const topicName = session.topics[0];
         const priority =
-          generatedSchedule.priorities?.find((p) => p.topicName === topicName) ||
-          generatedSchedule.priorities?.[0];
+          generatedSchedule.priorities?.find(
+            (p) => p.topicName === topicName,
+          ) || generatedSchedule.priorities?.[0];
 
         if (priority) {
           await savePlannedSession({
