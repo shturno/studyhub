@@ -6,7 +6,7 @@ import type { PlannedSession, ViewMode } from "@/features/study-cycle/types";
 export function usePlannerCalendar(sessions: PlannedSession[]) {
   const [viewMode, setViewMode] = useState<ViewMode>("semanal");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    new Date(),
+    sessions.length > 0 ? new Date() : undefined,
   );
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 

@@ -74,36 +74,33 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
               onSelect={setSelectedDate}
               month={currentMonth}
               onMonthChange={setCurrentMonth}
-              disabled={(date) => {
-                const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-                return !sessionsByDate.has(dateStr);
-              }}
               className="w-full"
             />
-            {Array.from(sessionsByDate.entries()).map(([dateStr, sessions]) => {
-              const date = new Date(dateStr + "T12:00:00");
-              if (
-                date.getMonth() !== currentMonth.getMonth() ||
-                date.getFullYear() !== currentMonth.getFullYear()
-              ) {
-                return null;
-              }
-              const hours =
-                sessions.reduce((sum, s) => sum + s.duration, 0) / 60;
-              return (
-                <div
-                  key={dateStr}
-                  className="text-center text-[10px] font-pixel text-[#00ff41] mt-1"
-                  style={{
-                    position: "absolute",
-                    pointerEvents: "none",
-                  }}
-                >
-                  <div>{sessions.length}</div>
-                  <div>{hours.toFixed(1)}h</div>
-                </div>
-              );
-            })}
+            {sessionsByDate.size > 0 && (
+              <div className="mt-3 text-xs font-mono text-[#7f7f9f] space-y-1">
+                {Array.from(sessionsByDate.entries())
+                  .filter(([dateStr]) => {
+                    const date = new Date(dateStr + "T12:00:00");
+                    return (
+                      date.getMonth() === currentMonth.getMonth() &&
+                      date.getFullYear() === currentMonth.getFullYear()
+                    );
+                  })
+                  .map(([dateStr, sessions]) => {
+                    const date = new Date(dateStr + "T12:00:00");
+                    const hours =
+                      sessions.reduce((sum, s) => sum + s.duration, 0) / 60;
+                    return (
+                      <div key={dateStr} className="flex justify-between">
+                        <span>{date.toLocaleDateString("pt-BR")}</span>
+                        <span className="text-[#00ff41]">
+                          {sessions.length} • {hours.toFixed(1)}h
+                        </span>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
           </div>
 
           {selectedDateStr && (
@@ -127,8 +124,20 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
                     </div>
                   ))
                 ) : (
-                  <div className="text-xs text-[#555]">Sem sessões</div>
+                  <div className="text-xs text-[#555]">
+                    Sem sessões neste dia
+                  </div>
                 )}
+              </div>
+            </div>
+          )}
+          {sessionsByDate.size === 0 && (
+            <div className="mt-4 p-3 border border-dashed border-[#00ff41]/30 rounded text-center">
+              <div className="font-pixel text-[8px] text-[#555] mb-2">
+                NENHUMA SESSÃO PLANEJADA
+              </div>
+              <div className="font-mono text-xs text-[#555]">
+                Arraste lições ou importe um cronograma
               </div>
             </div>
           )}
@@ -169,8 +178,9 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
               background: "#020008",
             }}
           >
-            {viewMode === "semanal" && sessionsByWeek.length > 0
-              ? sessionsByWeek.map(([week, entries]) => (
+            {viewMode === "semanal" &&
+              (sessionsByWeek.length > 0 ? (
+                sessionsByWeek.map(([week, entries]) => (
                   <div key={week} className="border-b border-[#00ff41]/10">
                     <div className="px-4 py-2 font-pixel text-[6px] text-[#00ff41]">
                       {week}
@@ -188,9 +198,14 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
                     ))}
                   </div>
                 ))
-              : null}
-            {viewMode === "mensal" && sessionsByMonth.length > 0
-              ? sessionsByMonth.map(([month, entries]) => (
+              ) : (
+                <div className="p-4 text-center text-[#555]">
+                  <div className="font-pixel text-[8px]">SEM DADOS</div>
+                </div>
+              ))}
+            {viewMode === "mensal" &&
+              (sessionsByMonth.length > 0 ? (
+                sessionsByMonth.map(([month, entries]) => (
                   <div key={month} className="border-b border-[#00ff41]/10">
                     <div className="px-4 py-2 font-pixel text-[6px] text-[#00ff41]">
                       {month}
@@ -208,9 +223,14 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
                     ))}
                   </div>
                 ))
-              : null}
-            {viewMode === "completo" && sessionsByDateComplete.length > 0
-              ? sessionsByDateComplete.map((entry) => {
+              ) : (
+                <div className="p-4 text-center text-[#555]">
+                  <div className="font-pixel text-[8px]">SEM DADOS</div>
+                </div>
+              ))}
+            {viewMode === "completo" &&
+              (sessionsByDateComplete.length > 0 ? (
+                sessionsByDateComplete.map((entry) => {
                   const hours =
                     entry.sessions.reduce((sum, s) => sum + s.duration, 0) / 60;
                   return (
@@ -245,7 +265,11 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
                     </div>
                   );
                 })
-              : null}
+              ) : (
+                <div className="p-4 text-center text-[#555]">
+                  <div className="font-pixel text-[8px]">SEM DADOS</div>
+                </div>
+              ))}
           </div>
         </div>
       </div>
