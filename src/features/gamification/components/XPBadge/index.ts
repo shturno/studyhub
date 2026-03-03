@@ -1,0 +1,1 @@
+export { XPBadge } from "./XPBadge";

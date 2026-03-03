@@ -24,3 +24,23 @@ export interface DashboardData {
     completedAt: Date;
   }>;
 }
+
+export interface WeeklyData {
+  readonly week: string;
+  readonly hours: number;
+}
+
+export interface TrackData {
+  readonly name: string;
+  readonly hours: number;
+  readonly minutes: number;
+}
+
+export interface StatsData {
+  readonly weeklyStats: WeeklyData[];
+  readonly trackDistribution: TrackData[];
+}
+
+export interface DashboardViewProps {
+  readonly data: DashboardData;
+}

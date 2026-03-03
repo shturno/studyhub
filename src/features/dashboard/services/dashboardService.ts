@@ -1,169 +1,105 @@
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { differenceInCalendarDays } from "date-fns";
-
-export interface DashboardData {
-  user: {
-    id: string;
-    name: string | null;
-    email: string;
-    xp: number;
-    level: number;
-  } | null;
-  randomTopic: {
-    id: string;
-    name: string;
-    subject: {
-      id: string;
-      name: string;
-    };
-  } | null;
-  recentSessions: Array<{
-    id: string;
-    xpEarned: number;
-    completedAt: Date;
-    topic: {
-      name: string;
-      subject: {
-        name: string;
-      };
-    };
-  }>;
-  streak: number;
-}
+import { startOfWeek, endOfWeek } from "date-fns";
+import type { DashboardData } from "@/features/dashboard/types";
 
 export async function getDashboardData(
-  contestId?: string,
+  userId: string,
 ): Promise<DashboardData> {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
-  const userId = session.user.id;
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
       id: true,
       name: true,
-      email: true,
       xp: true,
       level: true,
-      studySessions: {
-        orderBy: { completedAt: "desc" },
-        take: 5,
-        where: contestId
-          ? {
-              topic: {
-                subject: {
-                  contestId,
-                },
-              },
-            }
-          : undefined,
-        select: {
-          id: true,
-          xpEarned: true,
-          completedAt: true,
-          topic: {
+    },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const activeCycle = await prisma.studyCycle.findFirst({
+    where: {
+      userId,
+      isActive: true,
+    },
+  });
+
+  let nextTopic = null;
+  if (activeCycle) {
+    const config = activeCycle.config as { topicIds: string[] };
+    const topicIds = config.topicIds || [];
+
+    if (topicIds.length > 0) {
+      const topic = await prisma.topic.findUnique({
+        where: { id: topicIds[0] },
+        include: {
+          subject: {
             select: {
               name: true,
-              subject: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
             },
           },
         },
+      });
+
+      if (topic) {
+        nextTopic = {
+          id: topic.id,
+          name: topic.name,
+          subjectName: topic.subject.name,
+          estimatedMinutes: 25,
+        };
+      }
+    }
+  }
+
+  const weekStart = startOfWeek(new Date());
+  const weekEnd = endOfWeek(new Date());
+
+  const weeklySessions = await prisma.studySession.findMany({
+    where: {
+      userId,
+      completedAt: {
+        gte: weekStart,
+        lte: weekEnd,
       },
     },
   });
 
-  const randomTopic = await prisma.topic.findFirst({
-    where: contestId
-      ? {
-          subject: {
-            contestId,
-          },
-        }
-      : {
-          subject: {
-            contest: {
-              userId,
-            },
-          },
-        },
-    select: {
-      id: true,
-      name: true,
-      subject: {
+  const weeklyStats = {
+    minutesStudied: weeklySessions.reduce(
+      (sum: number, s) => sum + s.minutes,
+      0,
+    ),
+    sessionsCompleted: weeklySessions.length,
+    xpEarned: weeklySessions.reduce((sum: number, s) => sum + s.xpEarned, 0),
+  };
+
+  const recentSessions = await prisma.studySession.findMany({
+    where: { userId },
+    take: 5,
+    orderBy: { completedAt: "desc" },
+    include: {
+      topic: {
         select: {
-          id: true,
           name: true,
         },
       },
     },
   });
 
-  const streak = calculateStreak(user?.studySessions || []);
-
   return {
-    user: user
-      ? {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          xp: user.xp,
-          level: user.level,
-        }
-      : null,
-    randomTopic,
-    recentSessions: user?.studySessions || [],
-    streak,
+    user,
+    nextTopic,
+    weeklyStats,
+    recentSessions: recentSessions.map((s) => ({
+      id: s.id,
+      topicName: s.topic.name,
+      minutes: s.minutes,
+      xpEarned: s.xpEarned,
+      completedAt: s.completedAt,
+    })),
   };
-}
-
-function calculateStreak(sessions: Array<{ completedAt: Date }>): number {
-  if (sessions.length === 0) return 0;
-
-  const sortedSessions = [...sessions].sort(
-    (a, b) => b.completedAt.getTime() - a.completedAt.getTime(),
-  );
-
-  let streak = 0;
-  const currentDay = new Date();
-
-  const lastSessionDate = sortedSessions[0].completedAt;
-  const daysSinceLastSession = differenceInCalendarDays(
-    currentDay,
-    lastSessionDate,
-  );
-
-  if (daysSinceLastSession > 1) {
-    return 0;
-  }
-
-  const uniqueDays = new Set<string>();
-  sortedSessions.forEach((s) => {
-    uniqueDays.add(s.completedAt.toISOString().split("T")[0]);
-  });
-
-  const daysList = Array.from(uniqueDays).sort((a, b) => b.localeCompare(a));
-
-  let previousDate = new Date(daysList[0]);
-  streak = 1;
-
-  for (let i = 1; i < daysList.length; i++) {
-    const date = new Date(daysList[i]);
-    const diff = differenceInCalendarDays(previousDate, date);
-
-    if (diff === 1) {
-      streak++;
-      previousDate = date;
-    } else {
-      break;
-    }
-  }
-
-  return streak;
 }

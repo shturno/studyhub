@@ -194,8 +194,8 @@ describe("PlannerCalendar Data Logic", () => {
       const result = sessionsByMonthHelper(sessionsByDate);
 
       expect(result).toHaveLength(2);
-      expect(result[0][0]).toBe("2026-03"); // First month
-      expect(result[1][0]).toBe("2026-04"); // Second month
+      expect(result[0][0]).toBe("2026-03");
+      expect(result[1][0]).toBe("2026-04");
     });
 
     it("should group days within same month", () => {
@@ -234,7 +234,7 @@ describe("PlannerCalendar Data Logic", () => {
 
       expect(result).toHaveLength(1);
       expect(result[0][0]).toBe("2026-03");
-      expect(result[0][1]).toHaveLength(3); // 3 different days
+      expect(result[0][1]).toHaveLength(3);
     });
 
     it("should sort months chronologically", () => {
@@ -407,7 +407,7 @@ describe("PlannerCalendar Data Logic", () => {
 
     it("should calculate statistics from multiple months", () => {
       const sessions: PlannedSession[] = [
-        // March
+
         {
           id: "1",
           lessonId: "l1",
@@ -426,7 +426,7 @@ describe("PlannerCalendar Data Logic", () => {
           scheduledDate: "2026-03-06",
           draft: false,
         },
-        // April
+
         {
           id: "3",
           lessonId: "l3",

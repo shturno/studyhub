@@ -15,12 +15,11 @@ export async function POST(request: Request): Promise<NextResponse> {
 
         return {
           allowedContentTypes: ["application/pdf", "text/plain"],
-          maximumSizeInBytes: 50 * 1024 * 1024, // 50MB max allowed by Vercel free blobs normally? (Actually max 500mb depending on limits, but 50mb is safe for editais)
+          maximumSizeInBytes: 50 * 1024 * 1024,
         };
       },
       onUploadCompleted: async ({ blob }) => {
-        console.log("Blob upload completed:", blob.url);
-      },
+              },
     });
 
     return NextResponse.json(jsonResponse);

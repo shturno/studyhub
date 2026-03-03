@@ -61,8 +61,7 @@ export async function createContest(data: {
     revalidatePath("/dashboard");
     return { success: true };
   } catch (error) {
-    console.error("[createContest] Error:", error);
-    return { error: "Erro interno ao salvar no banco de dados." };
+        return { error: "Erro interno ao salvar no banco de dados." };
   }
 }
 

@@ -4,12 +4,8 @@ import type {
   GeneratedScheduleSession,
   WeeklyScheduleSummary,
   MonthlyScheduleSummary,
-} from "../geminiScheduleService";
+} from "@/features/ai/types";
 
-/**
- * Helper function to calculate priority allocation based on weeks until exam
- * Mirrors the urgency scaling logic in the Gemini prompt
- */
 function calculateUrgencyPriorities(weeksUntilExam: number): {
   high: number;
   medium: number;
@@ -357,7 +353,6 @@ describe("Gemini Schedule Service", () => {
         tips: [],
       };
 
-      // All views should sum to the same total
       const weeklyTotal = schedule.weeklySummary.reduce(
         (sum, w) => sum + w.totalHours,
         0,
@@ -388,7 +383,6 @@ describe("Gemini Schedule Service", () => {
         tips: [],
       };
 
-      // Average daily hours should be positive and reasonable (0.5 to 8 hours)
       expect(schedule.fullScheduleOverview.averageDailyHours).toBeGreaterThan(
         0,
       );
@@ -470,7 +464,6 @@ describe("Gemini Schedule Service", () => {
 
       expect(schedule.fullScheduleOverview.topicsCoverage.length).toBe(4);
 
-      // High priority topics should have more hours
       const highPriority = schedule.fullScheduleOverview.topicsCoverage.filter(
         (t) => t.priority === "high",
       );

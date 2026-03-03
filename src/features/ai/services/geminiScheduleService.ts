@@ -1,67 +1,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { StudyAreaPriority } from "@/features/editorials/services/contentCrossingService";
+import { type ScheduleRequest, type GeneratedSchedule } from "@/features/ai/types";
+import { type StudyAreaPriority } from "@/features/editorials/types";
 
-export interface ScheduleRequest {
-  contestName: string;
-  priorities: StudyAreaPriority[];
-  weeklyAvailableHours: number;
-  examDate: Date;
-  focusAreas?: string[];
-}
-
-export interface GeneratedScheduleSession {
-  day: string;
-  timeSlot: string;
-  topics: string[];
-  duration: number;
-  focus: string;
-  reason: string;
-}
-
-export interface WeeklyScheduleSummary {
-  week: number;
-  startDate: string;
-  endDate: string;
-  totalHours: number;
-  topics: string[];
-  focus: string;
-  keyActivities: string[];
-}
-
-export interface MonthlyScheduleSummary {
-  month: string;
-  totalHours: number;
-  topics: string[];
-  weeklyBreakdown: {
-    week: number;
-    hours: number;
-    focus: string;
-  }[];
-  milestones: string[];
-}
-
-export interface GeneratedSchedule {
-  weeks: number;
-  totalHours: number;
-  dailySessions: GeneratedScheduleSession[];
-  weeklySummary: WeeklyScheduleSummary[];
-  monthlySummary: MonthlyScheduleSummary[];
-  fullScheduleOverview: {
-    totalDaysOfStudy: number;
-    averageDailyHours: number;
-    peakIntensityWeek: number;
-    topicsCoverage: {
-      topic: string;
-      sessions: number;
-      totalHours: number;
-      priority: "high" | "medium" | "low";
-    }[];
-  };
-  keyMilestones: string[];
-  tips: string[];
-}
-
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || "");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function generateScheduleWithGemini(
   request: ScheduleRequest,
@@ -198,7 +139,6 @@ Provide the schedule in this JSON format:
     const schedule = JSON.parse(jsonMatch[0]) as GeneratedSchedule;
     return schedule;
   } catch (error) {
-    console.error("Error generating schedule with Gemini:", error);
     throw new Error("Failed to generate schedule. Please try again.");
   }
 }
@@ -242,7 +182,6 @@ Return as a JSON array of strings.
 
     return JSON.parse(jsonMatch[0]);
   } catch (error) {
-    console.error("Error getting recommendations:", error);
     return [
       "Focus on high-priority topics first",
       "Practice with past exam questions",
@@ -272,7 +211,6 @@ Provide a brief (2-3 sentences) assessment and next steps to fill gaps.
     const result = await model.generateContent(prompt);
     return result.response.text();
   } catch (error) {
-    console.error("Error analyzing coverage:", error);
     return `Your current coverage is at ${coverage}%. Focus on the remaining topics by using targeted study materials.`;
   }
 }

@@ -4,10 +4,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { parsePdfWithGemini } from "@/features/ai/services/editalParserService";
 import { generateScheduleWithGemini } from "@/features/ai/services/geminiScheduleService";
-import {
-  generateStudyPriorities,
-  type StudyAreaPriority,
-} from "@/features/editorials/services/contentCrossingService";
+import { generateStudyPriorities } from "@/features/editorials/services/contentCrossingService";
+import { type StudyAreaPriority } from "@/features/editorials/types";
 
 export const maxDuration = 60;
 
@@ -38,19 +36,13 @@ async function extractSelectedPages(
   arrayBuffer: ArrayBuffer,
   pageNumbers: number[],
 ): Promise<string> {
-  console.log(`[PDF Extract] Extracting pages: ${pageNumbers.join(", ")}`);
 
   const { getDocumentProxy } = await import("unpdf");
   const pdf = await getDocumentProxy(new Uint8Array(arrayBuffer));
 
-  console.log(`[PDF Extract] PDF has ${pdf.numPages} total pages`);
-
   const texts: string[] = [];
   for (const pageNum of pageNumbers) {
     if (pageNum < 1 || pageNum > pdf.numPages) {
-      console.warn(
-        `[PDF Extract] Page ${pageNum} is out of bounds (1-${pdf.numPages})`,
-      );
       continue;
     }
 
@@ -68,22 +60,16 @@ async function extractSelectedPages(
   }
 
   const extractedText = texts.join("\n\n");
-  console.log(
-    `[PDF Extract] Successfully extracted text from ${pageNumbers.length} pages: ${extractedText.length} characters`,
-  );
   return extractedText;
 }
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("[Editorial Parse] Iniciando processamento de edital");
 
     const session = await auth();
     if (!session?.user?.id) {
-      console.warn("[Editorial Parse] Requisição não autenticada");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    console.log(`[Editorial Parse] User ID: ${session.user.id}`);
 
     const formData = await request.formData();
     const fileUrl = formData.get("fileUrl") as string | null;
@@ -93,12 +79,7 @@ export async function POST(request: NextRequest) {
     const role = formData.get("role") as string | null;
     const examDate = formData.get("examDate") as string | null;
 
-    console.log(
-      `[Editorial Parse] fileName: ${fileName}, contestId: ${contestId}, pageRanges: ${pageRanges}, role: ${role}, examDate: ${examDate}`,
-    );
-
     if (!fileUrl || !contestId || !pageRanges || !role) {
-      console.error("[Editorial Parse] Parâmetros obrigatórios faltando");
       return NextResponse.json(
         { error: "fileUrl, contestId, pageRanges, and role are required" },
         { status: 400 },
@@ -110,28 +91,17 @@ export async function POST(request: NextRequest) {
     });
 
     if (contest?.userId !== session.user.id) {
-      console.warn(`[Editorial Parse] Acesso negado ao concurso ${contestId}`);
       return NextResponse.json({ error: "Contest not found" }, { status: 404 });
     }
-    console.log(`[Editorial Parse] Contest encontrado: ${contest.name}`);
-
-    console.log(`[Editorial Parse] Buscando arquivo da URL`);
     const fileResponse = await fetch(fileUrl);
     if (!fileResponse.ok) {
       throw new Error(`Falha ao obter arquivo: status ${fileResponse.status}`);
     }
     const arrayBuffer = await fileResponse.arrayBuffer();
     const fileSizeKB = arrayBuffer.byteLength / 1024;
-    console.log(
-      `[Editorial Parse] Arquivo obtido com sucesso: ${fileSizeKB.toFixed(2)} KB`,
-    );
 
-    // Validar tamanho do arquivo (limite: 50MB)
     const MAX_FILE_SIZE_MB = 50;
     if (fileSizeKB > MAX_FILE_SIZE_MB * 1024) {
-      console.warn(
-        `[Editorial Parse] Arquivo excede limite: ${fileSizeKB.toFixed(2)} KB > ${MAX_FILE_SIZE_MB * 1024} KB`,
-      );
       return NextResponse.json(
         {
           error: `Arquivo muito grande. Máximo permitido: ${MAX_FILE_SIZE_MB}MB`,
@@ -140,28 +110,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parsear o string de pageRanges em array de números
     const pageNumbers = parsePageRanges(pageRanges);
     if (pageNumbers.length === 0) {
-      console.error("[Editorial Parse] Nenhuma página válida fornecida");
       return NextResponse.json(
         { error: "No valid page numbers provided" },
         { status: 400 },
       );
     }
 
-    // Extrair apenas as páginas selecionadas do PDF
     const pdfText = await extractSelectedPages(arrayBuffer, pageNumbers);
 
-    console.log(
-      `[Editorial Parse] Enviando texto para Gemini para parsing (${(pdfText.length / 1024).toFixed(2)} KB), role: ${role}`,
-    );
-    const parsedData = await parsePdfWithGemini(pdfText, role);
-    console.log(
-      `[Editorial Parse] Gemini parsing completo: ${parsedData.subjects.length} subjects encontrados`,
-    );
-
-    console.log(`[Editorial Parse] Iniciando transação de banco de dados`);
+        const parsedData = await parsePdfWithGemini(pdfText, role);
     const result = await prisma.$transaction(
       async (tx) => {
         const editorial = await tx.editorialItem.create({
@@ -173,7 +132,6 @@ export async function POST(request: NextRequest) {
             description: "Mapeamento automático via Inteligência Artificial.",
           },
         });
-        console.log(`[Editorial Parse] EditorialItem criado: ${editorial.id}`);
 
         let totalTopicsCreated = 0;
         for (const parsedSubject of parsedData.subjects) {
@@ -189,11 +147,7 @@ export async function POST(request: NextRequest) {
                 weight: 1,
               },
             });
-            console.log(`[Editorial Parse] Subject criado: ${subject.name}`);
           } else {
-            console.log(
-              `[Editorial Parse] Subject encontrado: ${subject.name}`,
-            );
           }
 
           for (const parsedTopic of parsedSubject.topics) {
@@ -208,13 +162,7 @@ export async function POST(request: NextRequest) {
                   name: parsedTopic.name,
                 },
               });
-              console.log(
-                `[Editorial Parse] Topic criado: ${parsedTopic.name}`,
-              );
             } else {
-              console.log(
-                `[Editorial Parse] Topic encontrado: ${parsedTopic.name}`,
-              );
             }
 
             await tx.contentMapping.create({
@@ -228,9 +176,6 @@ export async function POST(request: NextRequest) {
             totalTopicsCreated++;
           }
         }
-        console.log(
-          `[Editorial Parse] Transação concluída: ${totalTopicsCreated} topics processados`,
-        );
 
         return editorial;
       },
@@ -238,74 +183,45 @@ export async function POST(request: NextRequest) {
         timeout: 30000,
       },
     );
-
-    // Invalidar cache da página de detalhes do concurso
-    console.log(`[Editorial Parse] Invalidando cache`);
     revalidatePath(`/[locale]/(authenticated)/contests/[slug]`);
     revalidatePath("/");
-
-    // Generate study priorities and schedule if enabled
-    console.log(`[Editorial Parse] Iniciando geração de cronograma`);
     let schedule = null;
     let priorities: StudyAreaPriority[] = [];
     let usedDefaultExamDate = false;
 
     try {
-      // Fetch priorities based on newly created content mappings
+
       priorities = await generateStudyPriorities(
         contestId,
         session.user.id,
         40,
       );
-      console.log(
-        `[Editorial Parse] Prioridades geradas: ${priorities.length} tópicos`,
-        priorities.map((p) => ({ topicId: p.topicId, topicName: p.topicName })),
-      );
 
       if (priorities.length > 0) {
-        // Determine effective exam date
+
         const effectiveExamDate = examDate
           ? new Date(examDate)
-          : new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000); // +6 months default
+          : new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000);
 
         if (!examDate) {
           usedDefaultExamDate = true;
-          console.log(
-            `[Editorial Parse] Data da prova não fornecida. Usando padrão de 6 meses.`,
-          );
         }
 
-        // Generate schedule with Gemini
-        console.log(
-          `[Editorial Parse] Gerando cronograma com Gemini (examDate: ${effectiveExamDate.toISOString()})`,
-        );
-        schedule = await generateScheduleWithGemini({
+                schedule = await generateScheduleWithGemini({
           contestName: contest.name,
           priorities,
           weeklyAvailableHours: 40,
           examDate: effectiveExamDate,
         });
-        console.log(
-          `[Editorial Parse] Cronograma gerado: ${schedule.weeks} semanas, ${schedule.totalHours}h total, ${schedule.dailySessions?.length || 0} sessões diárias`,
-          {
-            dailySessionsCount: schedule.dailySessions?.length,
-            firstDailySession: schedule.dailySessions?.[0],
-          },
-        );
       }
     } catch (scheduleError) {
       const errorMsg =
         scheduleError instanceof Error
           ? scheduleError.message
           : "Unknown error";
-      console.warn(
-        `[Editorial Parse] Aviso ao gerar cronograma (não é fatal): ${errorMsg}`,
-      );
-      // Don't fail the entire request if schedule generation fails
+
       schedule = null;
     }
-
-    console.log(`[Editorial Parse] ✅ Sucesso! Editorial ID: ${result.id}`);
     return NextResponse.json({
       success: true,
       editorialId: result.id,
@@ -318,12 +234,6 @@ export async function POST(request: NextRequest) {
     const errorMessage =
       error instanceof Error ? error.message : "Failed to parse edital";
     const errorStack = error instanceof Error ? error.stack : "No stack trace";
-
-    console.error("[Editorial Parse] ❌ ERRO:", {
-      message: errorMessage,
-      stack: errorStack,
-      timestamp: new Date().toISOString(),
-    });
 
     return NextResponse.json(
       {

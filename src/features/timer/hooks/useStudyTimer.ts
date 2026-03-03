@@ -19,8 +19,7 @@ export function useStudyTimer({
   initialMinutes = 25,
   onComplete,
 }: UseStudyTimerOptions) {
-  console.log("🔄 useStudyTimer hook initialized (fresh file)");
-  const [timeLeft, setTimeLeft] = useState(initialMinutes * 60);
+    const [timeLeft, setTimeLeft] = useState(initialMinutes * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [hasCompleted, setHasCompleted] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -53,8 +52,7 @@ export function useStudyTimer({
         }
       }
     } catch (error) {
-      console.error("Save session error:", error);
-      toast.error("Erro ao salvar sessão", {
+            toast.error("Erro ao salvar sessão", {
         description: "Não foi possível registrar sua sessão de estudos",
       });
     } finally {

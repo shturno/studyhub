@@ -2,12 +2,13 @@
 
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
+import { studySessionSchema } from "@/lib/schemas";
 import {
   calculateXP,
   calculateLevel,
   getXPForNextLevel,
 } from "@/features/gamification/utils/xpCalculator";
-import { revalidatePath } from "next/cache";
 
 export interface SaveStudySessionInput {
   topicId: string;
@@ -22,8 +23,6 @@ export interface SaveStudySessionResult {
   leveledUp: boolean;
   xpToNextLevel: number;
 }
-
-import { studySessionSchema } from "@/lib/schemas";
 
 export async function saveStudySession(
   data: SaveStudySessionInput,
@@ -82,6 +81,20 @@ export async function updateSessionDifficulty(
   sessionId: string,
   difficulty: number,
 ) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  const studySession = await prisma.studySession.findUnique({
+    where: { id: sessionId },
+    select: { userId: true },
+  });
+
+  if (studySession?.userId !== session.user.id) {
+    throw new Error("Unauthorized");
+  }
+
   await prisma.studySession.update({
     where: { id: sessionId },
     data: { difficulty },
