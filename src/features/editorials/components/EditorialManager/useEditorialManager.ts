@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { upload } from "@vercel/blob/client";
 import { savePlannedSession } from "@/features/study-cycle/actions";
@@ -15,6 +16,7 @@ export function useEditorialManager(
   onEditorialAdded?: () => void,
 ) {
   const router = useRouter();
+  const t = useTranslations("EditorialManager");
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState<"upload" | "availability" | "preview">(
     "upload",
@@ -56,12 +58,12 @@ export function useEditorialManager(
 
   const handleSubmit = async () => {
     if (!selectedFile || !pageRanges.trim() || !selectedRole) {
-      toast.error("Por favor, preencha cargo, páginas e selecione um arquivo");
+      toast.error(t("fillAllFields"));
       return;
     }
 
     if (!validatePageRanges(pageRanges)) {
-      toast.error("Formato de páginas inválido (ex: 1-5, 10, 15-20)");
+      toast.error(t("invalidPageFormat"));
       return;
     }
 
@@ -91,12 +93,12 @@ export function useEditorialManager(
 
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
-        let errorMsg = "Erro ao processar editorial";
+        let errorMsg = t("parseError");
 
         if (res.status === 413) {
-          errorMsg = "Arquivo muito grande. Máximo permitido: 50MB";
+          errorMsg = t("fileTooLarge");
         } else if (res.status === 401) {
-          errorMsg = "Sessão expirada. Faça login novamente";
+          errorMsg = t("unauthorized");
         } else if (res.status === 400) {
           errorMsg = data.error || errorMsg;
         }
@@ -104,11 +106,11 @@ export function useEditorialManager(
         throw new Error(errorMsg);
       }
 
-      toast.success("Matérias extraídas! Agora configure sua disponibilidade.");
+      toast.success(t("extractSuccess"));
       setStep("availability");
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Erro ao processar editorial";
+        error instanceof Error ? error.message : t("parseError");
       toast.error(message);
     } finally {
       setIsParsing(false);
@@ -117,7 +119,7 @@ export function useEditorialManager(
 
   const handleGenerateSchedule = async () => {
     if (!availableHoursPerDay || Number(availableHoursPerDay) <= 0) {
-      toast.error("Por favor, informe as horas de estudo por dia");
+      toast.error(t("fillDailyHours"));
       return;
     }
 
@@ -136,14 +138,14 @@ export function useEditorialManager(
 
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
-        let errorMsg = "Erro ao gerar cronograma";
+        let errorMsg = t("scheduleError");
 
         if (res.status === 401) {
-          errorMsg = "Sessão expirada. Faça login novamente";
+          errorMsg = t("unauthorized");
         } else if (res.status === 400) {
           errorMsg = data.error || errorMsg;
         } else if (res.status >= 500) {
-          errorMsg = "Erro no servidor. Tente novamente mais tarde";
+          errorMsg = t("serverError");
         }
 
         throw new Error(errorMsg);
@@ -156,13 +158,13 @@ export function useEditorialManager(
       if (data.schedule) {
         setGeneratedSchedule(data.schedule);
         setStep("preview");
-        toast.success("Cronograma gerado! Revise antes de importar.");
+        toast.success(t("scheduleGenerated"));
       } else {
-        toast.error("Não foi possível gerar o cronograma");
+        toast.error(t("scheduleError"));
       }
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Erro ao gerar cronograma";
+        error instanceof Error ? error.message : t("scheduleError");
       toast.error(message);
     } finally {
       setIsGenerating(false);
@@ -171,7 +173,7 @@ export function useEditorialManager(
 
   const handleImportSchedule = async () => {
     if (!generatedSchedule?.dailySessions?.length) {
-      toast.error("Nenhuma sessão para importar");
+      toast.error(t("noSessionsToImport"));
       return;
     }
 
@@ -210,10 +212,10 @@ export function useEditorialManager(
 
       if (failCount > 0) {
         toast.warning(
-          `${successCount} sessões salvas, ${failCount} falharam`,
+          t("importPartial", { success: successCount, failed: failCount }),
         );
       } else {
-        toast.success(`✅ ${successCount} sessões importadas!`);
+        toast.success(t("importSuccess", { count: successCount }));
       }
 
       resetDialog();
@@ -221,7 +223,7 @@ export function useEditorialManager(
       onEditorialAdded?.();
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Erro ao importar cronograma";
+        error instanceof Error ? error.message : t("importError");
       toast.error(message);
     } finally {
       setIsSavingSchedule(false);

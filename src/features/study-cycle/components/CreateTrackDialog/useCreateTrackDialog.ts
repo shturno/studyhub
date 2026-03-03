@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 export function useCreateTrackDialog() {
+  const t = useTranslations("StudyCycle");
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -23,10 +25,10 @@ export function useCreateTrackDialog() {
       .then(async (response) => {
         if (!response.ok) {
           const err = (await response.json()) as { error?: string };
-          throw new Error(err.error ?? "Erro ao criar trilha");
+          throw new Error(err.error ?? t("trackError"));
         }
         const track = (await response.json()) as { id: string };
-        toast.success("Trilha criada!");
+        toast.success(t("trackCreated"));
         setOpen(false);
         setName("");
         setDescription("");
@@ -35,7 +37,7 @@ export function useCreateTrackDialog() {
       })
       .catch((err: unknown) => {
         const message =
-          err instanceof Error ? err.message : "Erro ao criar trilha";
+          err instanceof Error ? err.message : t("trackError");
         toast.error("Erro", { description: message });
       })
       .finally(() => setIsLoading(false));

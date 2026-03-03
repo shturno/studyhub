@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { createContest } from "@/features/contests/actions";
 import { formSchema, type FormData } from "./types";
 
 export function useCreateContestDialog() {
+  const t = useTranslations("CreateContestDialog");
   const [open, setOpen] = useState(false);
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -23,14 +25,14 @@ export function useCreateContestDialog() {
     try {
       const res = await createContest(values);
       if (res?.error) {
-        toast.error(`Erro: ${res.error}`);
+        toast.error(`${t("error")}: ${res.error}`);
       } else {
-        toast.success("Concurso criado!");
+        toast.success(t("created"));
         setOpen(false);
         form.reset();
       }
     } catch {
-      toast.error("Ocorreu um erro inesperado ao salvar o concurso.");
+      toast.error(t("unexpectedError"));
     }
   }
 

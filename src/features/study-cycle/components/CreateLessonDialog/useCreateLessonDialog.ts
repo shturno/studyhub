@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 export function useCreateLessonDialog(trackId: string) {
+  const t = useTranslations("StudyCycle");
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -37,16 +39,16 @@ export function useCreateLessonDialog(trackId: string) {
       .then(async (response) => {
         if (!response.ok) {
           const err = (await response.json()) as { error?: string };
-          throw new Error(err.error ?? "Erro ao criar lição");
+          throw new Error(err.error ?? t("lessonError"));
         }
-        toast.success("Lição criada!");
+        toast.success(t("lessonCreated"));
         setOpen(false);
         resetForm();
         router.refresh();
       })
       .catch((err: unknown) => {
         const message =
-          err instanceof Error ? err.message : "Erro ao criar lição";
+          err instanceof Error ? err.message : t("lessonError");
         toast.error("Erro", { description: message });
       })
       .finally(() => setIsLoading(false));

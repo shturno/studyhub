@@ -2,37 +2,31 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { registerSchema } from "@/lib/schemas";
+import type { z } from "zod";
+
+type RegisterFormData = z.infer<typeof registerSchema>;
 
 export function RegisterForm() {
   const router = useRouter();
   const t = useTranslations("RegisterForm");
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (formData.password !== formData.confirmPassword) {
-      toast.error(t("passwordsDoNotMatch"));
-      return;
-    }
-    if (formData.password.length < 6) {
-      toast.error(t("passwordTooShort"));
-      return;
-    }
-
-    setIsLoading(true);
+  const onSubmit = async (formData: RegisterFormData) => {
 
     await fetch("/api/users", {
       method: "POST",
@@ -56,12 +50,10 @@ export function RegisterForm() {
         const message = err instanceof Error ? err.message : t("unknownError");
         toast.error(`${t("errorPrefix")} ${message}`);
       });
-
-    setIsLoading(false);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-2">
         <label
           htmlFor="name"
@@ -73,18 +65,26 @@ export function RegisterForm() {
           id="name"
           type="text"
           placeholder={t("namePlaceholder")}
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          disabled={isLoading}
+          {...register("name")}
+          disabled={isSubmitting}
           autoComplete="name"
-          style={{ borderColor: "rgba(255,0,110,0.4)" }}
+          style={{
+            borderColor: errors.name ? "#ff006e" : "rgba(255,0,110,0.4)",
+          }}
           onFocus={(e) => {
             e.currentTarget.style.borderColor = "#ff006e";
           }}
           onBlur={(e) => {
-            e.currentTarget.style.borderColor = "rgba(255,0,110,0.4)";
+            e.currentTarget.style.borderColor = errors.name
+              ? "#ff006e"
+              : "rgba(255,0,110,0.4)";
           }}
         />
+        {errors.name && (
+          <p className="text-[#ff006e] text-[10px] font-mono">
+            {errors.name.message}
+          </p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -98,19 +98,26 @@ export function RegisterForm() {
           id="email"
           type="email"
           placeholder="seu@email.com"
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          required
-          disabled={isLoading}
+          {...register("email")}
+          disabled={isSubmitting}
           autoComplete="email"
-          style={{ borderColor: "rgba(255,0,110,0.4)" }}
+          style={{
+            borderColor: errors.email ? "#ff006e" : "rgba(255,0,110,0.4)",
+          }}
           onFocus={(e) => {
             e.currentTarget.style.borderColor = "#ff006e";
           }}
           onBlur={(e) => {
-            e.currentTarget.style.borderColor = "rgba(255,0,110,0.4)";
+            e.currentTarget.style.borderColor = errors.email
+              ? "#ff006e"
+              : "rgba(255,0,110,0.4)";
           }}
         />
+        {errors.email && (
+          <p className="text-[#ff006e] text-[10px] font-mono">
+            {errors.email.message}
+          </p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -125,20 +132,20 @@ export function RegisterForm() {
             id="password"
             type={showPassword ? "text" : "password"}
             placeholder="••••••••"
-            value={formData.password}
-            onChange={(e) =>
-              setFormData({ ...formData, password: e.target.value })
-            }
-            required
-            disabled={isLoading}
+            {...register("password")}
+            disabled={isSubmitting}
             className="pr-10"
             autoComplete="new-password"
-            style={{ borderColor: "rgba(255,0,110,0.4)" }}
+            style={{
+              borderColor: errors.password ? "#ff006e" : "rgba(255,0,110,0.4)",
+            }}
             onFocus={(e) => {
               e.currentTarget.style.borderColor = "#ff006e";
             }}
             onBlur={(e) => {
-              e.currentTarget.style.borderColor = "rgba(255,0,110,0.4)";
+              e.currentTarget.style.borderColor = errors.password
+                ? "#ff006e"
+                : "rgba(255,0,110,0.4)";
             }}
           />
           <button
@@ -154,6 +161,11 @@ export function RegisterForm() {
             )}
           </button>
         </div>
+        {errors.password && (
+          <p className="text-[#ff006e] text-[10px] font-mono">
+            {errors.password.message}
+          </p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -168,20 +180,22 @@ export function RegisterForm() {
             id="confirmPassword"
             type={showConfirmPassword ? "text" : "password"}
             placeholder="••••••••"
-            value={formData.confirmPassword}
-            onChange={(e) =>
-              setFormData({ ...formData, confirmPassword: e.target.value })
-            }
-            required
-            disabled={isLoading}
+            {...register("confirmPassword")}
+            disabled={isSubmitting}
             className="pr-10"
             autoComplete="new-password"
-            style={{ borderColor: "rgba(255,0,110,0.4)" }}
+            style={{
+              borderColor: errors.confirmPassword
+                ? "#ff006e"
+                : "rgba(255,0,110,0.4)",
+            }}
             onFocus={(e) => {
               e.currentTarget.style.borderColor = "#ff006e";
             }}
             onBlur={(e) => {
-              e.currentTarget.style.borderColor = "rgba(255,0,110,0.4)";
+              e.currentTarget.style.borderColor = errors.confirmPassword
+                ? "#ff006e"
+                : "rgba(255,0,110,0.4)";
             }}
           />
           <button
@@ -199,17 +213,22 @@ export function RegisterForm() {
             )}
           </button>
         </div>
+        {errors.confirmPassword && (
+          <p className="text-[#ff006e] text-[10px] font-mono">
+            {errors.confirmPassword.message}
+          </p>
+        )}
       </div>
 
       <button
         type="submit"
-        disabled={isLoading}
+        disabled={isSubmitting}
         className="w-full font-pixel text-[10px] text-black bg-[#ff006e] h-12 flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
         style={{
           boxShadow: "4px 4px 0px #6b0030, 0 0 15px rgba(255,0,110,0.3)",
         }}
       >
-        {isLoading ? (
+        {isSubmitting ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" /> {t("creating")}
           </>

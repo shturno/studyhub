@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
+import { useTranslations } from "next-intl";
 import { useSessionModal } from "@/features/timer/context/SessionModalContext";
 import { toast } from "sonner";
 import {
@@ -14,6 +15,7 @@ export function usePlannerContent(data: {
   availableLessons: Lesson[];
   plannedSessions: PlannedSession[];
 }) {
+  const t = useTranslations("Planner");
   const [availableLessons] = useState(data.availableLessons);
   const [plannedSessions, setPlannedSessions] = useState(data.plannedSessions);
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
@@ -54,10 +56,10 @@ export function usePlannerContent(data: {
 
       if (!result.success) {
         setPlannedSessions((prev) => prev.filter((s) => s.id !== tempId));
-        toast.error("Erro ao salvar", { description: result.error });
+        toast.error(t("saveError"), { description: result.error });
       } else {
-        toast.success("Sessão agendada!", {
-          description: `${lesson.title} salvo no planner`,
+        toast.success(t("sessionScheduled"), {
+          description: t("sessionScheduledDescription"),
         });
       }
     }
@@ -70,9 +72,9 @@ export function usePlannerContent(data: {
     const result = await removePlannedSession(sessionId);
     if (!result.success) {
       setPlannedSessions(previousSessions);
-      toast.error("Erro ao remover", { description: result.error });
+      toast.error(t("removeError"), { description: result.error });
     } else {
-      toast.success("Sessão removida");
+      toast.success(t("sessionRemoved"));
     }
   };
 

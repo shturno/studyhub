@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useSessionModal } from "@/features/timer/context/SessionModalContext";
 import { toast } from "sonner";
 import { type TrackOption, type LessonOption } from "./types";
 
 export function useSessionModalForm() {
+  const t = useTranslations("SessionModal");
   const { isOpen, closeModal, lessonId, trackId } = useSessionModal();
   const [tracks, setTracks] = useState<TrackOption[]>([]);
   const [lessons, setLessons] = useState<LessonOption[]>([]);
@@ -29,10 +31,10 @@ export function useSessionModalForm() {
           }
         })
         .catch(() => {
-          toast.error("Erro ao carregar trilhas");
+          toast.error(t("tracksError"));
         });
     }
-  }, [isOpen, trackId]);
+  }, [isOpen, trackId, t]);
 
   useEffect(() => {
     if (selectedTrackId) {
@@ -45,10 +47,10 @@ export function useSessionModalForm() {
           }
         })
         .catch(() => {
-          toast.error("Erro ao carregar lições");
+          toast.error(t("lessonsError"));
         });
     }
-  }, [selectedTrackId, lessonId]);
+  }, [selectedTrackId, lessonId, t]);
 
   const resetForm = () => {
     setSelectedTrackId("");
@@ -66,7 +68,7 @@ export function useSessionModalForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedLessonId || !duration) {
-      toast.error("Selecione uma lição e defina a duração");
+      toast.error(t("selectLesson"));
       return;
     }
 
@@ -84,15 +86,15 @@ export function useSessionModalForm() {
       }),
     })
       .then(async (response) => {
-        if (!response.ok) throw new Error("Erro ao criar sessão");
-        toast.success("Sessão criada!");
+        if (!response.ok) throw new Error(t("createError"));
+        toast.success(t("sessionCreated"));
         closeModal();
         resetForm();
         router.refresh();
       })
       .catch((err: unknown) => {
         const message =
-          err instanceof Error ? err.message : "Erro desconhecido";
+          err instanceof Error ? err.message : t("createError");
         toast.error("Erro", { description: message });
       });
 

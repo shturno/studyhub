@@ -1,12 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { User, Settings, Bell, Save, Globe } from "lucide-react";
 import { updateProfileSettings } from "@/app/[locale]/(authenticated)/settings/actions";
 import { toast } from "sonner";
 import { useRouter, usePathname } from "next/navigation";
+import { updateSettingsSchema } from "@/lib/schemas";
+import type { z } from "zod";
+
+type SettingsFormData = z.infer<typeof updateSettingsSchema>;
 
 interface SettingsFormProps {
   initialName: string;
@@ -23,21 +30,35 @@ export function SettingsForm({
   initialBreak,
   initialLocale,
 }: Readonly<SettingsFormProps>) {
+  const t = useTranslations("Settings");
   const router = useRouter();
   const pathname = usePathname();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [name, setName] = useState(initialName);
-  const [pomodoro, setPomodoro] = useState(initialPomodoro);
-  const [breakTime, setBreakTime] = useState(initialBreak);
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<SettingsFormData>({
+    resolver: zodResolver(updateSettingsSchema),
+    defaultValues: {
+      name: initialName,
+      pomodoroDefault: initialPomodoro,
+      breakDefault: initialBreak,
+      dailyGoalMinutes: 60,
+    },
+  });
+
+  const name = watch("name");
+  const pomodoro = watch("pomodoroDefault");
+  const breakTime = watch("breakDefault");
   const [locale, setLocale] = useState(initialLocale);
 
-  const handleSave = async () => {
+  const onSubmit = async (data: SettingsFormData) => {
     try {
-      setIsSubmitting(true);
       await updateProfileSettings({
-        name,
-        pomodoroDefault: pomodoro,
-        breakDefault: breakTime,
+        name: data.name,
+        pomodoroDefault: data.pomodoroDefault,
+        breakDefault: data.breakDefault,
         locale,
       });
 
@@ -46,12 +67,10 @@ export function SettingsForm({
         router.push(newPath);
       }
 
-      toast.success("Configurações salvas com sucesso!");
+      toast.success(t("saved"));
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Erro ao salvar");
-    } finally {
-      setIsSubmitting(false);
+      toast.error(error instanceof Error ? error.message : t("saveError"));
     }
   };
 
@@ -93,10 +112,17 @@ export function SettingsForm({
             </Label>
             <Input
               id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              {...register("name")}
               className="bg-[#020008] border-[#333] text-[#e0e0ff] focus-visible:ring-[#00ff41] rounded-none"
+              style={{
+                borderColor: errors.name ? "#ff006e" : undefined,
+              }}
             />
+            {errors.name && (
+              <p className="text-[#ff006e] text-[10px] font-mono">
+                {errors.name.message}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label
@@ -151,12 +177,19 @@ export function SettingsForm({
             <Input
               id="pomodoro"
               type="number"
-              value={pomodoro}
-              onChange={(e) => setPomodoro(Number(e.target.value))}
+              {...register("pomodoroDefault", { valueAsNumber: true })}
               min={5}
               max={120}
               className="bg-[#020008] border-[#333] text-[#00ff41] focus-visible:ring-[#00ff41] rounded-none font-mono"
+              style={{
+                borderColor: errors.pomodoroDefault ? "#ff006e" : undefined,
+              }}
             />
+            {errors.pomodoroDefault && (
+              <p className="text-[#ff006e] text-[10px] font-mono">
+                {errors.pomodoroDefault.message}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label
@@ -168,18 +201,26 @@ export function SettingsForm({
             <Input
               id="break"
               type="number"
-              value={breakTime}
-              onChange={(e) => setBreakTime(Number(e.target.value))}
+              {...register("breakDefault", { valueAsNumber: true })}
               min={1}
               max={60}
               className="bg-[#020008] border-[#333] text-[#00ff41] focus-visible:ring-[#00ff41] rounded-none font-mono"
+              style={{
+                borderColor: errors.breakDefault ? "#ff006e" : undefined,
+              }}
             />
+            {errors.breakDefault && (
+              <p className="text-[#ff006e] text-[10px] font-mono">
+                {errors.breakDefault.message}
+              </p>
+            )}
           </div>
         </div>
 
         <div className="flex justify-end pt-4">
           <button
-            onClick={handleSave}
+            type="submit"
+            onClick={handleSubmit(onSubmit)}
             disabled={isSubmitting || !hasChanges}
             className="flex items-center gap-2 font-pixel text-[8px] px-6 py-3 transition-all rounded-none"
             style={{

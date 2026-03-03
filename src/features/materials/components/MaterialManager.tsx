@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import {
   Plus,
   Trash2,
@@ -40,9 +41,12 @@ interface Material {
 }
 
 export function MaterialManager({ topicId }: { readonly topicId: string }) {
+  const t = useTranslations("Materials");
   const [materials, setMaterials] = useState<Material[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [titleError, setTitleError] = useState<string | null>(null);
+  const [urlError, setUrlError] = useState<string | null>(null);
   const [newMaterial, setNewMaterial] = useState({
     type: "link",
     title: "",
@@ -60,9 +64,21 @@ export function MaterialManager({ topicId }: { readonly topicId: string }) {
   }, [loadMaterials]);
 
   async function handleAdd() {
-    if (!newMaterial.title) {
-      toast.error("Digite um título");
+    setTitleError(null);
+    setUrlError(null);
+
+    if (!newMaterial.title || newMaterial.title.length < 2) {
+      setTitleError(t("titleRequired"));
       return;
+    }
+
+    if (newMaterial.url) {
+      try {
+        new URL(newMaterial.url);
+      } catch {
+        setUrlError("URL inválida");
+        return;
+      }
     }
 
     await createMaterial({
@@ -72,21 +88,21 @@ export function MaterialManager({ topicId }: { readonly topicId: string }) {
       url: newMaterial.url || undefined,
     })
       .then(() => {
-        toast.success("Material adicionado");
+        toast.success(t("added"));
         setIsOpen(false);
         setNewMaterial({ type: "link", title: "", url: "" });
         void loadMaterials();
       })
-      .catch(() => toast.error("Erro ao adicionar material"));
+      .catch(() => toast.error(t("addError")));
   }
 
   async function handleDelete(id: string) {
     await deleteMaterial(id)
       .then(() => {
-        toast.success("Material removido");
+        toast.success(t("removed"));
         setMaterials(materials.filter((m) => m.id !== id));
       })
-      .catch(() => toast.error("Erro ao remover"));
+      .catch(() => toast.error(t("removeError")));
   }
 
   function getIcon(type: string) {
@@ -137,7 +153,15 @@ export function MaterialManager({ topicId }: { readonly topicId: string }) {
                     setNewMaterial({ ...newMaterial, title: e.target.value })
                   }
                   placeholder="Ex: Resumo em PDF"
+                  style={{
+                    borderColor: titleError ? "#ff006e" : undefined,
+                  }}
                 />
+                {titleError && (
+                  <p className="text-[#ff006e] text-[10px] font-mono">
+                    {titleError}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>URL (OPCIONAL)</Label>
@@ -147,7 +171,15 @@ export function MaterialManager({ topicId }: { readonly topicId: string }) {
                     setNewMaterial({ ...newMaterial, url: e.target.value })
                   }
                   placeholder="https://..."
+                  style={{
+                    borderColor: urlError ? "#ff006e" : undefined,
+                  }}
                 />
+                {urlError && (
+                  <p className="text-[#ff006e] text-[10px] font-mono">
+                    {urlError}
+                  </p>
+                )}
               </div>
             </div>
             <DialogFooter>
