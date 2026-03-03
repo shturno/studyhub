@@ -1,10 +1,10 @@
-import createNextIntlPlugin from 'next-intl/plugin';
+import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin();
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  output: "standalone",
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -14,6 +14,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-}
+};
 
 export default withNextIntl(nextConfig);

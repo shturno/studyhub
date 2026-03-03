@@ -52,6 +52,7 @@ git checkout -b fix/your-bug-fix
 ```
 
 Use descriptive branch names:
+
 - `feature/add-leaderboard` ✅
 - `fix/auth-session-timeout` ✅
 - `docs/update-readme` ✅
@@ -61,11 +62,13 @@ Use descriptive branch names:
 
 1. **Write code following existing patterns** in the codebase
 2. **Format code** before committing:
+
    ```bash
    pnpm format
    ```
 
 3. **Run linting** to catch errors:
+
    ```bash
    pnpm lint
    ```
@@ -136,6 +139,7 @@ fix: correct XP calculation for extended sessions
 ## 🧪 Testing Guidelines
 
 For new features, write tests. See examples in:
+
 - `src/features/gamification/utils/__tests__/` (unit tests)
 - `src/features/contests/__tests__/` (integration tests)
 - `e2e/auth.spec.ts` (E2E tests)
@@ -165,6 +169,7 @@ docker compose up
 ## 🔀 Submitting a Pull Request
 
 1. **Push your branch**
+
    ```bash
    git push origin feature/your-feature-name
    ```

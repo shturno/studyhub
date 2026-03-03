@@ -19,11 +19,10 @@ interface PlannerCalendarProps {
 }
 
 export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
-  const [viewMode, setViewMode] = useState<"calendar" | "timeline">("calendar")
+  const [viewMode, setViewMode] = useState<"diario" | "semanal" | "mensal" | "completo">("diario")
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
 
-  // Map "YYYY-MM-DD" → PlannedSession[]
   const sessionsByDate = useMemo(() => {
     const map = new Map<string, PlannedSession[]>()
     for (const s of sessions) {
@@ -34,14 +33,12 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
     return map
   }, [sessions])
 
-  // Array of Date for the calendar dots
   const datesWithSessions = useMemo(
     () =>
       Array.from(sessionsByDate.keys()).map((d) => new Date(d + "T12:00:00")),
     [sessionsByDate]
   )
 
-  // For timeline: months grouped
   const sessionsByMonth = useMemo(() => {
     const sorted = Array.from(sessionsByDate.entries()).sort(([a], [b]) =>
       a.localeCompare(b)
@@ -52,15 +49,33 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
       { dateStr: string; sessions: PlannedSession[] }[]
     >()
     for (const [dateStr, daySessions] of sorted) {
-      const monthKey = dateStr.slice(0, 7) // "YYYY-MM"
+      const monthKey = dateStr.slice(0, 7)
       const existing = months.get(monthKey) ?? []
       existing.push({ dateStr, sessions: daySessions })
       months.set(monthKey, existing)
     }
-    return Array.from(months.entries()) // [["2026-03", [...]], ...]
+    return Array.from(months.entries())
   }, [sessionsByDate])
 
-  // Sessions for selected day
+  const sessionsByWeek = useMemo(() => {
+    const sorted = Array.from(sessionsByDate.entries()).sort(([a], [b]) =>
+      a.localeCompare(b)
+    )
+
+    const weeks = new Map<string, { dateStr: string; sessions: PlannedSession[] }[]>()
+    for (const [dateStr, daySessions] of sorted) {
+      const date = new Date(dateStr + "T12:00:00")
+      const weekStart = new Date(date)
+      weekStart.setDate(date.getDate() - date.getDay() + 1)
+      const weekKey = `${weekStart.getFullYear()}-W${String(Math.ceil((date.getDate() - date.getDay() + 1) / 7)).padStart(2, "0")}`
+
+      const existing = weeks.get(weekKey) ?? []
+      existing.push({ dateStr, sessions: daySessions })
+      weeks.set(weekKey, existing)
+    }
+    return Array.from(weeks.entries())
+  }, [sessionsByDate])
+
   const selectedDateStr = selectedDate
     ? `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`
     : null
@@ -79,7 +94,6 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
         background: "#04000a",
       }}
     >
-      {/* Header with tabs */}
       <div
         className="flex items-center justify-between px-5 py-3"
         style={{ borderBottom: "1px solid rgba(0,255,65,0.15)" }}
@@ -94,33 +108,24 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
           </span>
         </div>
 
-        {/* Toggle tabs */}
         <div
-          className="flex"
+          className="flex gap-1"
           style={{ border: "1px solid rgba(0,255,65,0.3)" }}
         >
-          <button
-            onClick={() => setViewMode("calendar")}
-            className="px-3 py-1 font-pixel text-[8px] transition-all"
-            style={
-              viewMode === "calendar"
-                ? { background: "#00ff41", color: "#04000a" }
-                : { color: "#7f7f9f" }
-            }
-          >
-            CALENDÁRIO
-          </button>
-          <button
-            onClick={() => setViewMode("timeline")}
-            className="px-3 py-1 font-pixel text-[8px] transition-all"
-            style={
-              viewMode === "timeline"
-                ? { background: "#00ff41", color: "#04000a" }
-                : { color: "#7f7f9f" }
-            }
-          >
-            CRONOGRAMA COMPLETO
-          </button>
+          {["diario", "semanal", "mensal", "completo"].map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setViewMode(mode as "diario" | "semanal" | "mensal" | "completo")}
+              className="px-2 py-1 font-pixel text-[7px] transition-all"
+              style={
+                viewMode === mode
+                  ? { background: "#00ff41", color: "#04000a" }
+                  : { color: "#7f7f9f" }
+              }
+            >
+              {mode.toUpperCase()}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -132,7 +137,7 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
               NENHUMA SESSÃO PLANEJADA AINDA
             </div>
           </div>
-        ) : viewMode === "calendar" ? (
+        ) : viewMode === "diario" ? (
           <CalendarView
             currentMonth={currentMonth}
             setCurrentMonth={setCurrentMonth}
@@ -141,8 +146,12 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
             datesWithSessions={datesWithSessions}
             sessionsForDay={sessionsForDay}
           />
+        ) : viewMode === "semanal" ? (
+          <WeeklyView sessionsByWeek={sessionsByWeek} />
+        ) : viewMode === "mensal" ? (
+          <MonthlyView sessionsByMonth={sessionsByMonth} />
         ) : (
-          <TimelineView sessionsByMonth={sessionsByMonth} />
+          <CompleteView sessionsByMonth={sessionsByMonth} />
         )}
       </div>
     </div>
@@ -166,7 +175,6 @@ function CalendarView({
 }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Left: Mini calendar */}
       <div>
         <div
           className="inline-block"
@@ -192,9 +200,8 @@ function CalendarView({
               },
             }}
             components={{
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              DayButton: (props: any) => {
-                const { day, ...rest } = props
+              DayButton: (props) => {
+                const { day, ...rest } = props as { day: { date: Date }; [key: string]: unknown }
                 const hasSession = datesWithSessions.some(
                   (d) =>
                     d.getFullYear() === day.date.getFullYear() &&
@@ -252,7 +259,6 @@ function CalendarView({
         </div>
       </div>
 
-      {/* Right: Day details */}
       <div>
         {sessionsForDay.length > 0 ? (
           <div>
@@ -308,7 +314,183 @@ function CalendarView({
   )
 }
 
-function TimelineView({
+function WeeklyView({
+  sessionsByWeek,
+}: {
+  sessionsByWeek: Array<[string, { dateStr: string; sessions: PlannedSession[] }[]]>
+}) {
+  const today = new Date().toISOString().split("T")[0]
+
+  if (sessionsByWeek.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <div className="font-pixel text-[7px] text-[#555]">
+          NENHUMA SESSÃO PLANEJADA
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      {sessionsByWeek.map(([weekKey, daysInWeek]) => {
+        const firstDate = daysInWeek[0].dateStr
+        const [year, month, day] = firstDate.split("-")
+        const weekStart = new Date(`${year}-${month}-${day}T12:00:00`)
+        const weekEnd = new Date(weekStart)
+        weekEnd.setDate(weekEnd.getDate() + 6)
+
+        const totalSessionsInWeek = daysInWeek.reduce(
+          (sum, d) => sum + d.sessions.length,
+          0
+        )
+        const totalHoursInWeek =
+          daysInWeek.reduce((sum, d) => {
+            return sum + d.sessions.reduce((s, sess) => s + sess.duration, 0)
+          }, 0) / 60
+
+        return (
+          <div key={weekKey}>
+            <div
+              className="font-pixel text-[8px] text-[#00ff41] mb-3 pb-2"
+              style={{ borderBottom: "1px solid rgba(0,255,65,0.3)" }}
+            >
+              SEMANA {weekKey.split("-W")[1]} ({weekStart.toLocaleDateString("pt-BR")} - {weekEnd.toLocaleDateString("pt-BR")}) · {totalSessionsInWeek} sessões · {totalHoursInWeek.toFixed(1)}h
+            </div>
+
+            <div className="space-y-2">
+              {daysInWeek.map(({ dateStr, sessions }) => {
+                const isPast = dateStr < today
+                const isToday = dateStr === today
+                const date = new Date(dateStr + "T12:00:00")
+                const dayName = date.toLocaleDateString("pt-BR", { weekday: "short" })
+                const dayNum = date.getDate()
+                const monthNum = date.getMonth() + 1
+                const dayTotalHours = sessions.reduce((s, sess) => s + sess.duration, 0) / 60
+
+                return (
+                  <div key={dateStr}>
+                    <div
+                      className="font-pixel text-[7px] mb-1 pb-1"
+                      style={{
+                        opacity: isPast ? 0.6 : 1,
+                        borderLeft: isToday ? "2px solid #00ff41" : "2px solid transparent",
+                        paddingLeft: isToday ? "0.5rem" : 0,
+                        color: isToday ? "#00ff41" : "#e0e0ff",
+                        transition: "all 0.2s",
+                      }}
+                    >
+                      {dayName.toUpperCase()} {dayNum}/{String(monthNum).padStart(2, "0")} · {dayTotalHours.toFixed(1)}h
+                    </div>
+                    <div className="flex flex-wrap gap-2 ml-4 mb-3">
+                      {sessions.map((session) => (
+                        <div
+                          key={session.id}
+                          className="px-2 py-1 text-[6px] font-mono whitespace-nowrap rounded"
+                          style={{
+                            background: "rgba(0,255,65,0.1)",
+                            border: "1px solid rgba(0,255,65,0.2)",
+                            color: "#e0e0ff",
+                            opacity: isPast ? 0.6 : 1,
+                          }}
+                        >
+                          {session.lessonTitle} · {session.duration}min
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function MonthlyView({
+  sessionsByMonth,
+}: {
+  sessionsByMonth: Array<[string, { dateStr: string; sessions: PlannedSession[] }[]]>
+}) {
+  if (sessionsByMonth.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <div className="font-pixel text-[7px] text-[#555]">
+          NENHUMA SESSÃO PLANEJADA
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      {sessionsByMonth.map(([monthKey, daysInMonth]) => {
+        const [year, month] = monthKey.split("-")
+        const monthDate = new Date(parseInt(year), parseInt(month) - 1)
+        const monthName = monthDate.toLocaleDateString("pt-BR", {
+          month: "long",
+          year: "numeric",
+        })
+
+        const totalSessionsInMonth = daysInMonth.reduce(
+          (sum, day) => sum + day.sessions.length,
+          0
+        )
+        const totalHoursInMonth =
+          daysInMonth.reduce((sum, day) => {
+            return sum + day.sessions.reduce((s, sess) => s + sess.duration, 0)
+          }, 0) / 60
+
+        return (
+          <div key={monthKey}>
+            <div
+              className="font-pixel text-[8px] text-[#00ff41] mb-3 pb-2"
+              style={{ borderBottom: "1px solid rgba(0,255,65,0.3)" }}
+            >
+              {monthName.toUpperCase()} · {totalSessionsInMonth} sessões · {totalHoursInMonth.toFixed(1)}h
+            </div>
+
+            <div className="space-y-3 pl-4">
+              {daysInMonth.map(({ dateStr, sessions }) => {
+                const date = new Date(dateStr + "T12:00:00")
+                const dayName = date.toLocaleDateString("pt-BR", { weekday: "short" })
+                const dayNum = date.getDate()
+                const dayTotalHours = sessions.reduce((s, sess) => s + sess.duration, 0) / 60
+
+                return (
+                  <div key={dateStr}>
+                    <div className="font-pixel text-[7px] text-[#e0e0ff] mb-2">
+                      {dayName.toUpperCase()} {dayNum} · {dayTotalHours.toFixed(1)}h
+                    </div>
+                    <div className="space-y-1 mb-2">
+                      {sessions.map((session) => (
+                        <div
+                          key={session.id}
+                          className="px-2 py-1 text-[6px] font-mono rounded"
+                          style={{
+                            background: "rgba(0,255,65,0.1)",
+                            border: "1px solid rgba(0,255,65,0.2)",
+                            color: "#e0e0ff",
+                          }}
+                        >
+                          {session.lessonTitle} ({session.trackName}) · {session.duration}min
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function CompleteView({
   sessionsByMonth,
 }: {
   sessionsByMonth: Array<[string, { dateStr: string; sessions: PlannedSession[] }[]]>
@@ -340,9 +522,7 @@ function TimelineView({
         )
         const totalHoursInMonth =
           daysInMonth.reduce((sum, day) => {
-            return (
-              sum + day.sessions.reduce((s, sess) => s + sess.duration, 0)
-            )
+            return sum + day.sessions.reduce((s, sess) => s + sess.duration, 0)
           }, 0) / 60
 
         return (
@@ -351,8 +531,7 @@ function TimelineView({
               className="font-pixel text-[8px] text-[#00ff41] mb-3 pb-2"
               style={{ borderBottom: "1px solid rgba(0,255,65,0.3)" }}
             >
-              ══ {monthName.toUpperCase()} ══ · {totalSessionsInMonth} sessões ·{" "}
-              {totalHoursInMonth.toFixed(1)}h
+              ══ {monthName.toUpperCase()} ══ · {totalSessionsInMonth} sessões · {totalHoursInMonth.toFixed(1)}h
             </div>
 
             <div className="space-y-2">
@@ -360,14 +539,10 @@ function TimelineView({
                 const isPast = dateStr < today
                 const isToday = dateStr === today
                 const date = new Date(dateStr + "T12:00:00")
-                const dayName = date.toLocaleDateString("pt-BR", {
-                  weekday: "short",
-                })
+                const dayName = date.toLocaleDateString("pt-BR", { weekday: "short" })
                 const dayNum = date.getDate()
                 const monthNum = date.getMonth() + 1
-
-                const dayTotalHours =
-                  sessions.reduce((s, sess) => s + sess.duration, 0) / 60
+                const dayTotalHours = sessions.reduce((s, sess) => s + sess.duration, 0) / 60
 
                 return (
                   <div key={dateStr}>
@@ -375,16 +550,13 @@ function TimelineView({
                       className="font-pixel text-[7px] mb-1 pb-1"
                       style={{
                         opacity: isPast ? 0.6 : 1,
-                        borderLeft: isToday
-                          ? "2px solid #00ff41"
-                          : "2px solid transparent",
+                        borderLeft: isToday ? "2px solid #00ff41" : "2px solid transparent",
                         paddingLeft: isToday ? "0.5rem" : 0,
                         color: isToday ? "#00ff41" : "#e0e0ff",
                         transition: "all 0.2s",
                       }}
                     >
-                      ▸ {dayName.toUpperCase()} {dayNum}/{String(monthNum).padStart(2, "0")} ·{" "}
-                      {dayTotalHours.toFixed(1)}h
+                      ▸ {dayName.toUpperCase()} {dayNum}/{String(monthNum).padStart(2, "0")} · {dayTotalHours.toFixed(1)}h
                     </div>
                     <div className="flex flex-wrap gap-2 ml-4 mb-3">
                       {sessions.map((session) => (

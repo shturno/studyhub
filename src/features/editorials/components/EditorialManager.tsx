@@ -144,35 +144,41 @@ export function EditorialManager({ contestId, role, examDate: examDateProp, onEd
   }
 
   const handleImportSchedule = async () => {
-    if (!generatedSchedule?.priorities) {
-      toast.error('Cronograma não contém prioridades. Tente novamente.')
+    if (!generatedSchedule?.dailySessions || generatedSchedule.dailySessions.length === 0) {
+      toast.error('Cronograma não contém sessões. Tente novamente.')
       return
     }
 
     try {
       setIsSavingSchedule(true)
-      const today = new Date()
 
-      // Import prioritized sessions
-      for (const priority of generatedSchedule.priorities) {
-        if (priority.priority !== 'low') {
-          // Calculate sessions for high/medium priorities
-          const sessionsCount = Math.ceil(priority.recommendedHours)
+      // Import all generated daily sessions
+      let successCount = 0
+      for (const session of generatedSchedule.dailySessions) {
+        try {
+          // Extract date from day string format "2026-03-04 (Wednesday)"
+          const dateStr = session.day.split(' ')[0]
 
-          for (let week = 0; week < sessionsCount; week++) {
-            const sessionDate = new Date(today)
-            sessionDate.setDate(sessionDate.getDate() + week * 7)
+          // Find the topic ID from priorities using lesson title
+          const priority = generatedSchedule.priorities?.find(
+            p => p.topicName === session.topics[0]
+          )
 
+          if (priority) {
             await savePlannedSession({
               lessonId: priority.topicId,
-              date: sessionDate.toISOString().split('T')[0],
-              duration: 60, // 1 hour per session
+              date: dateStr,
+              duration: session.duration,
             })
+            successCount++
           }
+        } catch (sessionError) {
+          console.warn(`Failed to import session for ${session.day}:`, sessionError)
+          // Continue with next session
         }
       }
 
-      toast.success(`✅ ${generatedSchedule.priorities.length} tópicos importados para o Planner!`)
+      toast.success(`✅ ${successCount} sessões importadas do cronograma completo para o Planner!`)
       setIsOpen(false)
       setSelectedFile(null)
       setPageRanges('')
