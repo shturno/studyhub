@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import type { PlannedSession, ViewMode } from "@/features/study-cycle/types";
 
 export function usePlannerCalendar(sessions: PlannedSession[]) {
-  const [viewMode, setViewMode] = useState<ViewMode>("diario");
+  const [viewMode, setViewMode] = useState<ViewMode>("semanal");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     new Date(),
   );
@@ -66,6 +66,16 @@ export function usePlannerCalendar(sessions: PlannedSession[]) {
     return Array.from(weeks.entries());
   }, [sessionsByDate]);
 
+  const sessionsByDateComplete = useMemo(() => {
+    const sorted = Array.from(sessionsByDate.entries()).sort(([a], [b]) =>
+      a.localeCompare(b),
+    );
+    return sorted.map(([dateStr, daySessions]) => ({
+      dateStr,
+      sessions: daySessions,
+    }));
+  }, [sessionsByDate]);
+
   const selectedDateStr = selectedDate
     ? `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`
     : null;
@@ -87,6 +97,7 @@ export function usePlannerCalendar(sessions: PlannedSession[]) {
     datesWithSessions,
     sessionsByMonth,
     sessionsByWeek,
+    sessionsByDateComplete,
     sessionsForDay,
     totalDays,
     totalHours,

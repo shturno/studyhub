@@ -52,6 +52,7 @@ export interface SessionsByMonth {
 }
 
 export interface PlannerData {
+  readonly primaryContestId?: string;
   readonly tracks: Array<{
     readonly id: string;
     readonly name: string;
