@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { saveStudySession } from "../actions";
 
@@ -19,6 +20,7 @@ export function useStudyTimer({
   initialMinutes = 25,
   onComplete,
 }: UseStudyTimerOptions) {
+  const t = useTranslations("Timer");
   const [timeLeft, setTimeLeft] = useState(initialMinutes * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [hasCompleted, setHasCompleted] = useState(false);
@@ -41,10 +43,10 @@ export function useStudyTimer({
           difficulty: null,
         });
 
-        toast.success(`🎉 Sessão concluída! +${result.xpEarned} XP`, {
+        toast.success(t("sessionSaved", { xp: result.xpEarned }), {
           description: result.leveledUp
-            ? `Parabéns! Você subiu para o nível ${result.newLevel}!`
-            : `Faltam ${result.xpToNextLevel} XP para o próximo nível`,
+            ? t("levelUp", { level: result.newLevel })
+            : t("xpToNextLevel", { xp: result.xpToNextLevel }),
         });
 
         if (onComplete) {
@@ -52,13 +54,13 @@ export function useStudyTimer({
         }
       }
     } catch {
-      toast.error("Erro ao salvar sessão", {
-        description: "Não foi possível registrar sua sessão de estudos",
+      toast.error(t("saveError"), {
+        description: t("saveErrorDescription"),
       });
     } finally {
       setIsSaving(false);
     }
-  }, [topicId, onComplete]);
+  }, [topicId, onComplete, t]);
 
   useEffect(() => {
     if (isRunning && timeLeft > 0) {

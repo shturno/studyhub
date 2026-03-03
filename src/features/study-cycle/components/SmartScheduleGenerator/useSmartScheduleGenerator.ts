@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { savePlannedSession } from "@/features/study-cycle/actions";
 import type { ScheduleData } from "./types";
@@ -11,6 +12,7 @@ export function useSmartScheduleGenerator(
   onOpenChange: (open: boolean) => void,
 ) {
   const router = useRouter();
+  const t = useTranslations("SmartScheduleGenerator");
   const [examDate, setExamDate] = useState("");
   const [weeklyHours, setWeeklyHours] = useState("40");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -20,7 +22,7 @@ export function useSmartScheduleGenerator(
 
   const handleGenerateSchedule = async () => {
     if (!examDate) {
-      toast.error("Selecione a data da prova");
+      toast.error(t("selectExamDate"));
       return;
     }
 
@@ -37,15 +39,15 @@ export function useSmartScheduleGenerator(
       .then(async (response) => {
         if (!response.ok) {
           const err = (await response.json()) as { error?: string };
-          throw new Error(err.error ?? "Erro ao gerar cronograma");
+          throw new Error(err.error ?? t("scheduleError"));
         }
         const data = (await response.json()) as ScheduleData;
         setGeneratedSchedule(data);
-        toast.success("Cronograma gerado!");
+        toast.success(t("scheduleGenerated"));
       })
       .catch((err: unknown) => {
         toast.error(
-          err instanceof Error ? err.message : "Erro ao gerar cronograma",
+          err instanceof Error ? err.message : t("scheduleError"),
         );
       })
       .finally(() => setIsGenerating(false));
@@ -56,7 +58,7 @@ export function useSmartScheduleGenerator(
       !generatedSchedule?.schedule?.dailySessions ||
       generatedSchedule.schedule.dailySessions.length === 0
     ) {
-      toast.error("Cronograma não contém sessões. Tente novamente.");
+      toast.error(t("noSessions"));
       return;
     }
 
@@ -95,12 +97,10 @@ export function useSmartScheduleGenerator(
 
       if (failCount > 0) {
         toast.warning(
-          `${successCount} sessões salvas, ${failCount} falharam`,
+          t("importPartial", { success: successCount, failed: failCount }),
         );
       } else {
-        toast.success(
-          `✅ ${successCount} sessões importadas do cronograma completo para o Planner!`,
-        );
+        toast.success(t("importSuccess", { count: successCount }));
       }
       onOpenChange(false);
       setGeneratedSchedule(null);
@@ -108,7 +108,7 @@ export function useSmartScheduleGenerator(
       router.refresh();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Erro ao importar cronograma",
+        error instanceof Error ? error.message : t("importError"),
       );
     } finally {
       setIsSavingSchedule(false);

@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { fuseContests } from "@/features/contests/fuseActions";
 
 export function useMergeContestsView() {
+  const t = useTranslations("Fusion");
   const router = useRouter();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isFusing, setIsFusing] = useState(false);
@@ -22,7 +24,7 @@ export function useMergeContestsView() {
 
   const handleFuse = async () => {
     if (selectedIds.size < 2) {
-      toast.error("O Laboratório precisa de pelo menos 2 editais para fundir!");
+      toast.error(t("minContests"));
       return;
     }
 
@@ -30,13 +32,13 @@ export function useMergeContestsView() {
     try {
       await fuseContests(Array.from(selectedIds));
 
-      toast.success("Poder Cósmico Alcançado!", {
-        description: "Super-Ciclo criado com sucesso.",
+      toast.success(t("success"), {
+        description: t("successDescription"),
       });
       router.push("/contests");
       router.refresh();
-    } catch (error) {
-      toast.error("Falha na fusão.", { description: String(error) });
+    } catch {
+      toast.error(t("error"), { description: t("errorDescription") });
     } finally {
       setIsFusing(false);
     }

@@ -66,8 +66,6 @@ export async function createContest(data: {
   }
 }
 
-import { ok, err, type ActionResult } from "@/lib/result";
-
 export async function deleteContest(
   id: string,
 ): Promise<ActionResult<void>> {

@@ -113,6 +113,8 @@
     "addFirst": "Adicione seu primeiro edital para organizar seus estudos."
   },
   "CreateContestDialog": {
+    "error": "Erro",
+    "created": "Concurso criado!",
     "errorPrefix": "Erro:",
     "createSuccess": "Concurso criado!",
     "unexpectedError": "Ocorreu um erro inesperado ao salvar o concurso.",
@@ -162,16 +164,22 @@
   "SmartScheduleGenerator": {
     "selectExamDate": "Selecione a data da prova",
     "scheduleGenerated": "Cronograma gerado!",
+    "scheduleError": "Não foi possível gerar o cronograma",
     "noSessions": "Cronograma sem sessões. Tente novamente.",
     "importSuccess": "{count} sessões importadas para o Planner!",
+    "importPartial": "{success} sessões salvas, {failed} falharam",
     "importError": "Erro ao importar cronograma"
   },
   "Timer": {
     "sessionSaved": "Sessão concluída! +{xp} XP",
-    "saveError": "Erro ao salvar sessão"
+    "saveError": "Erro ao salvar sessão",
+    "saveErrorDescription": "Não foi possível registrar sua sessão de estudos",
+    "levelUp": "Parabéns! Você subiu para o nível {level}!",
+    "xpToNextLevel": "Faltam {xp} XP para o próximo nível"
   },
   "Planner": {
     "sessionScheduled": "Sessão agendada!",
+    "sessionScheduledDescription": "Adicionada ao seu planner",
     "saveError": "Erro ao salvar",
     "sessionRemoved": "Sessão removida",
     "removeError": "Erro ao remover"

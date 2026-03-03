@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 export function useLessonChecklist() {
+  const t = useTranslations("StudyCycle");
   const [updatingLessons, setUpdatingLessons] = useState<Set<string>>(
     new Set(),
   );
@@ -24,12 +26,12 @@ export function useLessonChecklist() {
       body: JSON.stringify({ status: newStatus }),
     })
       .then((response) => {
-        if (!response.ok) throw new Error("Erro ao atualizar");
+        if (!response.ok) throw new Error(t("checklistError"));
         router.refresh();
-        toast.success("Status atualizado!");
+        toast.success(t("checklistUpdated"));
       })
       .catch(() => {
-        toast.error("Erro ao atualizar status");
+        toast.error(t("checklistError"));
       })
       .finally(() => {
         setUpdatingLessons((prev) => {

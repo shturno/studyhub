@@ -113,6 +113,8 @@
     "addFirst": "Add your first editorial to organize your studies."
   },
   "CreateContestDialog": {
+    "error": "Error",
+    "created": "Contest created!",
     "errorPrefix": "Error:",
     "createSuccess": "Contest created!",
     "unexpectedError": "An unexpected error occurred while saving the contest.",
@@ -162,16 +164,22 @@
   "SmartScheduleGenerator": {
     "selectExamDate": "Select the exam date",
     "scheduleGenerated": "Schedule generated!",
+    "scheduleError": "Could not generate schedule",
     "noSessions": "Schedule has no sessions. Try again.",
     "importSuccess": "{count} sessions imported to Planner!",
+    "importPartial": "{success} sessions saved, {failed} failed",
     "importError": "Error importing schedule"
   },
   "Timer": {
     "sessionSaved": "Session completed! +{xp} XP",
-    "saveError": "Error saving session"
+    "saveError": "Error saving session",
+    "saveErrorDescription": "Could not record your study session",
+    "levelUp": "Congratulations! You leveled up to level {level}!",
+    "xpToNextLevel": "{xp} XP until next level"
   },
   "Planner": {
     "sessionScheduled": "Session scheduled!",
+    "sessionScheduledDescription": "Added to your planner",
     "saveError": "Error saving",
     "sessionRemoved": "Session removed",
     "removeError": "Error removing"

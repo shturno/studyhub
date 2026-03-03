@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 export function useExportButton() {
+  const t = useTranslations("StudyCycle");
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = async () => {
@@ -11,7 +13,7 @@ export function useExportButton() {
 
     await fetch("/api/stats/export")
       .then(async (response) => {
-        if (!response.ok) throw new Error("Erro na exportação");
+        if (!response.ok) throw new Error(t("exportError"));
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -21,12 +23,10 @@ export function useExportButton() {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        toast.success("Exportação concluída!");
+        toast.success(t("exportSuccess"));
       })
       .catch(() => {
-        toast.error("Erro na exportação", {
-          description: "Não foi possível exportar os dados.",
-        });
+        toast.error(t("exportError"));
       })
       .finally(() => setIsExporting(false));
   };
