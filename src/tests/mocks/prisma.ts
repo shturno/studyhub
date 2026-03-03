@@ -1,13 +1,33 @@
-import { mockDeep, mockReset, DeepMockProxy } from 'vitest-mock-extended'
-import { PrismaClient } from '@prisma/client'
-import { vi, beforeEach } from 'vitest'
+import { vi, beforeEach } from "vitest";
 
-vi.mock('@/lib/prisma', () => ({
-  default: prismaMock,
-}))
+const createMockProxy = (
+  target: Record<string, unknown> = {},
+): Record<string, unknown> => {
+  return new Proxy(target, {
+    get: (t, prop: string | symbol) => {
+      const key = String(prop);
+      if (!(key in t)) {
+        t[key] = createMockProxy();
+      }
+      const value = t[key];
+      if (
+        typeof value === "object" &&
+        value !== null &&
+        !("_isMockFunction" in value)
+      ) {
+        return createMockProxy(value as Record<string, unknown>);
+      }
+      return typeof value === "function" ? vi.fn() : value;
+    },
+  });
+};
 
-export const prismaMock: DeepMockProxy<PrismaClient> = mockDeep<PrismaClient>()
+export const prismaMock = createMockProxy();
+
+vi.mock("@/lib/prisma", () => ({
+  prisma: prismaMock,
+}));
 
 beforeEach(() => {
-  mockReset(prismaMock)
-})
+  vi.clearAllMocks();
+});

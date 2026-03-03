@@ -19,18 +19,18 @@ A gamified study planner for competitive exam preparation ("concursos públicos"
 
 ## 🛠 Tech Stack
 
-| Layer | Tech |
-|---|---|
-| **Frontend** | Next.js 15 (App Router), React 18, TypeScript, Tailwind CSS |
-| **Backend** | Next.js Server Actions, Node.js |
-| **Database** | PostgreSQL + Prisma ORM |
-| **Auth** | NextAuth v5 (beta) |
-| **Internationalization** | next-intl |
-| **AI** | Google Generative AI (Gemini 1.5 Flash) |
-| **State** | Zustand, TanStack React Query |
-| **Testing** | Vitest (unit/integration), Playwright (E2E) |
-| **Containerization** | Docker, Docker Compose |
-| **CI/CD** | GitHub Actions |
+| Layer                    | Tech                                                        |
+| ------------------------ | ----------------------------------------------------------- |
+| **Frontend**             | Next.js 15 (App Router), React 18, TypeScript, Tailwind CSS |
+| **Backend**              | Next.js Server Actions, Node.js                             |
+| **Database**             | PostgreSQL + Prisma ORM                                     |
+| **Auth**                 | NextAuth v5 (beta)                                          |
+| **Internationalization** | next-intl                                                   |
+| **AI**                   | Google Generative AI (Gemini 1.5 Flash)                     |
+| **State**                | Zustand, TanStack React Query                               |
+| **Testing**              | Vitest (unit/integration), Playwright (E2E)                 |
+| **Containerization**     | Docker, Docker Compose                                      |
+| **CI/CD**                | GitHub Actions                                              |
 
 ---
 
@@ -46,28 +46,33 @@ A gamified study planner for competitive exam preparation ("concursos públicos"
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/shturno/studyhub.git
    cd studyhub
    ```
 
 2. **Install dependencies**
+
    ```bash
    pnpm install
    ```
 
 3. **Configure environment variables**
+
    ```bash
    cp .env.example .env.local
    # Edit .env.local with your actual values
    ```
 
 4. **Run database migrations**
+
    ```bash
    pnpm db:migrate
    ```
 
 5. **Start development server**
+
    ```bash
    pnpm dev
    ```
@@ -78,14 +83,15 @@ A gamified study planner for competitive exam preparation ("concursos públicos"
 
 ## 🌍 Environment Variables
 
-| Variable | Description | Example |
-|---|---|---|
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@localhost/studyhub` |
-| `NEXTAUTH_SECRET` | JWT secret for NextAuth | Generated with `openssl rand -base64 32` |
-| `NEXTAUTH_URL` | App base URL (production) | `https://studyhub.example.com` |
-| `GEMINI_API_KEY` | Google Generative AI API key | From Google Cloud Console |
+| Variable          | Description                  | Example                                     |
+| ----------------- | ---------------------------- | ------------------------------------------- |
+| `DATABASE_URL`    | PostgreSQL connection string | `postgresql://user:pass@localhost/studyhub` |
+| `NEXTAUTH_SECRET` | JWT secret for NextAuth      | Generated with `openssl rand -base64 32`    |
+| `NEXTAUTH_URL`    | App base URL (production)    | `https://studyhub.example.com`              |
+| `GEMINI_API_KEY`  | Google Generative AI API key | From Google Cloud Console                   |
 
 Generate a secure `NEXTAUTH_SECRET`:
+
 ```bash
 openssl rand -base64 32
 ```
@@ -95,27 +101,32 @@ openssl rand -base64 32
 ## 🧪 Testing
 
 ### Run All Tests
+
 ```bash
 pnpm test
 ```
 
 ### Unit & Integration Tests
+
 ```bash
 pnpm test:unit
 pnpm test:integration
 ```
 
 ### E2E Tests (Browser)
+
 ```bash
 pnpm test:e2e
 ```
 
 ### Watch Mode (Development)
+
 ```bash
 pnpm test:watch
 ```
 
 ### Coverage Report
+
 ```bash
 pnpm coverage
 ```
@@ -127,12 +138,14 @@ pnpm coverage
 ### Using Docker Compose
 
 **Development** (database only):
+
 ```bash
 docker compose -f docker-compose.dev.yml up
 pnpm dev
 ```
 
 **Production**:
+
 ```bash
 docker compose up
 ```
@@ -143,22 +156,22 @@ The app will be available at `http://localhost:3000`
 
 ## 📦 Available Scripts
 
-| Command | Description |
-|---|---|
-| `pnpm dev` | Start dev server (port 3000) |
-| `pnpm build` | Production build |
-| `pnpm start` | Start production server |
-| `pnpm lint` | Run ESLint |
-| `pnpm format` | Format code with Prettier |
-| `pnpm test` | Run all tests |
-| `pnpm test:unit` | Unit tests only |
-| `pnpm test:integration` | Integration tests only |
-| `pnpm test:e2e` | E2E tests with Playwright |
-| `pnpm test:watch` | Watch mode for tests |
-| `pnpm coverage` | Coverage report |
-| `pnpm db:migrate` | Run Prisma migrations |
-| `pnpm db:seed` | Seed database |
-| `pnpm db:studio` | Open Prisma Studio GUI |
+| Command                 | Description                  |
+| ----------------------- | ---------------------------- |
+| `pnpm dev`              | Start dev server (port 3000) |
+| `pnpm build`            | Production build             |
+| `pnpm start`            | Start production server      |
+| `pnpm lint`             | Run ESLint                   |
+| `pnpm format`           | Format code with Prettier    |
+| `pnpm test`             | Run all tests                |
+| `pnpm test:unit`        | Unit tests only              |
+| `pnpm test:integration` | Integration tests only       |
+| `pnpm test:e2e`         | E2E tests with Playwright    |
+| `pnpm test:watch`       | Watch mode for tests         |
+| `pnpm coverage`         | Coverage report              |
+| `pnpm db:migrate`       | Run Prisma migrations        |
+| `pnpm db:seed`          | Seed database                |
+| `pnpm db:studio`        | Open Prisma Studio GUI       |
 
 ---
 

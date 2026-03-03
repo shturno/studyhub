@@ -1,13 +1,13 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Plus } from 'lucide-react'
-import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Plus } from "lucide-react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -25,31 +25,33 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { createEditorialItem } from '../actions'
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { createEditorialItem } from "../actions";
 
 const formSchema = z.object({
-  title: z.string().min(3, 'Título deve ter pelo menos 3 caracteres'),
+  title: z.string().min(3, "Título deve ter pelo menos 3 caracteres"),
   description: z.string().optional(),
-  url: z.string().url('URL inválida').optional().or(z.literal('')),
-})
+  url: z.string().url("URL inválida").optional().or(z.literal("")),
+});
 
 interface CreateEditorialDialogProps {
-  contestId: string
+  contestId: string;
 }
 
-export function CreateEditorialDialog({ contestId }: CreateEditorialDialogProps) {
-  const [open, setOpen] = useState(false)
-  const router = useRouter()
+export function CreateEditorialDialog({
+  contestId,
+}: CreateEditorialDialogProps) {
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: '',
-      description: '',
-      url: '',
+      title: "",
+      description: "",
+      url: "",
     },
-  })
+  });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -58,14 +60,14 @@ export function CreateEditorialDialog({ contestId }: CreateEditorialDialogProps)
         title: values.title,
         description: values.description || undefined,
         url: values.url || undefined,
-      })
-      toast.success('Edital adicionado com sucesso!')
-      setOpen(false)
-      form.reset()
-      router.refresh()
+      });
+      toast.success("Edital adicionado com sucesso!");
+      setOpen(false);
+      form.reset();
+      router.refresh();
     } catch (error) {
-      toast.error('Erro ao adicionar edital')
-      console.error(error)
+      toast.error("Erro ao adicionar edital");
+      console.error(error);
     }
   }
 
@@ -81,7 +83,8 @@ export function CreateEditorialDialog({ contestId }: CreateEditorialDialogProps)
         <DialogHeader>
           <DialogTitle>Adicionar Novo Edital</DialogTitle>
           <DialogDescription>
-            Adicione um edital para este concurso. Você poderá mapear o conteúdo para seus tópicos de estudo.
+            Adicione um edital para este concurso. Você poderá mapear o conteúdo
+            para seus tópicos de estudo.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -93,7 +96,10 @@ export function CreateEditorialDialog({ contestId }: CreateEditorialDialogProps)
                 <FormItem>
                   <FormLabel>Título do Edital</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ex: Edital Banco do Brasil 2026" {...field} />
+                    <Input
+                      placeholder="Ex: Edital Banco do Brasil 2026"
+                      {...field}
+                    />
                   </FormControl>
                   <FormDescription>
                     Um nome descritivo para este edital
@@ -110,7 +116,10 @@ export function CreateEditorialDialog({ contestId }: CreateEditorialDialogProps)
                 <FormItem>
                   <FormLabel>Descrição</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ex: Escriturário, edital de 2026" {...field} />
+                    <Input
+                      placeholder="Ex: Escriturário, edital de 2026"
+                      {...field}
+                    />
                   </FormControl>
                   <FormDescription>
                     Informações adicionais sobre o edital (opcional)
@@ -138,7 +147,10 @@ export function CreateEditorialDialog({ contestId }: CreateEditorialDialogProps)
             />
 
             <DialogFooter>
-              <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700">
+              <Button
+                type="submit"
+                className="w-full bg-indigo-600 hover:bg-indigo-700"
+              >
                 Adicionar Edital
               </Button>
             </DialogFooter>
@@ -146,5 +158,5 @@ export function CreateEditorialDialog({ contestId }: CreateEditorialDialogProps)
         </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
