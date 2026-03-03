@@ -3,6 +3,8 @@ import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { parsePdfWithGemini } from '@/features/ai/services/editalParserService'
+import { generateScheduleWithGemini } from '@/features/ai/services/geminiScheduleService'
+import { generateStudyPriorities } from '@/features/editorials/services/contentCrossingService'
 
 export const maxDuration = 60
 
@@ -78,13 +80,15 @@ export async function POST(request: NextRequest) {
     const fileName = formData.get('fileName') as string | null
     const contestId = formData.get('contestId') as string | null
     const pageRanges = formData.get('pageRanges') as string | null
+    const role = formData.get('role') as string | null
+    const examDate = formData.get('examDate') as string | null
 
-    console.log(`[Editorial Parse] fileName: ${fileName}, contestId: ${contestId}, pageRanges: ${pageRanges}`)
+    console.log(`[Editorial Parse] fileName: ${fileName}, contestId: ${contestId}, pageRanges: ${pageRanges}, role: ${role}, examDate: ${examDate}`)
 
-    if (!fileUrl || !contestId || !pageRanges) {
+    if (!fileUrl || !contestId || !pageRanges || !role) {
       console.error('[Editorial Parse] Parâmetros obrigatórios faltando')
       return NextResponse.json(
-        { error: 'fileUrl, contestId, and pageRanges are required' },
+        { error: 'fileUrl, contestId, pageRanges, and role are required' },
         { status: 400 }
       )
     }
@@ -131,8 +135,8 @@ export async function POST(request: NextRequest) {
     // Extrair apenas as páginas selecionadas do PDF
     const pdfText = await extractSelectedPages(arrayBuffer, pageNumbers)
 
-    console.log(`[Editorial Parse] Enviando texto para Gemini para parsing (${(pdfText.length / 1024).toFixed(2)} KB)`)
-    const parsedData = await parsePdfWithGemini(pdfText)
+    console.log(`[Editorial Parse] Enviando texto para Gemini para parsing (${(pdfText.length / 1024).toFixed(2)} KB), role: ${role}`)
+    const parsedData = await parsePdfWithGemini(pdfText, role)
     console.log(`[Editorial Parse] Gemini parsing completo: ${parsedData.subjects.length} subjects encontrados`)
 
     console.log(`[Editorial Parse] Iniciando transação de banco de dados`)
@@ -206,11 +210,53 @@ export async function POST(request: NextRequest) {
     revalidatePath(`/[locale]/(authenticated)/contests/[slug]`)
     revalidatePath('/')
 
+    // Generate study priorities and schedule if enabled
+    console.log(`[Editorial Parse] Iniciando geração de cronograma`)
+    let schedule = null
+    let priorities = []
+    let usedDefaultExamDate = false
+
+    try {
+      // Fetch priorities based on newly created content mappings
+      priorities = await generateStudyPriorities(contestId, session.user.id, 40)
+      console.log(`[Editorial Parse] Prioridades geradas: ${priorities.length} tópicos`)
+
+      if (priorities.length > 0) {
+        // Determine effective exam date
+        const effectiveExamDate = examDate
+          ? new Date(examDate)
+          : new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000) // +6 months default
+
+        if (!examDate) {
+          usedDefaultExamDate = true
+          console.log(`[Editorial Parse] Data da prova não fornecida. Usando padrão de 6 meses.`)
+        }
+
+        // Generate schedule with Gemini
+        console.log(`[Editorial Parse] Gerando cronograma com Gemini (examDate: ${effectiveExamDate.toISOString()})`)
+        schedule = await generateScheduleWithGemini({
+          contestName: contest.name,
+          priorities,
+          weeklyAvailableHours: 40,
+          examDate: effectiveExamDate,
+        })
+        console.log(`[Editorial Parse] Cronograma gerado: ${schedule.weeks} semanas, ${schedule.totalHours}h total`)
+      }
+    } catch (scheduleError) {
+      const errorMsg = scheduleError instanceof Error ? scheduleError.message : 'Unknown error'
+      console.warn(`[Editorial Parse] Aviso ao gerar cronograma (não é fatal): ${errorMsg}`)
+      // Don't fail the entire request if schedule generation fails
+      schedule = null
+    }
+
     console.log(`[Editorial Parse] ✅ Sucesso! Editorial ID: ${result.id}`)
     return NextResponse.json({
       success: true,
       editorialId: result.id,
       title: parsedData.title,
+      schedule,
+      priorities,
+      usedDefaultExamDate,
     })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to parse edital'

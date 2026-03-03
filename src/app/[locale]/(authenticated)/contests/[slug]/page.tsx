@@ -110,7 +110,7 @@ export default async function ContestDetailPage(props: ContestDetailPageProps) {
                 {t('noEditorialMappedDescription')}
               </p>
               <div className="w-full max-w-xs" style={{ border: '2px solid rgba(0,255,65,0.4)', padding: '16px', background: '#04000a' }}>
-                 <EditorialManager contestId={contest.id} />
+                 <EditorialManager contestId={contest.id} role={contest.role} examDate={contest.examDate?.toISOString() ?? null} />
               </div>
             </div>
           ) : (
@@ -121,7 +121,7 @@ export default async function ContestDetailPage(props: ContestDetailPageProps) {
                    <p className="font-mono text-sm text-[#7f7f9f]">{t('skillTreeDescription')}</p>
                  </div>
                  <div className="w-48 text-right">
-                   <EditorialManager contestId={contest.id} />
+                   <EditorialManager contestId={contest.id} role={contest.role} examDate={contest.examDate?.toISOString() ?? null} />
                  </div>
               </div>
 
