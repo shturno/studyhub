@@ -213,7 +213,7 @@ function CalendarView({
             }}
             components={{
               DayButton: (props) => {
-                const { day, ...rest } = props as {
+                const { day, ...rest } = props as unknown as {
                   day: { date: Date };
                   [key: string]: unknown;
                 };
