@@ -229,8 +229,8 @@ export default async function ContestDetailPage(props: ContestDetailPageProps) {
         </main>
       </div>
     );
-  } catch (error: unknown) {
-    const err = error as Error;
+  } catch (error) {
+    console.error("[ContestDetail] Error rendering contest page:", error);
     const t = await getTranslations("ContestDetail");
     return (
       <div

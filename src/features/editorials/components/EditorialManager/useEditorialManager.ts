@@ -89,12 +89,27 @@ export function useEditorialManager(
         }),
       });
 
-      if (!res.ok) throw new Error("Erro ao processar editorial");
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        let errorMsg = "Erro ao processar editorial";
+
+        if (res.status === 413) {
+          errorMsg = "Arquivo muito grande. Máximo permitido: 50MB";
+        } else if (res.status === 401) {
+          errorMsg = "Sessão expirada. Faça login novamente";
+        } else if (res.status === 400) {
+          errorMsg = data.error || errorMsg;
+        }
+
+        throw new Error(errorMsg);
+      }
 
       toast.success("Matérias extraídas! Agora configure sua disponibilidade.");
       setStep("availability");
-    } catch {
-      toast.error("Erro ao processar editorial");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Erro ao processar editorial";
+      toast.error(message);
     } finally {
       setIsParsing(false);
     }
@@ -119,7 +134,20 @@ export function useEditorialManager(
         }),
       });
 
-      if (!res.ok) throw new Error("Erro ao gerar cronograma");
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        let errorMsg = "Erro ao gerar cronograma";
+
+        if (res.status === 401) {
+          errorMsg = "Sessão expirada. Faça login novamente";
+        } else if (res.status === 400) {
+          errorMsg = data.error || errorMsg;
+        } else if (res.status >= 500) {
+          errorMsg = "Erro no servidor. Tente novamente mais tarde";
+        }
+
+        throw new Error(errorMsg);
+      }
 
       const data = (await res.json()) as {
         schedule?: GeneratedSchedule & { priorities?: StudyAreaPriority[] };
@@ -132,8 +160,10 @@ export function useEditorialManager(
       } else {
         toast.error("Não foi possível gerar o cronograma");
       }
-    } catch {
-      toast.error("Erro ao gerar cronograma");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Erro ao gerar cronograma";
+      toast.error(message);
     } finally {
       setIsGenerating(false);
     }
@@ -147,31 +177,52 @@ export function useEditorialManager(
 
     try {
       setIsSavingSchedule(true);
-      let count = 0;
 
-      for (const session of generatedSchedule.dailySessions) {
-        const topicName = session.topics[0];
-        const priority =
-          generatedSchedule.priorities?.find(
-            (p) => p.topicName === topicName,
-          ) || generatedSchedule.priorities?.[0];
+      const results = await Promise.allSettled(
+        generatedSchedule.dailySessions.map((session) => {
+          const topicName = session.topics[0];
+          const priority =
+            generatedSchedule.priorities?.find(
+              (p) => p.topicName === topicName,
+            ) || generatedSchedule.priorities?.[0];
 
-        if (priority) {
-          await savePlannedSession({
+          if (!priority) {
+            return Promise.resolve(null);
+          }
+
+          return savePlannedSession({
             lessonId: priority.topicId,
             date: session.day.split(" ")[0],
             duration: session.duration,
           });
-          count++;
+        }),
+      );
+
+      const successCount = results.filter((r) => {
+        if (r.status === "fulfilled") {
+          const result = r.value;
+          return result && "success" in result && result.success;
         }
+        return false;
+      }).length;
+
+      const failCount = results.length - successCount;
+
+      if (failCount > 0) {
+        toast.warning(
+          `${successCount} sessões salvas, ${failCount} falharam`,
+        );
+      } else {
+        toast.success(`✅ ${successCount} sessões importadas!`);
       }
 
-      toast.success(`✅ ${count} sessões importadas!`);
       resetDialog();
       router.refresh();
       onEditorialAdded?.();
-    } catch {
-      toast.error("Erro ao importar cronograma");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Erro ao importar cronograma";
+      toast.error(message);
     } finally {
       setIsSavingSchedule(false);
     }

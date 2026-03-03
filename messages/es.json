@@ -137,5 +137,87 @@
   },
   "Common": {
     "close": "Cerrar"
+  },
+  "Errors": {
+    "unauthorized": "Sesión expirada. Por favor, inicia sesión nuevamente.",
+    "networkError": "Sin conexión al servidor. Verifica tu internet.",
+    "unknownError": "Error inesperado. Intenta nuevamente.",
+    "serverError": "Error interno del servidor.",
+    "fileTooLarge": "Archivo demasiado grande. Máximo permitido: 50MB",
+    "validationError": "Por favor, verifica los datos proporcionados"
+  },
+  "EditorialManager": {
+    "fillAllFields": "Completa cargo, páginas y selecciona un archivo",
+    "invalidPageFormat": "Formato de páginas inválido (ej: 1-5, 10, 15-20)",
+    "extractSuccess": "¡Materias extraídas! Ahora configura tu disponibilidad.",
+    "parseError": "Error al procesar el editorial",
+    "fillDailyHours": "Por favor, especifica horas de estudio por día",
+    "scheduleGenerated": "¡Cronograma generado! Revisa antes de importar.",
+    "scheduleError": "No se pudo generar el cronograma",
+    "noSessionsToImport": "Sin sesiones para importar",
+    "importSuccess": "¡{count} sesiones importadas!",
+    "importPartial": "{success} sesiones guardadas, {failed} fallaron",
+    "importError": "Error al importar cronograma"
+  },
+  "SmartScheduleGenerator": {
+    "selectExamDate": "Selecciona la fecha del examen",
+    "scheduleGenerated": "¡Cronograma generado!",
+    "noSessions": "Cronograma sin sesiones. Intenta nuevamente.",
+    "importSuccess": "¡{count} sesiones importadas al Planificador!",
+    "importError": "Error al importar cronograma"
+  },
+  "Timer": {
+    "sessionSaved": "¡Sesión completada! +{xp} XP",
+    "saveError": "Error al guardar sesión"
+  },
+  "Planner": {
+    "sessionScheduled": "¡Sesión programada!",
+    "saveError": "Error al guardar",
+    "sessionRemoved": "Sesión eliminada",
+    "removeError": "Error al eliminar"
+  },
+  "StudyCycle": {
+    "trackCreated": "¡Pista creada!",
+    "trackError": "Error al crear pista",
+    "lessonCreated": "¡Lección creada!",
+    "lessonError": "Error al crear lección",
+    "checklistUpdated": "¡Estado actualizado!",
+    "checklistError": "Error al actualizar estado",
+    "exportSuccess": "¡Exportación completada!",
+    "exportError": "Error en exportación"
+  },
+  "SessionModal": {
+    "tracksError": "Error al cargar pistas",
+    "lessonsError": "Error al cargar lecciones",
+    "selectLesson": "Selecciona una lección y establece duración",
+    "sessionCreated": "¡Sesión creada!",
+    "createError": "Error al crear sesión"
+  },
+  "Materials": {
+    "titleRequired": "Ingresa un título para el material",
+    "added": "Material añadido",
+    "addError": "Error al añadir material",
+    "removed": "Material eliminado",
+    "removeError": "Error al eliminar material"
+  },
+  "Settings": {
+    "saved": "¡Configuración guardada con éxito!",
+    "saveError": "Error al guardar configuración"
+  },
+  "Editorials": {
+    "added": "¡Editorial añadido con éxito!",
+    "addError": "Error al añadir editorial",
+    "removed": "¡Editorial eliminado con éxito!",
+    "removeError": "Error al eliminar editorial",
+    "topicsRequired": "Selecciona al menos un tema",
+    "mappingSuccess": "¡{count} temas mapeados con éxito!",
+    "mappingError": "Error al mapear contenido"
+  },
+  "Fusion": {
+    "minContests": "¡El Laboratorio necesita al menos 2 editorials para fusionar!",
+    "success": "¡Poder Cósmico Alcanzado!",
+    "successDescription": "Súper-Ciclo creado con éxito.",
+    "error": "Falha en fusión.",
+    "errorDescription": "Intenta nuevamente o selecciona otros concursos."
   }
 }
