@@ -68,7 +68,11 @@ export function useEditorialManager(
     setIsParsing(true);
 
     try {
-      const blobUrl = await upload(selectedFile.name, selectedFile, {
+      const fileExtension = selectedFile.name.split(".").pop();
+      const timestamp = Date.now();
+      const blobFileName = `edital-${contestId}-${timestamp}.${fileExtension}`;
+
+      const blobUrl = await upload(blobFileName, selectedFile, {
         access: "public",
         handleUploadUrl: `/api/editorials/upload`,
       });
