@@ -18,6 +18,7 @@ import {
   ArrowRight,
   Calendar,
   AlertCircle,
+  Clock,
 } from "lucide-react";
 import { useEditorialManager } from "./useEditorialManager";
 import type { EditorialManagerProps } from "./types";
@@ -31,7 +32,9 @@ export function EditorialManager({
   const {
     isOpen,
     setIsOpen,
+    step,
     isParsing,
+    isGenerating,
     selectedFile,
     pageRanges,
     setPageRanges,
@@ -39,14 +42,19 @@ export function EditorialManager({
     setSelectedRole,
     examDate,
     setExamDate,
+    availableHoursPerDay,
+    setAvailableHoursPerDay,
     generatedSchedule,
     isSavingSchedule,
     fileInputRef,
     handleFileSelect,
     handleChangeFile,
     handleSubmit,
+    handleGenerateSchedule,
     handleImportSchedule,
     handleSkipSchedule,
+    handleGoBack,
+    handleClose,
   } = useEditorialManager(contestId, role, examDateProp, onEditorialAdded);
 
   return (
@@ -61,11 +69,13 @@ export function EditorialManager({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Book className="w-5 h-5 text-[#00ff41]" />
-            IMPORTAR EDITAL
+            {step === "upload" && "IMPORTAR EDITAL"}
+            {step === "availability" && "DISPONIBILIDADE & CRONOGRAMA"}
+            {step === "preview" && "REVISAR CRONOGRAMA"}
           </DialogTitle>
         </DialogHeader>
 
-        {generatedSchedule === null ? (
+        {step === "upload" && (
           <div className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="role">CARGO / POSIÇÃO</Label>
@@ -157,7 +167,8 @@ export function EditorialManager({
                   <ul className="space-y-1 font-mono text-sm text-[#7f7f9f]">
                     <li>✓ Upload seguro do PDF na nuvem</li>
                     <li>✓ IA extrai matérias e tópicos específicos do cargo</li>
-                    <li>✓ Gera cronograma personalizado até a data da prova</li>
+                    <li>✓ Você define sua disponibilidade</li>
+                    <li>✓ IA gera cronograma personalizado</li>
                     <li>✓ Você revisa e importa para o planner</li>
                   </ul>
                 </div>
@@ -165,7 +176,7 @@ export function EditorialManager({
             </div>
 
             <div className="flex gap-3 justify-end">
-              <Button variant="outline" onClick={() => setIsOpen(false)}>
+              <Button variant="outline" onClick={handleClose}>
                 CANCELAR
               </Button>
               <Button
@@ -181,13 +192,113 @@ export function EditorialManager({
                 ) : (
                   <>
                     <Cpu className="w-4 h-4" />
-                    EXTRAIR MATÉRIAS
+                    PRÓXIMO
                   </>
                 )}
               </Button>
             </div>
           </div>
-        ) : (
+        )}
+
+        {step === "availability" && (
+          <div className="space-y-5">
+            <div className="space-y-3">
+              <Label htmlFor="hours" className="flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                HORAS DE ESTUDO POR DIA
+              </Label>
+              <div className="flex items-center gap-3">
+                <Input
+                  id="hours"
+                  type="number"
+                  min="0.5"
+                  max="24"
+                  step="0.5"
+                  placeholder="Ex: 2, 3.5, 4"
+                  value={availableHoursPerDay}
+                  onChange={(e) => setAvailableHoursPerDay(e.target.value)}
+                  className="flex-1"
+                />
+                <span className="font-mono text-sm text-[#7f7f9f]">horas</span>
+              </div>
+              <div className="font-mono text-xs text-[#555]">
+                Quantas horas você consegue estudar por dia em média?
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Label className="block">DIAS DE ESTUDO</Label>
+              <div className="space-y-2">
+                <div className="text-xs text-[#7f7f9f] font-mono">
+                  (Nota: Você pode ajustar isso depois no planner)
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    "Segunda",
+                    "Terça",
+                    "Quarta",
+                    "Quinta",
+                    "Sexta",
+                    "Sábado",
+                  ].map((day) => (
+                    <div
+                      key={day}
+                      className="px-3 py-2 border border-[#00ff41]/30 rounded text-center text-sm font-mono text-[#7f7f9f]"
+                    >
+                      {day}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="p-4"
+              style={{
+                border: "2px solid rgba(0,255,65,0.2)",
+                background: "#04000a",
+              }}
+            >
+              <div className="font-pixel text-[7px] text-[#00ff41] mb-2">
+                DICA
+              </div>
+              <p className="font-mono text-xs text-[#7f7f9f]">
+                Com {availableHoursPerDay} horas/dia, você terá um cronograma
+                realista e sustentável. A IA distribuirá as matérias de forma
+                inteligente!
+              </p>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="outline"
+                onClick={handleGoBack}
+                disabled={isGenerating}
+              >
+                VOLTAR
+              </Button>
+              <Button
+                onClick={handleGenerateSchedule}
+                disabled={isGenerating || !availableHoursPerDay}
+                className="gap-2"
+              >
+                {isGenerating ? (
+                  <>
+                    <Cpu className="w-4 h-4 animate-spin" />
+                    GERANDO...
+                  </>
+                ) : (
+                  <>
+                    <Cpu className="w-4 h-4" />
+                    GERAR CRONOGRAMA
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === "preview" && generatedSchedule && (
           <div className="space-y-5">
             <div
               className="p-4"
@@ -225,10 +336,11 @@ export function EditorialManager({
                   }}
                 >
                   <div className="font-pixel text-[6px] text-[#555]">
-                    COBERTURA
+                    DIAS DE ESTUDO
                   </div>
                   <div className="font-pixel text-xl text-[#ffbe0b] mt-1">
-                    {generatedSchedule.weeks}%
+                    {generatedSchedule.fullScheduleOverview?.totalDaysOfStudy ||
+                      0}
                   </div>
                 </div>
               </div>

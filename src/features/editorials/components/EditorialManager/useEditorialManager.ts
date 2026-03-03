@@ -16,13 +16,18 @@ export function useEditorialManager(
 ) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [step, setStep] = useState<"upload" | "availability" | "preview">(
+    "upload",
+  );
   const [isParsing, setIsParsing] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [pageRanges, setPageRanges] = useState("");
   const [selectedRole, setSelectedRole] = useState(role || "");
   const [examDate, setExamDate] = useState(
     examDateProp ? examDateProp.split("T")[0] : "",
   );
+  const [availableHoursPerDay, setAvailableHoursPerDay] = useState<string>("2");
   const [generatedSchedule, setGeneratedSchedule] = useState<
     (GeneratedSchedule & { priorities?: StudyAreaPriority[] }) | null
   >(null);
@@ -50,8 +55,8 @@ export function useEditorialManager(
   };
 
   const handleSubmit = async () => {
-    if (!selectedFile || !pageRanges.trim()) {
-      toast.error("Por favor, preencha as páginas e selecione um arquivo");
+    if (!selectedFile || !pageRanges.trim() || !selectedRole) {
+      toast.error("Por favor, preencha cargo, páginas e selecione um arquivo");
       return;
     }
 
@@ -64,7 +69,7 @@ export function useEditorialManager(
 
     const blobUrl = await upload(selectedFile.name, selectedFile, {
       access: "public",
-      handleBlobUploadUrl: `/api/editorials/upload`,
+      handleUploadUrl: `/api/editorials/upload`,
     });
 
     await fetch("/api/editorials/parse", {
@@ -74,31 +79,61 @@ export function useEditorialManager(
         blobUrl: blobUrl.url,
         contestId,
         pageRanges,
-        role: selectedRole || undefined,
+        role: selectedRole,
         examDate: examDate || undefined,
       }),
     })
       .then(async (res) => {
         if (!res.ok) throw new Error("Erro ao processar editorial");
-        const data = (await res.json()) as {
-          schedule?: GeneratedSchedule & { priorities?: StudyAreaPriority[] };
-        };
-
-        if (data.schedule) {
-          setGeneratedSchedule(data.schedule);
-          toast.success("Editorial processado! Revise o cronograma.");
-        } else {
-          toast.success("Editorial importado com sucesso!");
-          setIsOpen(false);
-          router.refresh();
-          onEditorialAdded?.();
-        }
+        toast.success(
+          "Matérias extraídas! Agora configure sua disponibilidade.",
+        );
+        setStep("availability");
       })
       .catch(() => {
         toast.error("Erro ao processar editorial");
       })
       .finally(() => {
         setIsParsing(false);
+      });
+  };
+
+  const handleGenerateSchedule = async () => {
+    if (!availableHoursPerDay || Number(availableHoursPerDay) <= 0) {
+      toast.error("Por favor, informe as horas de estudo por dia");
+      return;
+    }
+
+    setIsGenerating(true);
+
+    await fetch("/api/editorials/generate-schedule", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contestId,
+        availableHoursPerDay: Number(availableHoursPerDay),
+        examDate: examDate || undefined,
+      }),
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error("Erro ao gerar cronograma");
+        const data = (await res.json()) as {
+          schedule?: GeneratedSchedule & { priorities?: StudyAreaPriority[] };
+        };
+
+        if (data.schedule) {
+          setGeneratedSchedule(data.schedule);
+          setStep("preview");
+          toast.success("Cronograma gerado! Revise antes de importar.");
+        } else {
+          toast.error("Não foi possível gerar o cronograma");
+        }
+      })
+      .catch(() => {
+        toast.error("Erro ao gerar cronograma");
+      })
+      .finally(() => {
+        setIsGenerating(false);
       });
   };
 
@@ -130,8 +165,7 @@ export function useEditorialManager(
       }
 
       toast.success(`✅ ${count} sessões importadas!`);
-      setIsOpen(false);
-      setGeneratedSchedule(null);
+      resetDialog();
       router.refresh();
       onEditorialAdded?.();
     } catch {
@@ -142,16 +176,40 @@ export function useEditorialManager(
   };
 
   const handleSkipSchedule = () => {
-    setGeneratedSchedule(null);
-    setIsOpen(false);
+    resetDialog();
     router.refresh();
     onEditorialAdded?.();
+  };
+
+  const resetDialog = () => {
+    setIsOpen(false);
+    setStep("upload");
+    setGeneratedSchedule(null);
+    setSelectedFile(null);
+    setPageRanges("");
+    setSelectedRole(role || "");
+    setExamDate(examDateProp ? examDateProp.split("T")[0] : "");
+    setAvailableHoursPerDay("2");
+  };
+
+  const handleGoBack = () => {
+    if (step === "availability") {
+      setStep("upload");
+    } else if (step === "preview") {
+      setStep("availability");
+    }
+  };
+
+  const handleClose = () => {
+    resetDialog();
   };
 
   return {
     isOpen,
     setIsOpen,
+    step,
     isParsing,
+    isGenerating,
     selectedFile,
     pageRanges,
     setPageRanges,
@@ -159,13 +217,18 @@ export function useEditorialManager(
     setSelectedRole,
     examDate,
     setExamDate,
+    availableHoursPerDay,
+    setAvailableHoursPerDay,
     generatedSchedule,
     isSavingSchedule,
     fileInputRef,
     handleFileSelect,
     handleChangeFile,
     handleSubmit,
+    handleGenerateSchedule,
     handleImportSchedule,
     handleSkipSchedule,
+    handleGoBack,
+    handleClose,
   };
 }

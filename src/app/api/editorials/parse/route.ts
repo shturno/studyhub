@@ -3,9 +3,6 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { parsePdfWithGemini } from "@/features/ai/services/editalParserService";
-import { generateScheduleWithGemini } from "@/features/ai/services/geminiScheduleService";
-import { generateStudyPriorities } from "@/features/editorials/services/contentCrossingService";
-import { type StudyAreaPriority } from "@/features/editorials/types";
 
 export const maxDuration = 60;
 
@@ -69,13 +66,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const formData = await request.formData();
-    const fileUrl = formData.get("fileUrl") as string | null;
-    const fileName = formData.get("fileName") as string | null;
-    const contestId = formData.get("contestId") as string | null;
-    const pageRanges = formData.get("pageRanges") as string | null;
-    const role = formData.get("role") as string | null;
-    const examDate = formData.get("examDate") as string | null;
+    const body = await request.json();
+    const fileUrl = body.blobUrl as string | null;
+    const fileName = body.fileName as string | null;
+    const contestId = body.contestId as string | null;
+    const pageRanges = body.pageRanges as string | null;
+    const role = body.role as string | null;
 
     if (!fileUrl || !contestId || !pageRanges || !role) {
       return NextResponse.json(
@@ -181,43 +177,11 @@ export async function POST(request: NextRequest) {
     );
     revalidatePath(`/[locale]/(authenticated)/contests/[slug]`);
     revalidatePath("/");
-    let schedule = null;
-    let priorities: StudyAreaPriority[] = [];
-    let usedDefaultExamDate = false;
 
-    try {
-      priorities = await generateStudyPriorities(
-        contestId,
-        session.user.id,
-        40,
-      );
-
-      if (priorities.length > 0) {
-        const effectiveExamDate = examDate
-          ? new Date(examDate)
-          : new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000);
-
-        if (!examDate) {
-          usedDefaultExamDate = true;
-        }
-
-        schedule = await generateScheduleWithGemini({
-          contestName: contest.name,
-          priorities,
-          weeklyAvailableHours: 40,
-          examDate: effectiveExamDate,
-        });
-      }
-    } catch {
-      schedule = null;
-    }
     return NextResponse.json({
       success: true,
       editorialId: result.id,
       title: parsedData.title,
-      schedule,
-      priorities,
-      usedDefaultExamDate,
     });
   } catch {
     return NextResponse.json(
