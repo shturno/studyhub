@@ -4,10 +4,8 @@ import { useState, useRef } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Plus, Book, UploadCloud, Cpu } from 'lucide-react'
-import { createEditorialItem } from '../actions'
+import { Plus, Book, UploadCloud, Cpu, ArrowRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { upload } from '@vercel/blob/client'
@@ -20,69 +18,67 @@ interface EditorialManagerProps {
 export function EditorialManager({ contestId, onEditorialAdded }: Readonly<EditorialManagerProps>) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [step, setStep] = useState<'select-file' | 'configure-pages'>('select-file')
   const [isParsing, setIsParsing] = useState(false)
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [url, setUrl] = useState('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [pageRanges, setPageRanges] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleManualAdd = async () => {
-    if (!title.trim()) {
-      toast.error('Por favor, insira um título para o edital')
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+      setStep('configure-pages')
+    }
+  }
+
+  const handleChangeFile = () => {
+    setStep('select-file')
+    setSelectedFile(null)
+    setPageRanges('')
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const validatePageRanges = (ranges: string): boolean => {
+    if (!ranges.trim()) return false
+    const pageRangeRegex = /^(\d+(-\d+)?)(,\s*\d+(-\d+)?)*$/
+    return pageRangeRegex.test(ranges.trim())
+  }
+
+  const handleSubmit = async () => {
+    if (!selectedFile || !pageRanges.trim()) {
+      toast.error('Por favor, selecione um arquivo e as páginas')
+      return
+    }
+
+    if (!validatePageRanges(pageRanges)) {
+      toast.error('Formato de páginas inválido. Use: 15-25, 30, 45-50')
       return
     }
 
     try {
-      setIsSubmitting(true)
-      await createEditorialItem({
-        contestId,
-        title: title.trim(),
-        description: description.trim() || undefined,
-        url: url.trim() || undefined,
-      })
-
-      toast.success('Edital manual adicionado!')
-      setTitle('')
-      setDescription('')
-      setUrl('')
-      setIsOpen(false)
-      router.refresh()
-      onEditorialAdded?.()
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'Erro ao adicionar edital'
-      )
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const handleParsePdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    try {
       setIsParsing(true)
-      
+
       toast.info('Enviando o PDF para a nuvem de forma segura...', { duration: 5000 })
-      
-      // Adicionar timestamp para garantir nome único
+
       const timestamp = Date.now()
-      const fileExtension = file.name.split('.').pop()
+      const fileExtension = selectedFile.name.split('.').pop()
       const uniqueFileName = `edital-${timestamp}.${fileExtension}`
-      
-      const newBlob = await upload(uniqueFileName, file, {
+
+      const newBlob = await upload(uniqueFileName, selectedFile, {
         access: 'public',
         handleUploadUrl: '/api/editorials/upload',
       })
 
       const formData = new FormData()
       formData.append('fileUrl', newBlob.url)
-      formData.append('fileName', file.name)
+      formData.append('fileName', selectedFile.name)
       formData.append('contestId', contestId)
+      formData.append('pageRanges', pageRanges.trim())
 
-      toast.info('IA do Alquimista lendo as centenas de páginas do PDF na Nuvem...', { duration: 5000 })
+      toast.info('IA do Alquimista lendo as páginas selecionadas do PDF na Nuvem...', { duration: 5000 })
 
       const response = await fetch('/api/editorials/parse', {
         method: 'POST',
@@ -109,13 +105,15 @@ export function EditorialManager({ contestId, onEditorialAdded }: Readonly<Edito
 
       toast.success('SUCESSO CRÍTICO: Edital, Disciplinas e Tópicos extraídos perfeitamente pelo Gemini!')
       setIsOpen(false)
+      setStep('select-file')
+      setSelectedFile(null)
+      setPageRanges('')
       router.refresh()
       onEditorialAdded?.()
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Falha na inteligência artificial')
     } finally {
       setIsParsing(false)
-      if (e.target) e.target.value = ''
     }
   }
 
@@ -133,7 +131,7 @@ export function EditorialManager({ contestId, onEditorialAdded }: Readonly<Edito
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
-          <Button 
+          <Button
             className="w-full gap-2 font-pixel text-[10px] tracking-wider transition-all"
             style={{ backgroundColor: '#00ff41', color: '#04000a', boxShadow: '0 0 15px rgba(0,255,65,0.4)', borderRadius: 0 }}
           >
@@ -146,100 +144,93 @@ export function EditorialManager({ contestId, onEditorialAdded }: Readonly<Edito
             <DialogHeader>
               <DialogTitle className="font-pixel text-lg text-[#ff006e] flex items-center gap-2">
                 <Book className="w-5 h-5" />
-                ADICIONAR EDITAL
+                {step === 'select-file' ? 'SELECIONAR PDF' : 'CONFIGURAR PÁGINAS'}
               </DialogTitle>
             </DialogHeader>
           </div>
 
-          <div className="p-6 space-y-8">
-            {/* AI AUTO PARSER SECTION */}
-            <div className="space-y-3">
-              <Label className="font-pixel text-[10px] text-[#00ff41] flex items-center gap-2">
-                <Cpu className="w-4 h-4" /> OPÇÃO RECOMENDADA: SCANNER IA (GEMINI)
-              </Label>
-              
-              <label 
-                className={`w-full p-6 border-2 border-dashed transition-all flex flex-col items-center justify-center gap-3 cursor-pointer group ${isParsing ? 'border-[#ff006e] bg-[#ff006e]/10 animate-pulse' : 'border-[#00ff41]/50 bg-[#00ff41]/5 hover:bg-[#00ff41]/20 hover:border-[#00ff41]'}`}
-              >
-                <input 
-                  type="file" 
-                  accept="application/pdf, text/plain" 
-                  className="hidden" 
-                  ref={fileInputRef}
-                  onChange={handleParsePdf}
-                  disabled={isParsing}
-                />
-                
-                {isParsing ? (
-                  <>
-                    <Cpu className="w-8 h-8 text-[#ff006e] animate-spin" />
-                    <span className="font-mono text-xs text-[#ff006e] text-center">
-                      ALQUIMISTA EXTRAINDO DISCIPLINAS...<br/>Isso pode levar de 10 a 30 segundos.
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <UploadCloud className="w-8 h-8 text-[#00ff41] group-hover:scale-110 transition-transform" />
-                    <span className="font-mono text-xs text-[#00ff41] text-center">
-                      Faça Upload do PDF do Edital<br/>A IA lerá todas as matérias automaticamente.
-                    </span>
-                  </>
-                )}
-              </label>
-            </div>
+          <div className="p-6 space-y-6">
+            {step === 'select-file' ? (
+              <div className="space-y-3">
+                <Label className="font-pixel text-[10px] text-[#00ff41] flex items-center gap-2">
+                  <Cpu className="w-4 h-4" /> OPÇÃO RECOMENDADA: SCANNER IA (GEMINI)
+                </Label>
 
-            <div className="flex items-center gap-2 opacity-50">
-              <div className="h-px bg-white/20 flex-1"></div>
-              <span className="font-pixel text-[8px] text-white/50">OU MANUALMENTE</span>
-              <div className="h-px bg-white/20 flex-1"></div>
-            </div>
+                <label
+                  className={`w-full p-6 border-2 border-dashed transition-all flex flex-col items-center justify-center gap-3 cursor-pointer group ${isParsing ? 'border-[#ff006e] bg-[#ff006e]/10 animate-pulse' : 'border-[#00ff41]/50 bg-[#00ff41]/5 hover:bg-[#00ff41]/20 hover:border-[#00ff41]'}`}
+                >
+                  <input
+                    type="file"
+                    accept="application/pdf, text/plain"
+                    className="hidden"
+                    ref={fileInputRef}
+                    onChange={handleFileSelect}
+                    disabled={isParsing}
+                  />
 
-            {/* MANUAL SECTION */}
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="title" className="font-mono text-xs text-[#7f7f9f]">Título do Edital</Label>
-                <Input
-                  id="title"
-                  placeholder="Ex: Edital Banco do Brasil 2024"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="bg-[#04000a] text-white border-[#7f7f9f]/30 rounded-none focus-visible:ring-[#7f7f9f]"
-                  disabled={isParsing || isSubmitting}
-                />
+                  <UploadCloud className="w-8 h-8 text-[#00ff41] group-hover:scale-110 transition-transform" />
+                  <span className="font-mono text-xs text-[#00ff41] text-center">
+                    Faça Upload do PDF do Edital<br/>Você irá especificar as páginas com matérias.
+                  </span>
+                </label>
               </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="bg-[#04000a] border border-[#7f7f9f]/30 p-4 rounded-none">
+                  <p className="font-mono text-xs text-[#00ff41] mb-2">Arquivo selecionado:</p>
+                  <p className="font-mono text-sm text-white break-all">{selectedFile?.name}</p>
+                </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="description" className="font-mono text-xs text-[#7f7f9f]">Descrição (opcional)</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Descreva o conteúdo do edital..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="bg-[#04000a] text-white border-[#7f7f9f]/30 rounded-none focus-visible:ring-[#7f7f9f] min-h-16"
-                  disabled={isParsing || isSubmitting}
-                />
+                <div className="grid gap-2">
+                  <Label htmlFor="pageRanges" className="font-pixel text-[10px] text-[#00ff41]">
+                    Páginas com as matérias
+                  </Label>
+                  <Input
+                    id="pageRanges"
+                    placeholder="Ex: 15-25, 30, 45-50"
+                    value={pageRanges}
+                    onChange={(e) => setPageRanges(e.target.value)}
+                    className="bg-[#04000a] text-white border-[#7f7f9f]/30 rounded-none focus-visible:ring-[#7f7f9f]"
+                    disabled={isParsing}
+                  />
+                  <p className="font-mono text-xs text-[#7f7f9f]">
+                    Separe ranges com vírgula. Ex: 15-25 (páginas 15 até 25), 30 (página 30), 45-50 (páginas 45 até 50)
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button
+                    onClick={handleChangeFile}
+                    disabled={isParsing}
+                    className="flex-1 font-pixel text-[10px] tracking-wider transition-all rounded-none bg-[#020008] text-[#7f7f9f] border border-[#7f7f9f] hover:bg-[#7f7f9f] hover:text-[#04000a]"
+                  >
+                    Trocar Arquivo
+                  </Button>
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={isParsing || !pageRanges.trim()}
+                    className="flex-1 gap-2 font-pixel text-[10px] tracking-wider transition-all rounded-none"
+                    style={{
+                      backgroundColor: pageRanges.trim() ? '#00ff41' : '#7f7f9f',
+                      color: '#04000a',
+                      boxShadow: pageRanges.trim() ? '0 0 15px rgba(0,255,65,0.4)' : 'none',
+                    }}
+                  >
+                    {isParsing ? (
+                      <>
+                        <Cpu className="w-4 h-4 animate-spin" />
+                        EXTRAINDO...
+                      </>
+                    ) : (
+                      <>
+                        <ArrowRight className="w-4 h-4" />
+                        EXTRAIR MATÉRIAS
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="url" className="font-mono text-xs text-[#7f7f9f]">Link (opcional)</Label>
-                <Input
-                  id="url"
-                  placeholder="https://..."
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  className="bg-[#04000a] text-white border-[#7f7f9f]/30 rounded-none focus-visible:ring-[#7f7f9f]"
-                  disabled={isParsing || isSubmitting}
-                />
-              </div>
-
-              <Button
-                onClick={handleManualAdd}
-                disabled={isSubmitting || isParsing}
-                className="mt-2 font-pixel text-[10px] tracking-wider transition-all rounded-none bg-[#020008] text-[#7f7f9f] border border-[#7f7f9f] hover:bg-[#7f7f9f] hover:text-[#04000a]"
-              >
-                {isSubmitting ? 'ADICIONANDO...' : 'ADICIONAR MANUALMENTE (LENTO)'}
-              </Button>
-            </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
