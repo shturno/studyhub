@@ -67,35 +67,33 @@ export function useEditorialManager(
 
     setIsParsing(true);
 
-    const blobUrl = await upload(selectedFile.name, selectedFile, {
-      access: "public",
-      handleUploadUrl: `/api/editorials/upload`,
-    });
-
-    await fetch("/api/editorials/parse", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        blobUrl: blobUrl.url,
-        contestId,
-        pageRanges,
-        role: selectedRole,
-        examDate: examDate || undefined,
-      }),
-    })
-      .then(async (res) => {
-        if (!res.ok) throw new Error("Erro ao processar editorial");
-        toast.success(
-          "Matérias extraídas! Agora configure sua disponibilidade.",
-        );
-        setStep("availability");
-      })
-      .catch(() => {
-        toast.error("Erro ao processar editorial");
-      })
-      .finally(() => {
-        setIsParsing(false);
+    try {
+      const blobUrl = await upload(selectedFile.name, selectedFile, {
+        access: "public",
+        handleUploadUrl: `/api/editorials/upload`,
       });
+
+      const res = await fetch("/api/editorials/parse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          blobUrl: blobUrl.url,
+          contestId,
+          pageRanges,
+          role: selectedRole,
+          examDate: examDate || undefined,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Erro ao processar editorial");
+
+      toast.success("Matérias extraídas! Agora configure sua disponibilidade.");
+      setStep("availability");
+    } catch {
+      toast.error("Erro ao processar editorial");
+    } finally {
+      setIsParsing(false);
+    }
   };
 
   const handleGenerateSchedule = async () => {
@@ -106,35 +104,35 @@ export function useEditorialManager(
 
     setIsGenerating(true);
 
-    await fetch("/api/editorials/generate-schedule", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contestId,
-        availableHoursPerDay: Number(availableHoursPerDay),
-        examDate: examDate || undefined,
-      }),
-    })
-      .then(async (res) => {
-        if (!res.ok) throw new Error("Erro ao gerar cronograma");
-        const data = (await res.json()) as {
-          schedule?: GeneratedSchedule & { priorities?: StudyAreaPriority[] };
-        };
-
-        if (data.schedule) {
-          setGeneratedSchedule(data.schedule);
-          setStep("preview");
-          toast.success("Cronograma gerado! Revise antes de importar.");
-        } else {
-          toast.error("Não foi possível gerar o cronograma");
-        }
-      })
-      .catch(() => {
-        toast.error("Erro ao gerar cronograma");
-      })
-      .finally(() => {
-        setIsGenerating(false);
+    try {
+      const res = await fetch("/api/editorials/generate-schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contestId,
+          availableHoursPerDay: Number(availableHoursPerDay),
+          examDate: examDate || undefined,
+        }),
       });
+
+      if (!res.ok) throw new Error("Erro ao gerar cronograma");
+
+      const data = (await res.json()) as {
+        schedule?: GeneratedSchedule & { priorities?: StudyAreaPriority[] };
+      };
+
+      if (data.schedule) {
+        setGeneratedSchedule(data.schedule);
+        setStep("preview");
+        toast.success("Cronograma gerado! Revise antes de importar.");
+      } else {
+        toast.error("Não foi possível gerar o cronograma");
+      }
+    } catch {
+      toast.error("Erro ao gerar cronograma");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleImportSchedule = async () => {
