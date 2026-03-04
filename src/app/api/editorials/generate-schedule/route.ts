@@ -74,9 +74,12 @@ export async function POST(request: NextRequest) {
       schedule,
       priorities,
     });
-  } catch {
+  } catch (error) {
+    console.error("Generate schedule error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to generate schedule";
     return NextResponse.json(
-      { error: "Failed to generate schedule" },
+      { error: errorMessage },
       { status: 500 },
     );
   }
