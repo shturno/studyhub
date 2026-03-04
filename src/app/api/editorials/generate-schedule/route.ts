@@ -4,7 +4,7 @@ import { generateScheduleWithGemini } from "@/features/ai/services/geminiSchedul
 import { generateStudyPriorities } from "@/features/editorials/services/contentCrossingService";
 import { prisma } from "@/lib/prisma";
 
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 export async function POST(request: NextRequest) {
   try {
