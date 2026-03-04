@@ -71,8 +71,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      schedule,
-      priorities,
+      schedule: {
+        ...schedule,
+        priorities,
+      },
     });
   } catch (error) {
     console.error("Generate schedule error:", error);
