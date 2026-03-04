@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { generateScheduleWithGemini } from "@/features/ai/services/geminiScheduleService";
+import { generateScheduleWithGemini } from "@/features/ai/services/scheduleGenerationService";
 import {
   generateStudyPriorities,
   calculateCoveragePercentage,
@@ -44,10 +44,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Calculate daily hours from weekly total (distribute evenly Mon-Fri)
+    const dailyHours = weeklyHours / 5;
+    const dailyAvailableHours = {
+      monday: dailyHours,
+      tuesday: dailyHours,
+      wednesday: dailyHours,
+      thursday: dailyHours,
+      friday: dailyHours,
+      saturday: 0,
+      sunday: 0,
+    };
+
     const schedule = await generateScheduleWithGemini({
       contestName: "Civil Service Exam",
       priorities,
       weeklyAvailableHours: weeklyHours,
+      dailyAvailableHours,
       examDate: new Date(examDate),
       focusAreas,
     });
