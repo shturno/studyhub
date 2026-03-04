@@ -56,7 +56,7 @@ export function SettingsForm({
   const onSubmit = async (data: SettingsFormData) => {
     try {
       await updateProfileSettings({
-        name: data.name,
+        name: data.name ?? initialName,
         pomodoroDefault: data.pomodoroDefault,
         breakDefault: data.breakDefault,
         locale,

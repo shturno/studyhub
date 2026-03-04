@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { startOfWeek, endOfWeek } from "date-fns";
 import type { DashboardData } from "@/features/dashboard/types";
 
-export async function getDashboardData(userId: string): Promise<DashboardData> {
+export async function getDashboardData(userId: string, _contestId?: string): Promise<DashboardData> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {

@@ -35,9 +35,10 @@ export function ContentCrossingView({
 
     async function loadCrossings() {
       try {
-        const data = await getContentCrossings(contestId);
+        const result = await getContentCrossings(contestId);
 
-        const multipleCrossings = data.filter((c) => c.editorialsCount > 1);
+        if (!result.success) throw new Error(result.error);
+        const multipleCrossings = result.data.filter((c) => c.editorialsCount > 1);
         setCrossings(multipleCrossings);
         setError(false);
       } catch (err) {

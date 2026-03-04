@@ -51,7 +51,7 @@ export async function getUserProfile(): Promise<
       user.achievements.map((ua: { achievementId: string }) => ua.achievementId),
     );
 
-    const achievementsWithStatus = allAchievements.map((ach: { id: string }) => ({
+    const achievementsWithStatus = allAchievements.map((ach) => ({
       ...ach,
       isUnlocked: unlockedIds.has(ach.id),
       unlockedAt:
@@ -68,7 +68,13 @@ export async function getUserProfile(): Promise<
     const xpToNext = getXPForNextLevel(user.xp, user.level + 1);
 
     return ok({
-      user,
+      user: {
+        id: user.id,
+        name: user.name ?? "",
+        email: user.email ?? "",
+        xp: user.xp,
+        level: user.level,
+      },
       achievements: achievementsWithStatus,
       stats: {
         totalSessions,

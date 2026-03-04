@@ -43,14 +43,18 @@ export function useStudyTimer({
           difficulty: null,
         });
 
-        toast.success(t("sessionSaved", { xp: result.xpEarned }), {
-          description: result.leveledUp
-            ? t("levelUp", { level: result.newLevel })
-            : t("xpToNextLevel", { xp: result.xpToNextLevel }),
-        });
+        if (result.success) {
+          toast.success(t("sessionSaved", { xp: result.data.xpEarned }), {
+            description: result.data.leveledUp
+              ? t("levelUp", { level: result.data.newLevel })
+              : t("xpToNextLevel", { xp: result.data.xpToNextLevel }),
+          });
 
-        if (onComplete) {
-          onComplete(result);
+          if (onComplete) {
+            onComplete(result.data);
+          }
+        } else {
+          throw new Error(result.error);
         }
       }
     } catch {

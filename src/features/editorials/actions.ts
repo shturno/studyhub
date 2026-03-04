@@ -25,6 +25,8 @@ export async function createEditorialItem(data: {
 
     return ok({
       ...editorial,
+      userId: session.user.id,
+      contestId: data.contestId,
       contest: { id: data.contestId, name: "" },
     });
   } catch (error) {
@@ -45,6 +47,8 @@ export async function getEditorialsForContest(
     return ok(
       editorials.map((e) => ({
         ...e,
+        userId: session.user.id,
+        contestId,
         contest: { id: contestId, name: "" },
       })),
     );

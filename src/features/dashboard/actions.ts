@@ -115,7 +115,7 @@ export async function getDashboardData(
     });
 
     return ok({
-      user,
+      user: { ...user, name: user.name ?? "" },
       nextTopic,
       weeklyStats,
       recentSessions: recentSessions.map((s) => ({

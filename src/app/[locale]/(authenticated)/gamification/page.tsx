@@ -16,7 +16,7 @@ export default async function GamificationPage() {
 
   const profile = await getUserProfile();
 
-  if (!profile) {
+  if (!profile.success || !profile.data) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="font-pixel text-[#7f7f9f] text-sm">
@@ -26,7 +26,7 @@ export default async function GamificationPage() {
     );
   }
 
-  const { user, achievements, stats } = profile;
+  const { user, achievements, stats } = profile.data;
 
   const unlockedCount = (achievements as { isUnlocked: boolean }[]).filter(
     (a) => a.isUnlocked,
