@@ -4,6 +4,7 @@ import { Press_Start_2P, VT323 } from "next/font/google";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/components/auth-provider";
 import { NextIntlClientProvider } from "next-intl";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const pressStart2P = Press_Start_2P({
@@ -59,6 +60,7 @@ export default async function RootLayout({
             />
           </AuthProvider>
         </NextIntlClientProvider>
+        <Analytics />
       </body>
     </html>
   );
