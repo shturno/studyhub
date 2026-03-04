@@ -6,8 +6,18 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { upload } from "@vercel/blob/client";
 import { savePlannedSession } from "@/features/study-cycle/actions";
-import type { GeneratedSchedule } from "@/features/ai/types";
+import type { GeneratedSchedule, DayKey } from "@/features/ai/types";
 import type { StudyAreaPriority } from "@/features/editorials/types";
+
+const DEFAULT_DAILY_HOURS: Record<DayKey, number> = {
+  monday: 2,
+  tuesday: 2,
+  wednesday: 2,
+  thursday: 2,
+  friday: 2,
+  saturday: 0,
+  sunday: 0,
+};
 
 export function useEditorialManager(
   contestId: string,
@@ -29,7 +39,9 @@ export function useEditorialManager(
   const [examDate, setExamDate] = useState(
     examDateProp ? examDateProp.split("T")[0] : "",
   );
-  const [availableHoursPerDay, setAvailableHoursPerDay] = useState<string>("2");
+  const [dailyHours, setDailyHours] = useState<Record<DayKey, number>>(
+    DEFAULT_DAILY_HOURS,
+  );
   const [generatedSchedule, setGeneratedSchedule] = useState<
     (GeneratedSchedule & { priorities?: StudyAreaPriority[] }) | null
   >(null);
@@ -118,7 +130,8 @@ export function useEditorialManager(
   };
 
   const handleGenerateSchedule = async () => {
-    if (!availableHoursPerDay || Number(availableHoursPerDay) <= 0) {
+    const weeklyTotal = Object.values(dailyHours).reduce((a, b) => a + b, 0);
+    if (weeklyTotal <= 0) {
       toast.error(t("fillDailyHours"));
       return;
     }
@@ -131,7 +144,7 @@ export function useEditorialManager(
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contestId,
-          availableHoursPerDay: Number(availableHoursPerDay),
+          dailyAvailableHours: dailyHours,
           examDate: examDate || undefined,
         }),
       });
@@ -244,7 +257,7 @@ export function useEditorialManager(
     setPageRanges("");
     setSelectedRole(role || "");
     setExamDate(examDateProp ? examDateProp.split("T")[0] : "");
-    setAvailableHoursPerDay("2");
+    setDailyHours(DEFAULT_DAILY_HOURS);
   };
 
   const handleGoBack = () => {
@@ -272,8 +285,8 @@ export function useEditorialManager(
     setSelectedRole,
     examDate,
     setExamDate,
-    availableHoursPerDay,
-    setAvailableHoursPerDay,
+    dailyHours,
+    setDailyHours,
     generatedSchedule,
     isSavingSchedule,
     fileInputRef,

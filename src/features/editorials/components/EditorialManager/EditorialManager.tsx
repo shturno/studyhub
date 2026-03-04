@@ -42,8 +42,8 @@ export function EditorialManager({
     setSelectedRole,
     examDate,
     setExamDate,
-    availableHoursPerDay,
-    setAvailableHoursPerDay,
+    dailyHours,
+    setDailyHours,
     generatedSchedule,
     isSavingSchedule,
     fileInputRef,
@@ -56,6 +56,18 @@ export function EditorialManager({
     handleGoBack,
     handleClose,
   } = useEditorialManager(contestId, role, examDateProp, onEditorialAdded);
+
+  const dayLabels = ["SEG", "TER", "QUA", "QUI", "SEX", "SAB", "DOM"] as const;
+  const dayKeys = [
+    "monday" as const,
+    "tuesday" as const,
+    "wednesday" as const,
+    "thursday" as const,
+    "friday" as const,
+    "saturday" as const,
+    "sunday" as const,
+  ];
+  const weeklyTotal = Object.values(dailyHours).reduce((a, b) => a + b, 0);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -203,51 +215,87 @@ export function EditorialManager({
         {step === "availability" && (
           <div className="space-y-5">
             <div className="space-y-3">
-              <Label htmlFor="hours" className="flex items-center gap-2">
+              <Label className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
-                HORAS DE ESTUDO POR DIA
+                DISPONIBILIDADE POR DIA
               </Label>
-              <div className="flex items-center gap-3">
-                <Input
-                  id="hours"
-                  type="number"
-                  min="0.5"
-                  max="24"
-                  step="0.5"
-                  placeholder="Ex: 2, 3.5, 4"
-                  value={availableHoursPerDay}
-                  onChange={(e) => setAvailableHoursPerDay(e.target.value)}
-                  className="flex-1"
-                />
-                <span className="font-mono text-sm text-[#7f7f9f]">horas</span>
-              </div>
-              <div className="font-mono text-xs text-[#555]">
-                Quantas horas você consegue estudar por dia em média?
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <Label className="block">DIAS DE ESTUDO</Label>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="text-xs text-[#7f7f9f] font-mono">
-                  (Nota: Você pode ajustar isso depois no planner)
+                  Clique em um dia para ativar/desativar. Quando ativo, defina as
+                  horas de estudo.
                 </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    "Segunda",
-                    "Terça",
-                    "Quarta",
-                    "Quinta",
-                    "Sexta",
-                    "Sábado",
-                  ].map((day) => (
-                    <div
-                      key={day}
-                      className="px-3 py-2 border border-[#00ff41]/30 rounded text-center text-sm font-mono text-[#7f7f9f]"
-                    >
-                      {day}
-                    </div>
-                  ))}
+
+                {/* Grid of 7 day cards */}
+                <div className="grid grid-cols-7 gap-2">
+                  {dayKeys.map((dayKey, idx) => {
+                    const hours = dailyHours[dayKey];
+                    const isActive = hours > 0;
+
+                    return (
+                      <div
+                        key={dayKey}
+                        className={`rounded border-2 p-3 transition-colors cursor-pointer ${
+                          isActive
+                            ? "border-[#00ff41] bg-[#020008]"
+                            : "border-[#00ff41]/30 bg-[#04000a] opacity-60"
+                        }`}
+                        onClick={() => {
+                          setDailyHours((prev) => ({
+                            ...prev,
+                            [dayKey]: isActive ? 0 : 2,
+                          }));
+                        }}
+                      >
+                        <div className="text-center mb-2">
+                          <div className="font-pixel text-[7px] text-[#00ff41] font-bold">
+                            {dayLabels[idx]}
+                          </div>
+                        </div>
+                        {isActive && (
+                          <div className="flex items-center gap-1">
+                            <Input
+                              type="number"
+                              min="0.5"
+                              max="12"
+                              step="0.5"
+                              value={hours}
+                              onChange={(e) => {
+                                const val = Number(e.target.value);
+                                if (val > 0) {
+                                  setDailyHours((prev) => ({
+                                    ...prev,
+                                    [dayKey]: val,
+                                  }));
+                                }
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              className="h-8 text-xs p-1"
+                            />
+                            <span className="text-xs font-mono text-[#7f7f9f] whitespace-nowrap">
+                              h
+                            </span>
+                          </div>
+                        )}
+                        {!isActive && (
+                          <div className="text-center text-xs font-mono text-[#555]">
+                            —
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Weekly total */}
+                <div className="mt-3 p-3 border border-[#00ff41]/30 rounded bg-[#04000a]">
+                  <div className="flex justify-between items-center">
+                    <span className="font-mono text-sm text-[#7f7f9f]">
+                      TOTAL SEMANAL:
+                    </span>
+                    <span className="font-pixel text-lg text-[#00ff41]">
+                      {weeklyTotal}h
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -263,9 +311,8 @@ export function EditorialManager({
                 DICA
               </div>
               <p className="font-mono text-xs text-[#7f7f9f]">
-                Com {availableHoursPerDay} horas/dia, você terá um cronograma
-                realista e sustentável. A IA distribuirá as matérias de forma
-                inteligente!
+                Com {weeklyTotal}h/semana, você terá um cronograma realista e
+                sustentável. A IA distribuirá as matérias de forma inteligente!
               </p>
             </div>
 
@@ -279,7 +326,7 @@ export function EditorialManager({
               </Button>
               <Button
                 onClick={handleGenerateSchedule}
-                disabled={isGenerating || !availableHoursPerDay}
+                disabled={isGenerating || weeklyTotal === 0}
                 className="gap-2"
               >
                 {isGenerating ? (

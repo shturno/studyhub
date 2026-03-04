@@ -26,6 +26,31 @@ export async function generateScheduleWithGemini(
     );
     const weeksUntilExam = Math.ceil(daysUntilExam / 7);
 
+    const dayNames = [
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+      "sunday",
+    ] as const;
+    const dayLabels = [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ] as const;
+    const dailyBreakdown = dayNames
+      .map((day, idx) => {
+        const hours = request.dailyAvailableHours[day] || 0;
+        return `- ${dayLabels[idx]}: ${hours}h`;
+      })
+      .join("\n");
+
     const prompt = `
 You are an expert study planner helping a Brazilian civil service exam candidate prepare for "${request.contestName}".
 
@@ -33,9 +58,12 @@ You are an expert study planner helping a Brazilian civil service exam candidate
 ${prioritiesText}
 
 ## Study Parameters:
-- Available hours per week: ${request.weeklyAvailableHours}
+Daily Study Availability:
+${dailyBreakdown}
+- Total per week: ${request.weeklyAvailableHours}h
 - Time until exam: ${weeksUntilExam} weeks (${daysUntilExam} days)
 - Exam date: ${request.examDate.toLocaleDateString("pt-BR")}
+- **IMPORTANT**: Days with 0h are rest days — DO NOT schedule sessions on these days
 
 ## Critical Rules:
 1. **URGENCY SCALING**: As time decreases, increase focus on HIGH priority topics exponentially

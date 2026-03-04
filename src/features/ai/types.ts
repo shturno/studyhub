@@ -1,9 +1,12 @@
 import { type StudyAreaPriority } from "@/features/editorials/types";
 
+export type DayKey = "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
+
 export interface ScheduleRequest {
   contestName: string;
   priorities: StudyAreaPriority[];
   weeklyAvailableHours: number;
+  dailyAvailableHours: Record<DayKey, number>;
   examDate: Date;
   focusAreas?: string[];
 }
