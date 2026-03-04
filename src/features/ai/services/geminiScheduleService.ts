@@ -11,7 +11,7 @@ export async function generateScheduleWithGemini(
   request: ScheduleRequest,
 ): Promise<GeneratedSchedule> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prioritiesText = request.priorities
       .map(
@@ -183,7 +183,7 @@ export async function getStudyRecommendations(
   coverage: number,
 ): Promise<string[]> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prioritiesText = priorities
       .slice(0, 10)
@@ -230,7 +230,7 @@ export async function analyzeCoverageAndSuggest(
   gaps: string[],
 ): Promise<string> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const gapsText = gaps.slice(0, 10).join(", ");
 
