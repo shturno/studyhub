@@ -25,7 +25,15 @@ export async function savePlannedSession(data: {
     });
 
     revalidatePath("/planner");
-    return ok(newSession as PlannedSession);
+    return ok({
+      id: newSession.id,
+      lessonId: newSession.topicId,
+      lessonTitle: "",
+      trackName: "",
+      duration: newSession.durationMinutes,
+      scheduledDate: newSession.scheduledDate.toISOString(),
+      draft: false,
+    } satisfies PlannedSession);
   } catch (error) {
     console.error("savePlannedSession error:", error);
     return err("Erro ao salvar sessão planejada");

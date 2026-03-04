@@ -14,6 +14,8 @@ export interface EditorialItemWithMappings {
   url?: string | null;
   uploadedAt: Date;
   contentMappings: Array<{
+    id: string;
+    editorialItemId: string;
     topicId: string;
     contentSummary?: string | null;
     relevance: number;

@@ -32,9 +32,9 @@ export default async function SubjectsPage() {
       </div>
 
       <main className="px-4 md:px-8 py-4 max-w-5xl mx-auto">
-        {subjects.length > 0 ? (
+        {subjects.success && subjects.data.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {subjects.map((subject) => (
+            {subjects.data.map((subject) => (
               <SubjectCard key={subject.id} subject={subject} />
             ))}
           </div>

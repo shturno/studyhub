@@ -19,13 +19,13 @@ export default async function SubjectDetailsPage(
   const params = await props.params;
   const data = await getSubjectDetails(params.id);
 
-  if (!data) {
+  if (!data.success || !data.data) {
     notFound();
   }
 
-  const { subjectName, topics } = data;
-  const completedTopics = topics.filter((t) => t.status !== "pending").length;
-  const masteredTopics = topics.filter((t) => t.status === "mastered").length;
+  const { subjectName, topics } = data.data;
+  const completedTopics = topics.filter((t: { status: string }) => t.status !== "pending").length;
+  const masteredTopics = topics.filter((t: { status: string }) => t.status === "mastered").length;
   const progress =
     topics.length > 0 ? Math.round((completedTopics / topics.length) * 100) : 0;
 
