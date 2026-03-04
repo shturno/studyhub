@@ -16,11 +16,19 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const contestId = body.contestId as string | null;
     const examDate = body.examDate as string | null;
-    const availableHoursPerDay = body.availableHoursPerDay as number | null;
+    const dailyAvailableHours = body.dailyAvailableHours as Record<string, number> | null;
 
-    if (!contestId || !availableHoursPerDay) {
+    if (!contestId || !dailyAvailableHours) {
       return NextResponse.json(
-        { error: "contestId and availableHoursPerDay are required" },
+        { error: "contestId and dailyAvailableHours are required" },
+        { status: 400 },
+      );
+    }
+
+    const weeklyTotal = Object.values(dailyAvailableHours).reduce((a, b) => a + b, 0);
+    if (weeklyTotal <= 0) {
+      return NextResponse.json(
+        { error: "At least one day must have available hours" },
         { status: 400 },
       );
     }
@@ -36,7 +44,7 @@ export async function POST(request: NextRequest) {
     const priorities = await generateStudyPriorities(
       contestId,
       session.user.id,
-      availableHoursPerDay * 5,
+      weeklyTotal,
     );
 
     if (priorities.length === 0) {
@@ -53,7 +61,11 @@ export async function POST(request: NextRequest) {
     const schedule = await generateScheduleWithGemini({
       contestName: contest.name,
       priorities,
-      weeklyAvailableHours: availableHoursPerDay * 5,
+      weeklyAvailableHours: weeklyTotal,
+      dailyAvailableHours: dailyAvailableHours as Record<
+        "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday",
+        number
+      >,
       examDate: effectiveExamDate,
     });
 
