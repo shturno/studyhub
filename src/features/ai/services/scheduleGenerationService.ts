@@ -15,7 +15,10 @@ export async function generateScheduleChunk(
   priorities: StudyAreaPriority[],
   startDate: Date,
   endDate: Date,
-  dailyAvailableHours: Record<"monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday", number>,
+  dailyAvailableHours: Record<
+    "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday",
+    number
+  >,
   chunkNumber: number,
 ): Promise<GeneratedSchedule> {
   try {
@@ -29,8 +32,7 @@ export async function generateScheduleChunk(
       .join("\n");
 
     const daysUntilExamEnd = Math.ceil(
-      (endDate.getTime() - new Date().getTime()) /
-        (1000 * 60 * 60 * 24),
+      (endDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24),
     );
 
     const dayNames = [
@@ -58,7 +60,178 @@ export async function generateScheduleChunk(
       })
       .join("\n");
 
-    const prompt = `
+    const prompt = buildScheduleChunkPrompt(
+      contestName,
+      prioritiesText,
+      dailyBreakdown,
+      daysUntilExamEnd,
+      startDate,
+      endDate,
+      chunkNumber,
+    );
+
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();
+
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("No JSON found in Gemini response");
+    }
+
+    const schedule = JSON.parse(jsonMatch[0]) as GeneratedSchedule;
+    return schedule;
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to generate schedule chunk";
+    console.error(`Gemini schedule generation error (chunk ${chunkNumber}):`, message, error);
+    throw new Error(`Failed to generate schedule chunk ${chunkNumber}: ${message}`);
+  }
+}
+
+/**
+ * Generate complete schedule by chunking 4 weeks at a time
+ */
+export async function generateScheduleWithGemini(
+  request: ScheduleRequest,
+): Promise<GeneratedSchedule> {
+  try {
+    // Calculate chunks: 4 weeks per chunk
+    const startDate = new Date();
+    const endDate = request.examDate;
+    const totalDays = Math.ceil(
+      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+    );
+    const CHUNK_DAYS = 28; // 4 weeks
+    const chunkCount = Math.ceil(totalDays / CHUNK_DAYS);
+
+    console.log(
+      `Generating ${chunkCount} chunks (${totalDays} days total, ${CHUNK_DAYS} days per chunk)`,
+    );
+
+    // Generate each chunk in parallel
+    const chunkPromises = [];
+    for (let i = 0; i < chunkCount; i++) {
+      const chunkStartDate = new Date(
+        startDate.getTime() + i * CHUNK_DAYS * 24 * 60 * 60 * 1000,
+      );
+      let chunkEndDate = new Date(
+        chunkStartDate.getTime() + CHUNK_DAYS * 24 * 60 * 60 * 1000,
+      );
+
+      // Don't exceed exam date
+      if (chunkEndDate > endDate) {
+        chunkEndDate = endDate;
+      }
+
+      chunkPromises.push(
+        generateScheduleChunk(
+          request.contestName,
+          request.priorities,
+          chunkStartDate,
+          chunkEndDate,
+          request.dailyAvailableHours,
+          i + 1,
+        ),
+      );
+    }
+
+    const chunkResults = await Promise.all(chunkPromises);
+
+    // Merge all chunks into single schedule
+    const mergedSchedule = mergeScheduleChunks(chunkResults, request.examDate);
+    return mergedSchedule;
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to generate schedule";
+    console.error("Gemini schedule generation error:", message, error);
+    throw new Error(`Failed to generate schedule: ${message}`);
+  }
+}
+
+/**
+ * Merge multiple schedule chunks into a single unified schedule
+ */
+function mergeScheduleChunks(
+  chunks: GeneratedSchedule[],
+  examDate: Date,
+): GeneratedSchedule {
+  const allDailySessions = chunks.flatMap((c) => c.dailySessions);
+  const allWeeklySummaries = chunks.flatMap((c) => c.weeklySummary);
+  const allMonthlySummaries = chunks.flatMap((c) => c.monthlySummary);
+
+  // Recalculate overview across all chunks
+  const totalHours = allDailySessions.reduce((sum, s) => sum + s.duration, 0) / 60;
+  const uniqueDays = new Set(allDailySessions.map((s) => s.day.split(" ")[0])).size;
+
+  // Group by topic
+  const topicCoverageMap = new Map<
+    string,
+    { sessions: number; totalHours: number }
+  >();
+  for (const session of allDailySessions) {
+    for (const topic of session.topics) {
+      const existing = topicCoverageMap.get(topic) || {
+        sessions: 0,
+        totalHours: 0,
+      };
+      existing.sessions += 1;
+      existing.totalHours += session.duration / 60;
+      topicCoverageMap.set(topic, existing);
+    }
+  }
+
+  // Find peak week
+  const weeklySessions = allWeeklySummaries.sort(
+    (a, b) => b.totalHours - a.totalHours,
+  );
+  const peakWeek = weeklySessions[0]?.week || 1;
+
+  return {
+    weeks: Math.ceil(allWeeklySummaries.length),
+    totalHours,
+    dailySessions: allDailySessions,
+    weeklySummary: allWeeklySummaries,
+    monthlySummary: allMonthlySummaries,
+    fullScheduleOverview: {
+      totalDaysOfStudy: uniqueDays,
+      averageDailyHours: parseFloat(
+        (totalHours / Math.max(uniqueDays, 1)).toFixed(1),
+      ),
+      peakIntensityWeek: peakWeek,
+      topicsCoverage: Array.from(topicCoverageMap.entries()).map(
+        ([topic, data]) => ({
+          topic,
+          sessions: data.sessions,
+          totalHours: parseFloat(data.totalHours.toFixed(1)),
+          priority: "medium" as const,
+        }),
+      ),
+    },
+    keyMilestones: [
+      `Week ${Math.ceil(allWeeklySummaries.length / 4)}: Key review phases`,
+      `Final week: Intensive review & mock exams before ${examDate.toLocaleDateString("pt-BR")}`,
+    ],
+    tips: [
+      "Review high-frequency topics daily",
+      "Practice questions for topics learned 3-4 days prior",
+      "Increase intensity in final weeks",
+    ],
+  };
+}
+
+/**
+ * Helper to build the Gemini prompt for schedule chunk generation
+ */
+function buildScheduleChunkPrompt(
+  contestName: string,
+  prioritiesText: string,
+  dailyBreakdown: string,
+  daysUntilExamEnd: number,
+  startDate: Date,
+  endDate: Date,
+  chunkNumber: number,
+): string {
+  return `
 You are an expert study planner helping a Brazilian civil service exam candidate prepare for "${contestName}".
 
 THIS IS CHUNK ${chunkNumber} of a multi-part study schedule.
@@ -142,225 +315,4 @@ Provide the schedule in this JSON format (for this 4-week chunk only):
 - Dates must be in YYYY-MM-DD format
 - Do NOT generate sessions beyond the endDate provided
 `;
-
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
-
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error("No JSON found in Gemini response");
-    }
-
-    const schedule = JSON.parse(jsonMatch[0]) as GeneratedSchedule;
-    return schedule;
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to generate schedule chunk";
-    console.error(`Gemini schedule generation error (chunk ${chunkNumber}):`, message, error);
-    throw new Error(`Failed to generate schedule chunk ${chunkNumber}: ${message}`);
-  }
-}
-
-export async function generateScheduleWithGemini(
-  request: ScheduleRequest,
-): Promise<GeneratedSchedule> {
-  try {
-    // Calculate chunks: 4 weeks per chunk
-    const startDate = new Date();
-    const endDate = request.examDate;
-    const totalDays = Math.ceil(
-      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
-    );
-    const CHUNK_DAYS = 28; // 4 weeks
-    const chunkCount = Math.ceil(totalDays / CHUNK_DAYS);
-
-    console.log(
-      `Generating ${chunkCount} chunks (${totalDays} days total, ${CHUNK_DAYS} days per chunk)`,
-    );
-
-    const chunks: GeneratedSchedule[] = [];
-
-    // Generate each chunk in parallel
-    const chunkPromises = [];
-    for (let i = 0; i < chunkCount; i++) {
-      const chunkStartDate = new Date(
-        startDate.getTime() + i * CHUNK_DAYS * 24 * 60 * 60 * 1000,
-      );
-      let chunkEndDate = new Date(
-        chunkStartDate.getTime() + CHUNK_DAYS * 24 * 60 * 60 * 1000,
-      );
-
-      // Don't exceed exam date
-      if (chunkEndDate > endDate) {
-        chunkEndDate = endDate;
-      }
-
-      chunkPromises.push(
-        generateScheduleChunk(
-          request.contestName,
-          request.priorities,
-          chunkStartDate,
-          chunkEndDate,
-          request.dailyAvailableHours,
-          i + 1,
-        ),
-      );
-    }
-
-    const chunkResults = await Promise.all(chunkPromises);
-    chunks.push(...chunkResults);
-
-    // Merge all chunks into single schedule
-    const mergedSchedule = mergeScheduleChunks(chunks, request.examDate);
-    return mergedSchedule;
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to generate schedule";
-    console.error("Gemini schedule generation error:", message, error);
-    throw new Error(`Failed to generate schedule: ${message}`);
-  }
-}
-
-/**
- * Merge multiple schedule chunks into a single unified schedule
- */
-function mergeScheduleChunks(
-  chunks: GeneratedSchedule[],
-  examDate: Date,
-): GeneratedSchedule {
-  const allDailySessions = chunks.flatMap((c) => c.dailySessions);
-  const allWeeklySummaries = chunks.flatMap((c) => c.weeklySummary);
-  const allMonthlySummaries = chunks.flatMap((c) => c.monthlySummary);
-
-  // Recalculate overview across all chunks
-  const totalHours = allDailySessions.reduce((sum, s) => sum + s.duration, 0) / 60;
-  const uniqueDays = new Set(allDailySessions.map((s) => s.day.split(" ")[0])).size;
-
-  // Group by topic
-  const topicCoverageMap = new Map<
-    string,
-    { sessions: number; totalHours: number; priority: string }
-  >();
-  for (const session of allDailySessions) {
-    for (const topic of session.topics) {
-      const existing = topicCoverageMap.get(topic) || {
-        sessions: 0,
-        totalHours: 0,
-        priority: "medium",
-      };
-      existing.sessions += 1;
-      existing.totalHours += session.duration / 60;
-      topicCoverageMap.set(topic, existing);
-    }
-  }
-
-  // Find peak week
-  const weeklySessions = allWeeklySummaries.sort(
-    (a, b) => b.totalHours - a.totalHours,
-  );
-  const peakWeek = weeklySessions[0]?.week || 1;
-
-  return {
-    weeks: Math.ceil(allWeeklySummaries.length),
-    totalHours,
-    dailySessions: allDailySessions,
-    weeklySummary: allWeeklySummaries,
-    monthlySummary: allMonthlySummaries,
-    fullScheduleOverview: {
-      totalDaysOfStudy: uniqueDays,
-      averageDailyHours: parseFloat(
-        (totalHours / Math.max(uniqueDays, 1)).toFixed(1),
-      ),
-      peakIntensityWeek: peakWeek,
-      topicsCoverage: Array.from(topicCoverageMap.entries()).map(
-        ([topic, data]) => ({
-          topic,
-          sessions: data.sessions,
-          totalHours: parseFloat(data.totalHours.toFixed(1)),
-          priority: "medium" as const,
-        }),
-      ),
-    },
-    keyMilestones: [
-      `Week ${Math.ceil(allWeeklySummaries.length / 4)}: Key review phases`,
-      `Final week: Intensive review & mock exams before ${examDate.toLocaleDateString("pt-BR")}`,
-    ],
-    tips: [
-      "Review high-frequency topics daily",
-      "Practice questions for topics learned 3-4 days prior",
-      "Increase intensity in final weeks",
-    ],
-  };
-}
-
-export async function getStudyRecommendations(
-  contestName: string,
-  priorities: StudyAreaPriority[],
-  coverage: number,
-): Promise<string[]> {
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-    const prioritiesText = priorities
-      .slice(0, 10)
-      .map((p) => `- ${p.topicName} (${p.priority})`)
-      .join("\n");
-
-    const prompt = `
-As an expert study advisor for Brazilian civil service exams, provide 3-5 specific, actionable study recommendations for someone preparing for "${contestName}".
-
-Current study profile:
-- Current content coverage: ${coverage}%
-- Top priority topics:
-${prioritiesText}
-
-Provide practical, implementable recommendations that leverage the identified priority topics and address any gaps.
-Return as a JSON array of strings.
-`;
-
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
-
-    const jsonMatch = responseText.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-      return [
-        "Focus on high-priority topics first",
-        "Practice with past exam questions",
-        "Create a study group for complex topics",
-      ];
-    }
-
-    return JSON.parse(jsonMatch[0]);
-  } catch {
-    return [
-      "Focus on high-priority topics first",
-      "Practice with past exam questions",
-      "Create a study group for complex topics",
-    ];
-  }
-}
-
-export async function analyzeCoverageAndSuggest(
-  contestName: string,
-  coverage: number,
-  gaps: string[],
-): Promise<string> {
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-    const gapsText = gaps.slice(0, 10).join(", ");
-
-    const prompt = `
-Analyze this study preparation status for "${contestName}" civil service exam:
-- Content coverage: ${coverage}%
-- Content gaps to address: ${gapsText}
-
-Provide a brief (2-3 sentences) assessment and next steps to fill gaps.
-`;
-
-    const result = await model.generateContent(prompt);
-    return result.response.text();
-  } catch {
-    return `Your current coverage is at ${coverage}%. Focus on the remaining topics by using targeted study materials.`;
-  }
 }

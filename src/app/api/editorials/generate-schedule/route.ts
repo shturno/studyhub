@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { generateScheduleWithGemini } from "@/features/ai/services/geminiScheduleService";
+import { generateScheduleWithGemini } from "@/features/ai/services/scheduleGenerationService";
 import { generateStudyPriorities } from "@/features/editorials/services/contentCrossingService";
 import { prisma } from "@/lib/prisma";
 
