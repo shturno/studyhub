@@ -169,8 +169,11 @@ Provide the schedule in this JSON format:
 
     const schedule = JSON.parse(jsonMatch[0]) as GeneratedSchedule;
     return schedule;
-  } catch {
-    throw new Error("Failed to generate schedule. Please try again.");
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to generate schedule";
+    console.error("Gemini schedule generation error:", message, error);
+    throw new Error(`Failed to generate schedule: ${message}`);
   }
 }
 
