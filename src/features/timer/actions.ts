@@ -10,6 +10,10 @@ import {
   calculateLevel,
   getXPForNextLevel,
 } from "@/features/gamification/utils/xpCalculator";
+import {
+  checkAndUnlockAchievements,
+  type UnlockedAchievement,
+} from "@/features/gamification/services/achievementService";
 
 export interface SaveStudySessionInput {
   topicId: string;
@@ -23,6 +27,7 @@ export interface SaveStudySessionResult {
   newLevel: number;
   leveledUp: boolean;
   xpToNextLevel: number;
+  newAchievements: UnlockedAchievement[];
 }
 
 export async function saveStudySession(
@@ -71,6 +76,8 @@ export async function saveStudySession(
 
     const xpToNextLevel = getXPForNextLevel(user.xp, newLevel);
 
+    const newAchievements = await checkAndUnlockAchievements(userId);
+
     revalidatePath("/dashboard");
 
     return ok({
@@ -79,9 +86,9 @@ export async function saveStudySession(
       newLevel,
       leveledUp,
       xpToNextLevel,
+      newAchievements,
     });
-  } catch (error) {
-    console.error("saveStudySession error:", error);
+  } catch {
     return err("Erro ao salvar sessão");
   }
 }

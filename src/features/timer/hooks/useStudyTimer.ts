@@ -50,6 +50,12 @@ export function useStudyTimer({
               : t("xpToNextLevel", { xp: result.data.xpToNextLevel }),
           });
 
+          for (const ach of result.data.newAchievements) {
+            toast.success(t("achievementUnlocked"), {
+              description: `${ach.icon} ${ach.name} +${ach.xpReward} XP`,
+            });
+          }
+
           if (onComplete) {
             onComplete(result.data);
           }

@@ -175,7 +175,8 @@
     "saveError": "Error al guardar sesión",
     "saveErrorDescription": "No se pudo registrar tu sesión de estudio",
     "levelUp": "¡Felicidades! ¡Subiste al nivel {level}!",
-    "xpToNextLevel": "Faltan {xp} XP para el próximo nivel"
+    "xpToNextLevel": "Faltan {xp} XP para el próximo nivel",
+    "achievementUnlocked": "¡Logro desbloqueado!"
   },
   "Planner": {
     "sessionScheduled": "¡Sesión programada!",

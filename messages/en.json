@@ -175,7 +175,8 @@
     "saveError": "Error saving session",
     "saveErrorDescription": "Could not record your study session",
     "levelUp": "Congratulations! You leveled up to level {level}!",
-    "xpToNextLevel": "{xp} XP until next level"
+    "xpToNextLevel": "{xp} XP until next level",
+    "achievementUnlocked": "Achievement unlocked!"
   },
   "Planner": {
     "sessionScheduled": "Session scheduled!",
