@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { saveStudySession } from "../actions";
 import { useAchievementModal } from "@/lib/achievement-modal-context";
+import { useLevelUp } from "@/lib/level-up-context";
 
 export interface UseStudyTimerOptions {
   topicId: string;
@@ -23,6 +24,7 @@ export function useStudyTimer({
 }: UseStudyTimerOptions) {
   const t = useTranslations("Timer");
   const { showAchievements } = useAchievementModal();
+  const { showLevelUp } = useLevelUp();
   const [timeLeft, setTimeLeft] = useState(initialMinutes * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [hasCompleted, setHasCompleted] = useState(false);
@@ -52,6 +54,10 @@ export function useStudyTimer({
               : t("xpToNextLevel", { xp: result.data.xpToNextLevel }),
           });
 
+          if (result.data.leveledUp) {
+            showLevelUp(result.data.newLevel);
+          }
+
           if (result.data.newAchievements.length > 0) {
             showAchievements(result.data.newAchievements);
           }
@@ -70,7 +76,7 @@ export function useStudyTimer({
     } finally {
       setIsSaving(false);
     }
-  }, [topicId, onComplete, t, showAchievements]);
+  }, [topicId, onComplete, t, showAchievements, showLevelUp]);
 
   useEffect(() => {
     if (isRunning && timeLeft > 0) {

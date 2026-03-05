@@ -79,6 +79,7 @@ export async function saveStudySession(
     const newAchievements = await checkAndUnlockAchievements(userId);
 
     revalidatePath("/dashboard");
+    revalidatePath("/gamification");
 
     return ok({
       sessionId: newSession.id,
