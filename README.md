@@ -1,23 +1,26 @@
-# StudyHub 🚀
+# StudyHub
 
-A gamified study planner for competitive exam preparation ("concursos públicos"). Built with Next.js 15, TypeScript, Prisma, PostgreSQL, NextAuth v5, and next-intl.
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![CI](https://github.com/shturno/studyhub/actions/workflows/ci.yml/badge.svg)](https://github.com/shturno/studyhub/actions/workflows/ci.yml)
+[![E2E Tests](https://github.com/shturno/studyhub/actions/workflows/e2e.yml/badge.svg)](https://github.com/shturno/studyhub/actions/workflows/e2e.yml)
 
-**English** · [Português](#português)
+A gamified study planner built for **concursos públicos** — Brazil's competitive public-sector exams. Helps candidates organize syllabuses, track study sessions, earn XP, and generate AI-powered study schedules.
 
-## ✨ Features
+Built with Next.js 15, TypeScript, Prisma, PostgreSQL, NextAuth v5, and next-intl.
 
-- 🎮 **Gamification** — XP system, levels, achievements, and progress tracking
-- 📚 **Subject Management** — Hierarchical topics with study sessions
-- 🔄 **Study Cycles** — Plan and track study sessions on a calendar
-- 📊 **Dashboard** — Real-time analytics and performance insights
-- 🌍 **Multi-language** — Portuguese (default), English, Spanish
-- 🤖 **AI PDF Parser** — Auto-extract syllabus from exam PDFs using Google Gemini
-- ⏱️ **Pomodoro Timer** — Focused study sessions with XP rewards
-- 🔐 **Authentication** — Secure login/register with NextAuth v5
-- 📱 **Responsive Design** — Mobile-first UI with Tailwind CSS
-- 🔀 **The Alchemist** — Find overlapping topics across multiple exams
+## Features
 
-## 🛠 Tech Stack
+- **Gamification** — XP system, levels, and achievements tied to real study time
+- **Subject Management** — Hierarchical topics synced to your exam syllabuses
+- **Study Planner** — Drag-and-drop calendar to schedule and track sessions
+- **Dashboard** — Weekly stats, streaks, and next-topic recommendations
+- **AI Syllabus Parser** — Upload exam PDFs; Gemini extracts topics automatically
+- **AI Schedule Generator** — Generates a prioritized weekly schedule based on your coverage gaps
+- **The Alchemist** — Identifies overlapping topics across multiple exams
+- **Pomodoro Timer** — Focus sessions that award XP on completion
+- **Multi-language** — Portuguese (default), English, Spanish
+
+## Tech Stack
 
 | Layer                    | Tech                                                        |
 | ------------------------ | ----------------------------------------------------------- |
@@ -34,7 +37,9 @@ A gamified study planner for competitive exam preparation ("concursos públicos"
 
 ---
 
-## 🚀 Getting Started
+---
+
+## Getting Started
 
 ### Prerequisites
 
@@ -81,7 +86,7 @@ A gamified study planner for competitive exam preparation ("concursos públicos"
 
 ---
 
-## 🌍 Environment Variables
+## Environment Variables
 
 | Variable          | Description                  | Example                                     |
 | ----------------- | ---------------------------- | ------------------------------------------- |
@@ -98,7 +103,7 @@ openssl rand -base64 32
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ### Run All Tests
 
@@ -133,7 +138,7 @@ pnpm coverage
 
 ---
 
-## 🐳 Docker
+## Docker
 
 ### Using Docker Compose
 
@@ -154,7 +159,7 @@ The app will be available at `http://localhost:3000`
 
 ---
 
-## 📦 Available Scripts
+## Available Scripts
 
 | Command                 | Description                  |
 | ----------------------- | ---------------------------- |
@@ -175,7 +180,7 @@ The app will be available at `http://localhost:3000`
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 src/
@@ -209,7 +214,7 @@ prisma/                        # Database schema & migrations
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
 
@@ -220,20 +225,26 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 
 ---
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+
+This means:
+- You can freely use, study, modify, and distribute this software
+- If you run a **modified version as a network service** (e.g. a hosted SaaS), you must release your modifications under AGPL-3.0
+- You **cannot** take this code, build a competing product, and keep your changes proprietary
+
+See [LICENSE](LICENSE) for the full terms. For commercial licensing inquiries, open an issue.
 
 ---
 
-## ⚠️ Known Limitations
+## Known Limitations
 
-- **NextAuth v5 Beta**: This project uses NextAuth v5.0.0-beta.30, which is pre-release. Expect potential API changes before v5.0.0 stable.
-- **Tests in Progress**: Tests are setup in this repository but require implementation for existing features. New features follow TDD practices.
+- **NextAuth v5 Beta**: Uses NextAuth v5.0.0-beta.30. Expect potential API changes before the stable release.
 
 ---
 
-## 🔗 Resources
+## Resources
 
 - [Next.js Docs](https://nextjs.org)
 - [Prisma Docs](https://www.prisma.io/docs)
