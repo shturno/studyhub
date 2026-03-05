@@ -140,37 +140,6 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
               onMonthChange={setCurrentMonth}
               className="w-full"
             />
-            {/* Month summary */}
-            {sessionsByDate.size > 0 && (
-              <div className="mt-3 space-y-1">
-                {Array.from(sessionsByDate.entries())
-                  .filter(([dateStr]) => {
-                    const d = new Date(dateStr + "T12:00:00");
-                    return (
-                      d.getMonth() === currentMonth.getMonth() &&
-                      d.getFullYear() === currentMonth.getFullYear()
-                    );
-                  })
-                  .map(([dateStr, daySessions]) => {
-                    const hours =
-                      daySessions.reduce((sum, s) => sum + s.duration, 0) / 60;
-                    return (
-                      <div
-                        key={dateStr}
-                        className="flex justify-between font-mono text-xs"
-                      >
-                        <span className="text-[#7f7f9f]">
-                          {formatDate(dateStr)}
-                        </span>
-                        <span className="text-[#00ff41]">
-                          {plural(daySessions.length, "sessão", "sessões")} ·{" "}
-                          {hours.toFixed(1)}h
-                        </span>
-                      </div>
-                    );
-                  })}
-              </div>
-            )}
           </div>
 
           {/* Selected day detail */}
