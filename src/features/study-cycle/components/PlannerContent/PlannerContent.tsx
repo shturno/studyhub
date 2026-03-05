@@ -120,7 +120,7 @@ export function PlannerContent({ data, contestId }: PlannerContentProps) {
             </div>
             <div className="p-4">
               <DroppableArea id="planner-area">
-                <div className="space-y-3 min-h-96">
+                <div className="space-y-3 min-h-96 max-h-96 overflow-y-auto">
                   {plannedSessions.map((session) => (
                     <div
                       key={session.id}
