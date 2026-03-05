@@ -36,17 +36,17 @@ Return as a JSON array of strings.
 
     const jsonMatch = responseText.match(/\[[\s\S]*\]/);
     if (!jsonMatch) {
-      return getDefaultRecommendations();
+      return [];
     }
 
     const parsed = JSON.parse(jsonMatch[0]);
     if (!Array.isArray(parsed) || parsed.length === 0) {
-      return getDefaultRecommendations();
+      return [];
     }
 
     return parsed;
   } catch {
-    return getDefaultRecommendations();
+    return [];
   }
 }
 
@@ -76,15 +76,4 @@ Provide a brief (2-3 sentences) assessment and next steps to fill gaps.
   } catch {
     return `Your current coverage is at ${coverage}%. Focus on the remaining topics by using targeted study materials.`;
   }
-}
-
-/**
- * Default recommendations fallback
- */
-function getDefaultRecommendations(): string[] {
-  return [
-    "Focus on high-priority topics first",
-    "Practice with past exam questions",
-    "Create a study group for complex topics",
-  ];
 }

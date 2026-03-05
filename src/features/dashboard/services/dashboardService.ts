@@ -1,10 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { startOfWeek, endOfWeek } from "date-fns";
+import { getTranslations } from "next-intl/server";
 import { calculateLevel } from "@/features/gamification/utils/xpCalculator";
 import { getStudyRecommendations } from "@/features/ai/services/aiAdvisoryService";
 import type { DashboardData } from "@/features/dashboard/types";
 
 export async function getDashboardData(userId: string, _contestId?: string): Promise<DashboardData> {
+  const t = await getTranslations("AIAdvisoryCard");
+
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -113,9 +116,9 @@ export async function getDashboardData(userId: string, _contestId?: string): Pro
       priorities,
       coveragePercent,
     ).catch(() => [
-      "Foque nos tópicos com maior peso no edital",
-      "Pratique com questões de provas anteriores",
-      "Revise os tópicos estudados na última semana",
+      t("fallback1"),
+      t("fallback2"),
+      t("fallback3"),
     ]),
   ]);
 
