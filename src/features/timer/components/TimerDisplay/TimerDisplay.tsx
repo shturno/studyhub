@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Play, Pause, RotateCcw, Trophy, ArrowLeft } from "lucide-react";
 import { useEffect } from "react";
 import { useStudyTimer } from "@/features/timer/hooks/useStudyTimer";
+import { useTimerRecovery } from "@/features/timer/hooks/useTimerRecovery";
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
 import type { TimerDisplayProps } from "./types";
@@ -30,11 +31,14 @@ export function TimerDisplay({
     pause,
     reset,
     setDuration,
+    restore,
   } = useStudyTimer({
     topicId,
     initialMinutes: 25,
     onComplete,
   });
+
+  const { pending, recover, dismiss } = useTimerRecovery(restore);
 
   const durations = [15, 25, 45, 60];
   const totalBlocks = TOTAL_BLOCKS;
@@ -76,6 +80,38 @@ export function TimerDisplay({
           {topicName}
         </div>
       </div>
+
+      {pending && (
+        <div
+          className="w-full p-4 space-y-3"
+          style={{ border: "2px solid #ffbe0b", background: "#04000a" }}
+        >
+          <div className="font-pixel text-[7px] text-[#ffbe0b]">
+            ⚠ SESSÃO SUSPENSA ENCONTRADA
+          </div>
+          <div className="font-mono text-sm text-[#e0e0ff]">
+            {Math.floor(
+              (pending.totalSeconds - pending.elapsedSeconds) / 60,
+            )}{" "}
+            min restantes
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={recover}
+              className="font-pixel text-[7px] bg-[#00ff41] text-black px-3 py-2"
+            >
+              ▶ RETOMAR
+            </button>
+            <button
+              onClick={dismiss}
+              className="font-pixel text-[7px] text-[#ff006e] px-3 py-2"
+              style={{ border: "1px solid #ff006e" }}
+            >
+              ✕ DESCARTAR
+            </button>
+          </div>
+        </div>
+      )}
 
       <div
         className="relative w-full"

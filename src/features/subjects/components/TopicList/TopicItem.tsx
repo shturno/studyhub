@@ -7,6 +7,7 @@ import {
   ChevronRight,
   ChevronDown,
   Plus,
+  Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -34,7 +35,14 @@ export function TopicItem({ node, level }: TopicItemProps) {
     newTopicName,
     setNewTopicName,
     handleAddSubTopic,
-  } = useTopicItem();
+    isEditing,
+    setIsEditing,
+    editName,
+    setEditName,
+    isSaving,
+    handleSaveEdit,
+    handleCancelEdit,
+  } = useTopicItem(node.id, node.name);
 
   return (
     <div className={cn("space-y-2", level > 0 && "ml-6")}>
@@ -70,12 +78,49 @@ export function TopicItem({ node, level }: TopicItemProps) {
             <Circle className="w-4 h-4 text-[#333] group-hover:text-[#555] transition-colors" />
           )}
 
-          <span className="font-mono text-base text-[#e0e0ff] group-hover:text-white transition-colors">
-            {node.name}
-          </span>
+          {isEditing ? (
+            <div className="flex items-center gap-2 flex-1">
+              <input
+                autoFocus
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void handleSaveEdit();
+                  if (e.key === "Escape") handleCancelEdit();
+                }}
+                className="font-mono text-base text-[#e0e0ff] bg-transparent border-b border-[#00ff41] outline-none flex-1"
+              />
+              <button
+                onClick={() => void handleSaveEdit()}
+                disabled={isSaving}
+                className="font-pixel text-[7px] text-[#00ff41] hover:bg-[#00ff41]/10 px-2 py-1"
+              >
+                {isSaving ? "..." : "✓"}
+              </button>
+              <button
+                onClick={handleCancelEdit}
+                className="font-pixel text-[7px] text-[#ff006e] hover:bg-[#ff006e]/10 px-2 py-1"
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <span className="font-mono text-base text-[#e0e0ff] group-hover:text-white transition-colors">
+              {node.name}
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-7 w-7"
+            title="Renomear"
+            onClick={() => setIsEditing(true)}
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </Button>
           <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
             <DialogTrigger asChild>
               <Button

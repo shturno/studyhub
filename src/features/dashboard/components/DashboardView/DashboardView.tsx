@@ -134,8 +134,8 @@ export function DashboardView({ data, contests = [] }: DashboardViewProps) {
             <div className="font-mono text-xl text-[#7f7f9f]">
               Nenhum tópico disponível.
               <br />
-              <Link href="/contests" className="text-[#00ff41] hover:underline">
-                Adicione um concurso.
+              <Link href="/subjects" className="text-[#00ff41] hover:underline">
+                Adicione matérias ao seu concurso.
               </Link>
             </div>
           )}

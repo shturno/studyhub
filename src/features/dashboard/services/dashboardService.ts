@@ -5,7 +5,10 @@ import { calculateLevel } from "@/features/gamification/utils/xpCalculator";
 import { getStudyRecommendations } from "@/features/ai/services/aiAdvisoryService";
 import type { DashboardData } from "@/features/dashboard/types";
 
-export async function getDashboardData(userId: string, _contestId?: string): Promise<DashboardData> {
+export async function getDashboardData(
+  userId: string,
+  contestId?: string,
+): Promise<DashboardData> {
   const t = await getTranslations("AIAdvisoryCard");
 
   const user = await prisma.user.findUnique({
@@ -24,30 +27,52 @@ export async function getDashboardData(userId: string, _contestId?: string): Pro
 
   const effectiveLevel = calculateLevel(user.xp);
 
-  const contestWithTopics = await prisma.contest.findFirst({
-    where: { userId },
-    orderBy: [{ isPrimary: "desc" }, { createdAt: "desc" }],
-    include: {
-      subjects: {
+  const contestWithTopics = contestId
+    ? await prisma.contest.findUnique({
+        where: { id: contestId, userId },
         include: {
-          topics: {
+          subjects: {
             include: {
-              studySessions: {
-                where: { userId },
-                take: 1,
-                select: { id: true },
+              topics: {
+                include: {
+                  studySessions: {
+                    where: { userId },
+                    take: 1,
+                    select: { id: true },
+                  },
+                },
               },
             },
           },
         },
-      },
-    },
-  });
+      })
+    : await prisma.contest.findFirst({
+        where: { userId },
+        orderBy: [{ isPrimary: "desc" }, { createdAt: "desc" }],
+        include: {
+          subjects: {
+            include: {
+              topics: {
+                include: {
+                  studySessions: {
+                    where: { userId },
+                    take: 1,
+                    select: { id: true },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
 
   const allTopics = contestWithTopics?.subjects.flatMap((s) => s.topics) ?? [];
   const totalTopics = allTopics.length;
-  const studiedCount = allTopics.filter((t) => t.studySessions.length > 0).length;
-  const coveragePercent = totalTopics > 0 ? Math.round((studiedCount / totalTopics) * 100) : 0;
+  const studiedCount = allTopics.filter(
+    (t) => t.studySessions.length > 0,
+  ).length;
+  const coveragePercent =
+    totalTopics > 0 ? Math.round((studiedCount / totalTopics) * 100) : 0;
 
   const priorities = allTopics
     .filter((t) => t.studySessions.length === 0)
@@ -60,38 +85,21 @@ export async function getDashboardData(userId: string, _contestId?: string): Pro
       recommendedHours: 2,
     }));
 
-  const activeCycle = await prisma.studyCycle.findFirst({
-    where: {
-      userId,
-      isActive: true,
-    },
-  });
+  const unstudiedTopic = allTopics.find((t) => t.studySessions.length === 0);
 
   let nextTopic = null;
-  if (activeCycle) {
-    const config = activeCycle.config as { topicIds: string[] };
-    const topicIds = config.topicIds || [];
-
-    if (topicIds.length > 0) {
-      const topic = await prisma.topic.findUnique({
-        where: { id: topicIds[0] },
-        include: {
-          subject: {
-            select: {
-              name: true,
-            },
-          },
-        },
-      });
-
-      if (topic) {
-        nextTopic = {
-          id: topic.id,
-          name: topic.name,
-          subjectName: topic.subject.name,
-          estimatedMinutes: 25,
-        };
-      }
+  if (unstudiedTopic) {
+    const topic = await prisma.topic.findUnique({
+      where: { id: unstudiedTopic.id },
+      include: { subject: { select: { name: true } } },
+    });
+    if (topic) {
+      nextTopic = {
+        id: topic.id,
+        name: topic.name,
+        subjectName: topic.subject.name,
+        estimatedMinutes: 25,
+      };
     }
   }
 
@@ -110,37 +118,44 @@ export async function getDashboardData(userId: string, _contestId?: string): Pro
   for (const s of rawSessions) {
     const key = s.completedAt.toISOString().slice(0, 10);
     const cur = heatmapMap.get(key) ?? { count: 0, minutes: 0 };
-    heatmapMap.set(key, { count: cur.count + 1, minutes: cur.minutes + s.minutes });
+    heatmapMap.set(key, {
+      count: cur.count + 1,
+      minutes: cur.minutes + s.minutes,
+    });
   }
 
-  const heatmap = Array.from(heatmapMap.entries()).map(([date, v]) => ({ date, ...v }));
+  const heatmap = Array.from(heatmapMap.entries()).map(([date, v]) => ({
+    date,
+    ...v,
+  }));
 
-  const [weeklySessions, recentSessions, aiRecommendations] = await Promise.all([
-    prisma.studySession.findMany({
-      where: {
-        userId,
-        completedAt: { gte: weekStart, lte: weekEnd },
-      },
-    }),
-    prisma.studySession.findMany({
-      where: { userId },
-      take: 5,
-      orderBy: { completedAt: "desc" },
-      include: { topic: { select: { name: true } } },
-    }),
-    getStudyRecommendations(
-      contestWithTopics?.name ?? "concurso",
-      priorities,
-      coveragePercent,
-    ).catch(() => [
-      t("fallback1"),
-      t("fallback2"),
-      t("fallback3"),
-    ]),
-  ]);
+  const [weeklySessions, recentSessions, aiRecommendations] = await Promise.all(
+    [
+      prisma.studySession.findMany({
+        where: {
+          userId,
+          completedAt: { gte: weekStart, lte: weekEnd },
+        },
+      }),
+      prisma.studySession.findMany({
+        where: { userId },
+        take: 5,
+        orderBy: { completedAt: "desc" },
+        include: { topic: { select: { name: true } } },
+      }),
+      getStudyRecommendations(
+        contestWithTopics?.name ?? "concurso",
+        priorities,
+        coveragePercent,
+      ).catch(() => [t("fallback1"), t("fallback2"), t("fallback3")]),
+    ],
+  );
 
   const weeklyStats = {
-    minutesStudied: weeklySessions.reduce((sum: number, s) => sum + s.minutes, 0),
+    minutesStudied: weeklySessions.reduce(
+      (sum: number, s) => sum + s.minutes,
+      0,
+    ),
     sessionsCompleted: weeklySessions.length,
     xpEarned: weeklySessions.reduce((sum: number, s) => sum + s.xpEarned, 0),
   };

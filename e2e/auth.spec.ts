@@ -40,8 +40,8 @@ test.describe("Authentication Flow", () => {
     );
     await expect(emailInput).toBeVisible();
 
-    // Check for password input
-    const passwordInput = page.locator('input[type="password"]');
+    // Check for password input (register may have multiple — use first)
+    const passwordInput = page.locator('input[type="password"]').first();
     await expect(passwordInput).toBeVisible();
 
     // Check for submit button
@@ -69,6 +69,6 @@ test.describe("Authentication Flow", () => {
 
     // Look for link to register
     const registerLink = page.locator('a[href*="register"]');
-    expect(registerLink.count()).toBeGreaterThan(0);
+    expect(await registerLink.count()).toBeGreaterThan(0);
   });
 });

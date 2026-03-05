@@ -6,6 +6,10 @@ import { toast } from "sonner";
 import { saveStudySession } from "../actions";
 import { useAchievementModal } from "@/lib/achievement-modal-context";
 import { useLevelUp } from "@/lib/level-up-context";
+import {
+  timerPersistence,
+  type PersistedTimerState,
+} from "@/features/timer/services/timerPersistence";
 
 export interface UseStudyTimerOptions {
   topicId: string;
@@ -31,6 +35,8 @@ export function useStudyTimer({
   const [isSaving, setIsSaving] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const totalTimeRef = useRef(initialMinutes * 60);
+  const tickRef = useRef(0);
+  const startedAtRef = useRef(Date.now());
 
   const handleComplete = useCallback(async () => {
     setIsRunning(false);
@@ -39,6 +45,8 @@ export function useStudyTimer({
 
     try {
       const studiedMinutes = Math.ceil(totalTimeRef.current / 60);
+
+      void timerPersistence.clear();
 
       if (studiedMinutes > 0) {
         const result = await saveStudySession({
@@ -106,6 +114,7 @@ export function useStudyTimer({
   const pause = () => setIsRunning(false);
 
   const reset = () => {
+    void timerPersistence.clear();
     setTimeLeft(totalTimeRef.current);
     setIsRunning(false);
     setHasCompleted(false);
@@ -118,6 +127,30 @@ export function useStudyTimer({
       totalTimeRef.current = seconds;
     }
   };
+
+  const restore = useCallback((state: PersistedTimerState) => {
+    const remaining = Math.max(0, state.totalSeconds - state.elapsedSeconds);
+    totalTimeRef.current = state.totalSeconds;
+    tickRef.current = 0;
+    startedAtRef.current = Date.now();
+    setTimeLeft(remaining);
+    setIsRunning(false);
+    setHasCompleted(false);
+  }, []);
+
+  useEffect(() => {
+    if (!isRunning || hasCompleted) return;
+    tickRef.current++;
+    if (tickRef.current % 5 === 0) {
+      void timerPersistence.save({
+        topicId,
+        totalSeconds: totalTimeRef.current,
+        elapsedSeconds: totalTimeRef.current - timeLeft,
+        startedAt: startedAtRef.current,
+        isRunning: true,
+      });
+    }
+  }, [timeLeft, isRunning, hasCompleted, topicId]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -139,5 +172,6 @@ export function useStudyTimer({
     pause,
     reset,
     setDuration,
+    restore,
   };
 }

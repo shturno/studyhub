@@ -2,30 +2,40 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 import { ok, err, type ActionResult } from "@/lib/result";
 import { SubjectStats, TopicWithStatus } from "./types";
 
-export async function getUserSubjects(): Promise<
-  ActionResult<SubjectStats[]>
-> {
+const subjectInclude = {
+  subjects: {
+    include: {
+      topics: {
+        include: {
+          studySessions: true,
+        },
+      },
+    },
+  },
+} as const;
+
+export async function getUserSubjects(
+  contestId?: string,
+): Promise<ActionResult<SubjectStats[]>> {
   try {
     const session = await auth();
     if (!session?.user?.id) return err("Não autorizado");
+    const userId = session.user.id;
 
-    const contest = await prisma.contest.findFirst({
-      where: { userId: session.user.id },
-      include: {
-        subjects: {
-          include: {
-            topics: {
-              include: {
-                studySessions: true,
-              },
-            },
-          },
-        },
-      },
-    });
+    const contest = contestId
+      ? await prisma.contest.findUnique({
+          where: { id: contestId, userId },
+          include: subjectInclude,
+        })
+      : await prisma.contest.findFirst({
+          where: { userId },
+          orderBy: [{ isPrimary: "desc" }, { createdAt: "desc" }],
+          include: subjectInclude,
+        });
 
     if (!contest) return ok([]);
 
@@ -54,8 +64,7 @@ export async function getUserSubjects(): Promise<
     });
 
     return ok(subjects);
-  } catch (error) {
-    console.error("getUserSubjects error:", error);
+  } catch {
     return err("Erro ao carregar matérias");
   }
 }
@@ -66,9 +75,13 @@ export async function getSubjectDetails(
   ActionResult<{ subjectName: string; topics: TopicWithStatus[] } | null>
 > {
   try {
+    const session = await auth();
+    if (!session?.user?.id) return err("Não autorizado");
+
     const subject = await prisma.subject.findUnique({
       where: { id: subjectId },
       include: {
+        contest: { select: { userId: true } },
         topics: {
           include: {
             studySessions: {
@@ -80,7 +93,7 @@ export async function getSubjectDetails(
       },
     });
 
-    if (!subject) return ok(null);
+    if (!subject || subject.contest.userId !== session.user.id) return ok(null);
 
     const topics: TopicWithStatus[] = subject.topics.map((topic) => {
       const hasStudied = topic.studySessions.length > 0;
@@ -109,8 +122,37 @@ export async function getSubjectDetails(
       subjectName: subject.name,
       topics,
     });
-  } catch (error) {
-    console.error("getSubjectDetails error:", error);
+  } catch {
     return err("Erro ao carregar detalhes da matéria");
+  }
+}
+
+export async function updateSubject(
+  id: string,
+  data: { name: string },
+): Promise<ActionResult<void>> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return err("Não autorizado");
+
+    const trimmed = data.name.trim();
+    if (!trimmed || trimmed.length < 2) return err("Nome muito curto");
+    if (trimmed.length > 100) return err("Nome muito longo");
+
+    const subject = await prisma.subject.findUnique({
+      where: { id },
+      select: { contest: { select: { userId: true } } },
+    });
+
+    if (!subject || subject.contest.userId !== session.user.id) {
+      return err("Não autorizado");
+    }
+
+    await prisma.subject.update({ where: { id }, data: { name: trimmed } });
+
+    revalidatePath("/subjects", "page");
+    return ok(undefined);
+  } catch {
+    return err("Erro ao atualizar matéria");
   }
 }
