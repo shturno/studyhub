@@ -1,14 +1,14 @@
 # Stage 1: Dependencies
 FROM node:18-alpine AS deps
 WORKDIR /app
-RUN corepack enable pnpm
+RUN npm install -g pnpm@10
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # Stage 2: Builder
 FROM node:18-alpine AS builder
 WORKDIR /app
-RUN corepack enable pnpm
+RUN npm install -g pnpm@10
 COPY package.json pnpm-lock.yaml ./
 COPY --from=deps /app/node_modules ./node_modules
 COPY prisma ./prisma
