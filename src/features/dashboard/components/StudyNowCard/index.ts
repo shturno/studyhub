@@ -1,0 +1,1 @@
+export { StudyNowCard } from "./StudyNowCard";

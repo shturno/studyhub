@@ -1,62 +1,96 @@
-'use server'
+"use server";
 
-import { auth } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import { revalidatePath } from 'next/cache'
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
+import { ok, err, type ActionResult } from "@/lib/result";
+import { unlockAchievementBySlug } from "@/features/gamification/services/achievementService";
+import type { UnlockedAchievement } from "@/features/gamification/services/achievementService";
 
 export async function getContests() {
-    const session = await auth()
-    if (!session?.user?.id) return []
+  const session = await auth();
+  if (!session?.user?.id) return [];
 
-    return await prisma.contest.findMany({
-        where: {
-            userId: session.user.id
-        },
-        orderBy: {
-            isPrimary: 'desc'
-        }
-    })
+  return await prisma.contest.findMany({
+    where: {
+      userId: session.user.id,
+    },
+    orderBy: {
+      isPrimary: "desc",
+    },
+  });
 }
 
 export async function createContest(data: {
-    name: string
-    institution: string
-    role: string
-    examDate?: Date
-    isPrimary?: boolean
+  name: string;
+  institution: string;
+  role: string;
+  examDate?: Date;
+  isPrimary?: boolean;
 }) {
-    const session = await auth()
-    if (!session?.user?.id) throw new Error('Unauthorized')
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Não autorizado" };
 
     if (data.isPrimary) {
-        // Unset other primary contests
-        await prisma.contest.updateMany({
-            where: { userId: session.user.id, isPrimary: true },
-            data: { isPrimary: false }
-        })
+      await prisma.contest.updateMany({
+        where: { userId: session.user.id, isPrimary: true },
+        data: { isPrimary: false },
+      });
     }
 
-    await prisma.contest.create({
-        data: {
-            ...data,
-            userId: session.user.id
-        }
-    })
+    const baseSlug = data.name
+      .toLowerCase()
+      .trim()
+      .replaceAll(/[^a-z0-9]+/g, "-");
+    const uniqueSuffix = Math.floor(Math.random() * 10000)
+      .toString()
+      .padStart(4, "0");
+    const finalSlug = `${baseSlug}-${uniqueSuffix}`;
 
-    revalidatePath('/contests')
-    revalidatePath('/dashboard')
+    await prisma.contest.create({
+      data: {
+        name: data.name,
+        institution: data.institution,
+        role: data.role,
+        examDate: data.examDate,
+        isPrimary: data.isPrimary,
+        slug: finalSlug,
+        userId: session.user.id,
+      },
+    });
+
+    revalidatePath("/contests");
+    revalidatePath("/dashboard");
+    const newAchievement = await unlockAchievementBySlug(
+      session.user.id,
+      "first_contest",
+    );
+    const newAchievements: UnlockedAchievement[] = newAchievement
+      ? [newAchievement]
+      : [];
+    return { success: true as const, newAchievements };
+  } catch {
+    return { error: "Erro interno ao salvar no banco de dados." };
+  }
 }
 
-export async function deleteContest(id: string) {
-    const session = await auth()
-    if (!session?.user?.id) throw new Error('Unauthorized')
+export async function deleteContest(id: string): Promise<ActionResult<void>> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return err("Não autorizado");
 
     await prisma.contest.delete({
-        where: {
-            id,
-            userId: session.user.id
-        }
-    })
+      where: {
+        id,
+        userId: session.user.id,
+      },
+    });
 
-    revalidatePath('/contests')
+    revalidatePath("/contests");
+    return ok(undefined);
+  } catch (error) {
+    console.error("deleteContest error:", error);
+    return err("Erro ao deletar concurso");
+  }
 }

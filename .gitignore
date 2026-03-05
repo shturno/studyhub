@@ -26,5 +26,33 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Antigravity
+# Lockfiles alternativos
+package-lock.json
+yarn.lock
+
+# Error logs
+tsc-errors.log
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# AI/IDE tooling
+CLAUDE.md
 .agent/
+
+# docs
+/docs/*
+
+# Testes
+coverage/
+playwright-report/
+test-results/
+.playwright/
+
+# Scripts de debug locais
+check_cycles.ts
+check_db.ts
+wipe_dirty_sessions.ts
+wipe_stray_subjects.ts

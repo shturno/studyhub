@@ -1,116 +1,133 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
+
+const ACHIEVEMENTS = [
+  {
+    slug: "welcome",
+    name: "Bem-vindo ao StudyHub!",
+    description: "Criou sua conta e começou a jornada.",
+    icon: "🎉",
+    xpReward: 50,
+  },
+  {
+    slug: "first_session",
+    name: "Primeira Sessão",
+    description: "Completou sua primeira sessão de estudo.",
+    icon: "⏱️",
+    xpReward: 100,
+  },
+  {
+    slug: "sessions_10",
+    name: "Veterano",
+    description: "Completou 10 sessões de estudo.",
+    icon: "📚",
+    xpReward: 200,
+  },
+  {
+    slug: "sessions_50",
+    name: "Dedicado",
+    description: "Completou 50 sessões de estudo.",
+    icon: "💪",
+    xpReward: 500,
+  },
+  {
+    slug: "sessions_100",
+    name: "Centurião",
+    description: "Completou 100 sessões de estudo.",
+    icon: "🏆",
+    xpReward: 1000,
+  },
+  {
+    slug: "hours_10",
+    name: "10 Horas",
+    description: "Acumulou 10 horas de estudo.",
+    icon: "⏳",
+    xpReward: 150,
+  },
+  {
+    slug: "hours_50",
+    name: "50 Horas",
+    description: "Acumulou 50 horas de estudo.",
+    icon: "🔥",
+    xpReward: 400,
+  },
+  {
+    slug: "hours_100",
+    name: "Centenário de Horas",
+    description: "Acumulou 100 horas de estudo.",
+    icon: "💯",
+    xpReward: 800,
+  },
+  {
+    slug: "streak_3",
+    name: "Sequência de 3 Dias",
+    description: "Estudou por 3 dias consecutivos.",
+    icon: "🔁",
+    xpReward: 150,
+  },
+  {
+    slug: "streak_7",
+    name: "Semana Perfeita",
+    description: "Estudou por 7 dias consecutivos.",
+    icon: "📅",
+    xpReward: 400,
+  },
+  {
+    slug: "streak_30",
+    name: "Mês de Ferro",
+    description: "Estudou por 30 dias consecutivos.",
+    icon: "🛡️",
+    xpReward: 1500,
+  },
+  {
+    slug: "level_5",
+    name: "Nível 5",
+    description: "Alcançou o nível 5.",
+    icon: "⭐",
+    xpReward: 200,
+  },
+  {
+    slug: "level_10",
+    name: "Nível 10",
+    description: "Alcançou o nível 10.",
+    icon: "🌟",
+    xpReward: 500,
+  },
+  {
+    slug: "first_contest",
+    name: "Concurso na Mira",
+    description: "Criou seu primeiro concurso.",
+    icon: "🎯",
+    xpReward: 100,
+  },
+];
 
 async function main() {
-    console.log('🌱 Starting seed...')
+  console.log("🌱 Starting seed...");
 
-    // 1. Clean legacy data
-    await prisma.studySession.deleteMany()
-    await prisma.topic.deleteMany()
-    await prisma.subject.deleteMany()
-    await prisma.contest.deleteMany()
-    await prisma.user.deleteMany()
+  for (const ach of ACHIEVEMENTS) {
+    await prisma.achievement.upsert({
+      where: { slug: ach.slug },
+      update: {
+        name: ach.name,
+        description: ach.description,
+        icon: ach.icon,
+        xpReward: ach.xpReward,
+      },
+      create: ach,
+    });
+  }
 
-    // 2. Create Hero User
-    const user = await prisma.user.create({
-        data: {
-            email: 'student@studyhub.com',
-            name: 'Estudante Dedicado',
-            password: 'hashed-password-123', // In real app, hash this
-            xp: 1250,
-            level: 5,
-            settings: {
-                pomodoroDefault: 25,
-                breakDefault: 5,
-                dailyGoalMinutes: 120
-            }
-        }
-    })
-
-    console.log(`👤 Created user: ${user.name}`)
-
-    // 3. Create Contest: Banco do Brasil
-    const contest = await prisma.contest.create({
-        data: {
-            userId: user.id,
-            name: 'Banco do Brasil - Escriturário',
-            institution: 'Banco do Brasil',
-            role: 'Escriturário',
-            isPrimary: true
-        }
-    })
-
-    console.log(`🏆 Created contest: ${contest.name}`)
-
-    // 4. Create Subjects & Topics
-    const subjectsData = [
-        {
-            name: 'Matemática Financeira',
-            topics: ['Juros Simples', 'Juros Compostos', 'Sistemas de Amortização', 'Análise de Investimentos']
-        },
-        {
-            name: 'Conhecimentos Bancários',
-            topics: ['Sistema Financeiro Nacional', 'Mercado de Capitais', 'Produtos Bancários', 'Garantias']
-        },
-        {
-            name: 'Língua Portuguesa',
-            topics: ['Interpretação de Texto', 'Crase', 'Concordância Verbal', 'Regência']
-        },
-        {
-            name: 'Informática',
-            topics: ['Segurança da Informação', 'Excel Avançado', 'Banco de Dados', 'Python Básico']
-        }
-    ]
-
-    for (const s of subjectsData) {
-        const subject = await prisma.subject.create({
-            data: {
-                contestId: contest.id,
-                name: s.name,
-                weight: 1, // Default weight
-                userLevel: 1
-            }
-        })
-
-        for (const tName of s.topics) {
-            await prisma.topic.create({
-                data: {
-                    subjectId: subject.id,
-                    name: tName
-                }
-            })
-        }
-        console.log(`📚 Created subject: ${s.name} with ${s.topics.length} topics`)
-    }
-
-    // 5. Create some fake history (Study Sessions)
-    // Find a topic to add history to
-    const mathSubject = await prisma.subject.findFirst({ where: { name: 'Matemática Financeira' } })
-    const mathTopic = await prisma.topic.findFirst({ where: { subjectId: mathSubject?.id } })
-
-    if (mathTopic) {
-        await prisma.studySession.create({
-            data: {
-                userId: user.id,
-                topicId: mathTopic.id,
-                minutes: 25,
-                xpEarned: 250,
-                difficulty: 3,
-                completedAt: new Date(Date.now() - 1000 * 60 * 60 * 24) // 1 day ago
-            }
-        })
-        console.log('⏱️ Created sample study session')
-    }
-
-    console.log('✅ Seed completed!')
+  console.log(
+    "✅ Seed completed! Database is ready for users to add their own contests.",
+  );
 }
-
 main()
-    .catch((e) => {
-        console.error(e)
-        process.exit(1)
-    })
-    .finally(async () => {
-        await prisma.$disconnect()
-    })
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

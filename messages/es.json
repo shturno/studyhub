@@ -1,0 +1,241 @@
+{
+  "Landing": {
+    "login": "INICIAR SESIÓN",
+    "play": "JUGAR",
+    "title": "STUDY HUB",
+    "subtitle": "PREPARE. LEVEL UP. CONQUER.",
+    "insertCoin": "► INSERTE MONEDA PARA EMPEZAR ◄",
+    "hallOfChampions": "★ SALÓN DE LOS CAMPEONES ★",
+    "newGame": "▶ NUEVO JUEGO",
+    "continue": "↺ CONTINUAR",
+    "achieveResults": "ALCANZA ESTOS RESULTADOS ESTUDIANDO CON NOSOTROS",
+    "copyright": "© 2026 STUDYHUB CORP · VER 1.0.0 · BUILD 001 · TODOS LOS DERECHOS RESERVADOS"
+  },
+  "ScoreEntries": {
+    "focusHours": "HORAS DE ENFOQUE",
+    "questionsSolved": "PREGUNTAS RESUELTAS",
+    "streakDays": "DÍAS DE RACHA",
+    "subjectsMastered": "MATERIAS DOMINADAS"
+  },
+  "Features": {
+    "adhdFriendly": {
+      "title": "AMIGABLE CON TDAH",
+      "desc": "Sesiones cortas, metas claras, sin ruido"
+    },
+    "gamified": {
+      "title": "GAMIFICADO",
+      "desc": "XP, nivel, logros y ranking real"
+    },
+    "adaptiveAi": {
+      "title": "IA ADAPTATIVA",
+      "desc": "Ciclo de estudio generado por IA"
+    },
+    "allInOne": {
+      "title": "TODO-EN-UNO",
+      "desc": "Temario, materias y exámenes en un solo lugar"
+    }
+  },
+  "ContestDetail": {
+    "back": "VOLVER",
+    "mainFocus": "★ ENFOQUE PRINCIPAL",
+    "examDate": "FECHA DEL EXAMEN",
+    "notDefined": "No definida",
+    "subjects": "MATERIAS",
+    "topics": "TEMAS",
+    "editorials": "EDITORIALES",
+    "noEditorialMapped": "NINGÚN EDITORIAL MAPEADO",
+    "noEditorialMappedDescription": "Para generar tu Árbol de Habilidades y comenzar a planificar tus ciclos de estudio, necesitamos extraer las materias y temas de tu editorial. Sube el documento y deja que la Inteligencia Artificial lo mapee por ti.",
+    "skillTree": "ÁRBOL DE HABILIDADES",
+    "skillTreeDescription": "Tu editorial formateado en un árbol de habilidades.",
+    "topicsCount": "temas",
+    "serverErrorTitle": "ERROR CAPTURADO EN EL SERVIDOR DE NEXT.JS (TRY-CATCH)",
+    "serverErrorDescription": "El Backend de Node sufrió un pánico y fue capturado. Por favor, envía una captura de pantalla del código a continuación:",
+    "errorLabel": "ERROR:"
+  },
+  "AppSidebar": {
+    "titleStudy": "STUDY",
+    "titleHub": "HUB",
+    "select": "▼ SELECT ▼",
+    "navDashboard": "PANEL",
+    "navPlanner": "PLANIFICADOR",
+    "navSubjects": "MATERIAS",
+    "navContests": "CONCURSOS",
+    "navReviews": "REVISIONES",
+    "navAchievements": "LOGROS",
+    "player1": "JUGADOR 1",
+    "config": "⚙ CONFIG",
+    "logout": "✕ SALIR"
+  },
+  "ThemeToggle": {
+    "toggle": "Cambiar tema"
+  },
+  "LoginForm": {
+    "unknownError": "Error desconocido",
+    "errorPrefix": "Error:",
+    "invalidCredentials": "Correo electrónico o contraseña no válidos",
+    "loginSuccess": "¡Inicio de sesión exitoso!",
+    "emailLabel": "CORREO ELECTRÓNICO",
+    "passwordLabel": "CONTRASEÑA",
+    "hidePassword": "Ocultar contraseña",
+    "showPassword": "Mostrar contraseña",
+    "loggingIn": "INICIANDO SESIÓN...",
+    "submit": "► INICIAR SESIÓN"
+  },
+  "RegisterForm": {
+    "passwordsDoNotMatch": "Las contraseñas no coinciden",
+    "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
+    "accountCreationError": "Error al crear la cuenta",
+    "accountCreationSuccess": "¡Cuenta creada! Por favor, inicia sesión.",
+    "unknownError": "Error desconocido",
+    "errorPrefix": "Error:",
+    "nameLabel": "NOMBRE",
+    "namePlaceholder": "Tu nombre",
+    "emailLabel": "CORREO ELECTRÓNICO",
+    "passwordLabel": "CONTRASEÑA",
+    "confirmPasswordLabel": "CONFIRMAR CONTRASEÑA",
+    "hidePassword": "Ocultar contraseña",
+    "showPassword": "Mostrar contraseña",
+    "creating": "CREANDO...",
+    "submit": "► CREAR CUENTA"
+  },
+  "ContestCard": {
+    "removedSuccess": "Concurso eliminado",
+    "unknownError": "Error desconocido",
+    "removeErrorPrefix": "Error al eliminar el concurso:",
+    "mainFocus": "★ ENFOQUE PRINCIPAL",
+    "removeLabel": "Eliminar concurso",
+    "dateNotSet": "Fecha no establecida",
+    "viewButton": "► VER"
+  },
+  "ContestList": {
+    "found": "{count, plural, one {# concurso encontrado} other {# concursos encontrados}}",
+    "fusionLab": "LABORATORIO DE FUSIÓN",
+    "noneFound": "NO SE ENCONTRARON CONCURSOS",
+    "addFirst": "Añade tu primer editorial para organizar tus estudios."
+  },
+  "CreateContestDialog": {
+    "error": "Error",
+    "created": "¡Concurso creado!",
+    "errorPrefix": "Error:",
+    "createSuccess": "¡Concurso creado!",
+    "unexpectedError": "Ocurrió un error inesperado al guardar el concurso.",
+    "trigger": "NUEVO CONCURSO",
+    "title": "AÑADIR CONCURSO",
+    "description": "Registra el editorial en el que estás enfocado.",
+    "nameLabel": "NOMBRE DEL CONCURSO",
+    "namePlaceholder": "Ej: Banco de Brasil 2026",
+    "institutionLabel": "INSTITUCIÓN",
+    "institutionPlaceholder": "Ej: Cesgranrio",
+    "roleLabel": "CARGO",
+    "rolePlaceholder": "Ej: Oficinista",
+    "examDateLabel": "FECHA DEL EXAMEN",
+    "mainFocusLabel": "ENFOQUE PRINCIPAL",
+    "mainFocusDescription": "Establecer como meta principal actual",
+    "submit": "GUARDAR CONCURSO",
+    "validation": {
+      "nameMin": "El nombre debe tener al menos 2 caracteres",
+      "institutionMin": "La institución debe tener al menos 2 caracteres",
+      "roleMin": "El cargo debe tener al menos 2 caracteres"
+    }
+  },
+  "Common": {
+    "close": "Cerrar"
+  },
+  "Errors": {
+    "unauthorized": "Sesión expirada. Por favor, inicia sesión nuevamente.",
+    "networkError": "Sin conexión al servidor. Verifica tu internet.",
+    "unknownError": "Error inesperado. Intenta nuevamente.",
+    "serverError": "Error interno del servidor.",
+    "fileTooLarge": "Archivo demasiado grande. Máximo permitido: 50MB",
+    "validationError": "Por favor, verifica los datos proporcionados"
+  },
+  "EditorialManager": {
+    "fillAllFields": "Completa cargo, páginas y selecciona un archivo",
+    "invalidPageFormat": "Formato de páginas inválido (ej: 1-5, 10, 15-20)",
+    "extractSuccess": "¡Materias extraídas! Ahora configura tu disponibilidad.",
+    "parseError": "Error al procesar el editorial",
+    "fillDailyHours": "Por favor, especifica horas de estudio por día",
+    "scheduleGenerated": "¡Cronograma generado! Revisa antes de importar.",
+    "scheduleError": "No se pudo generar el cronograma",
+    "noSessionsToImport": "Sin sesiones para importar",
+    "importSuccess": "¡{count} sesiones importadas!",
+    "importPartial": "{success} sesiones guardadas, {failed} fallaron",
+    "importError": "Error al importar cronograma"
+  },
+  "SmartScheduleGenerator": {
+    "selectExamDate": "Selecciona la fecha del examen",
+    "scheduleGenerated": "¡Cronograma generado!",
+    "scheduleError": "No se pudo generar el cronograma",
+    "noSessions": "Cronograma sin sesiones. Intenta nuevamente.",
+    "importSuccess": "¡{count} sesiones importadas al Planificador!",
+    "importPartial": "{success} sesiones guardadas, {failed} fallaron",
+    "importError": "Error al importar cronograma"
+  },
+  "Timer": {
+    "sessionSaved": "¡Sesión completada! +{xp} XP",
+    "saveError": "Error al guardar sesión",
+    "saveErrorDescription": "No se pudo registrar tu sesión de estudio",
+    "levelUp": "¡Felicidades! ¡Subiste al nivel {level}!",
+    "xpToNextLevel": "Faltan {xp} XP para el próximo nivel",
+    "achievementUnlocked": "¡Logro desbloqueado!"
+  },
+  "Planner": {
+    "sessionScheduled": "¡Sesión programada!",
+    "sessionScheduledDescription": "Añadida a tu planificador",
+    "saveError": "Error al guardar",
+    "sessionRemoved": "Sesión eliminada",
+    "removeError": "Error al eliminar"
+  },
+  "StudyCycle": {
+    "trackCreated": "¡Pista creada!",
+    "trackError": "Error al crear pista",
+    "lessonCreated": "¡Lección creada!",
+    "lessonError": "Error al crear lección",
+    "checklistUpdated": "¡Estado actualizado!",
+    "checklistError": "Error al actualizar estado",
+    "exportSuccess": "¡Exportación completada!",
+    "exportError": "Error en exportación"
+  },
+  "SessionModal": {
+    "tracksError": "Error al cargar pistas",
+    "lessonsError": "Error al cargar lecciones",
+    "selectLesson": "Selecciona una lección y establece duración",
+    "sessionCreated": "¡Sesión creada!",
+    "createError": "Error al crear sesión"
+  },
+  "Materials": {
+    "titleRequired": "Ingresa un título para el material",
+    "added": "Material añadido",
+    "addError": "Error al añadir material",
+    "removed": "Material eliminado",
+    "removeError": "Error al eliminar material"
+  },
+  "Settings": {
+    "saved": "¡Configuración guardada con éxito!",
+    "saveError": "Error al guardar configuración"
+  },
+  "Editorials": {
+    "added": "¡Editorial añadido con éxito!",
+    "addError": "Error al añadir editorial",
+    "removed": "¡Editorial eliminado con éxito!",
+    "removeError": "Error al eliminar editorial",
+    "topicsRequired": "Selecciona al menos un tema",
+    "mappingSuccess": "¡{count} temas mapeados con éxito!",
+    "mappingError": "Error al mapear contenido"
+  },
+  "AIAdvisoryCard": {
+    "title": "── AI ADVISOR ──",
+    "poweredBy": "GEMINI AI",
+    "coverageLabel": "COBERTURA DEL TEMARIO",
+    "fallback1": "Enfócate en los temas con mayor peso en el temario",
+    "fallback2": "Practica con preguntas de exámenes anteriores",
+    "fallback3": "Repasa los temas estudiados en la última semana"
+  },
+  "Fusion": {
+    "minContests": "¡El Laboratorio necesita al menos 2 editorials para fusionar!",
+    "success": "¡Poder Cósmico Alcanzado!",
+    "successDescription": "Súper-Ciclo creado con éxito.",
+    "error": "Falha en fusión.",
+    "errorDescription": "Intenta nuevamente o selecciona otros concursos."
+  }
+}

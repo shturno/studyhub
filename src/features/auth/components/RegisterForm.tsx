@@ -1,182 +1,241 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { toast } from 'sonner'
-import Link from 'next/link'
-import { Eye, EyeOff } from 'lucide-react'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { registerSchema } from "@/lib/schemas";
+import type { z } from "zod";
+
+type RegisterFormData = z.infer<typeof registerSchema>;
 
 export function RegisterForm() {
-    const router = useRouter()
-    const [isLoading, setIsLoading] = useState(false)
-    const [showPassword, setShowPassword] = useState(false)
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: ''
+  const router = useRouter();
+  const t = useTranslations("RegisterForm");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+  });
+
+  const onSubmit = async (formData: RegisterFormData) => {
+
+    await fetch("/api/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+      }),
     })
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-
-        if (formData.password !== formData.confirmPassword) {
-            toast.error('As senhas não coincidem')
-            return
+      .then(async (response) => {
+        const data = (await response.json()) as { error?: string };
+        if (!response.ok) {
+          toast.error(data.error ?? t("accountCreationError"));
+        } else {
+          toast.success(t("accountCreationSuccess"));
+          router.push("/login");
         }
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : t("unknownError");
+        toast.error(`${t("errorPrefix")} ${message}`);
+      });
+  };
 
-        if (formData.password.length < 6) {
-            toast.error('A senha deve ter no mínimo 6 caracteres')
-            return
-        }
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="space-y-2">
+        <label
+          htmlFor="name"
+          className="font-pixel text-[7px] text-[#ff006e] block"
+        >
+          {t("nameLabel")}
+        </label>
+        <Input
+          id="name"
+          type="text"
+          placeholder={t("namePlaceholder")}
+          {...register("name")}
+          disabled={isSubmitting}
+          autoComplete="name"
+          style={{
+            borderColor: errors.name ? "#ff006e" : "rgba(255,0,110,0.4)",
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = "#ff006e";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = errors.name
+              ? "#ff006e"
+              : "rgba(255,0,110,0.4)";
+          }}
+        />
+        {errors.name && (
+          <p className="text-[#ff006e] text-[10px] font-mono">
+            {errors.name.message}
+          </p>
+        )}
+      </div>
 
-        setIsLoading(true)
+      <div className="space-y-2">
+        <label
+          htmlFor="email"
+          className="font-pixel text-[7px] text-[#ff006e] block"
+        >
+          {t("emailLabel")}
+        </label>
+        <Input
+          id="email"
+          type="email"
+          placeholder="seu@email.com"
+          {...register("email")}
+          disabled={isSubmitting}
+          autoComplete="email"
+          style={{
+            borderColor: errors.email ? "#ff006e" : "rgba(255,0,110,0.4)",
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = "#ff006e";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = errors.email
+              ? "#ff006e"
+              : "rgba(255,0,110,0.4)";
+          }}
+        />
+        {errors.email && (
+          <p className="text-[#ff006e] text-[10px] font-mono">
+            {errors.email.message}
+          </p>
+        )}
+      </div>
 
-        try {
-            const response = await fetch('/api/users', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    name: formData.name,
-                    email: formData.email,
-                    password: formData.password
-                })
-            })
+      <div className="space-y-2">
+        <label
+          htmlFor="password"
+          className="font-pixel text-[7px] text-[#ff006e] block"
+        >
+          {t("passwordLabel")}
+        </label>
+        <div className="relative">
+          <Input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            placeholder="••••••••"
+            {...register("password")}
+            disabled={isSubmitting}
+            className="pr-10"
+            autoComplete="new-password"
+            style={{
+              borderColor: errors.password ? "#ff006e" : "rgba(255,0,110,0.4)",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = "#ff006e";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = errors.password
+                ? "#ff006e"
+                : "rgba(255,0,110,0.4)";
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#555] hover:text-[#ff006e] transition-colors"
+            aria-label={showPassword ? t("hidePassword") : t("showPassword")}
+          >
+            {showPassword ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+        {errors.password && (
+          <p className="text-[#ff006e] text-[10px] font-mono">
+            {errors.password.message}
+          </p>
+        )}
+      </div>
 
-            const data = await response.json()
-
-            if (!response.ok) {
-                toast.error('Erro ao criar conta', {
-                    description: data.error || 'Tente novamente'
-                })
-                return
+      <div className="space-y-2">
+        <label
+          htmlFor="confirmPassword"
+          className="font-pixel text-[7px] text-[#ff006e] block"
+        >
+          {t("confirmPasswordLabel")}
+        </label>
+        <div className="relative">
+          <Input
+            id="confirmPassword"
+            type={showConfirmPassword ? "text" : "password"}
+            placeholder="••••••••"
+            {...register("confirmPassword")}
+            disabled={isSubmitting}
+            className="pr-10"
+            autoComplete="new-password"
+            style={{
+              borderColor: errors.confirmPassword
+                ? "#ff006e"
+                : "rgba(255,0,110,0.4)",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = "#ff006e";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = errors.confirmPassword
+                ? "#ff006e"
+                : "rgba(255,0,110,0.4)";
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#555] hover:text-[#ff006e] transition-colors"
+            aria-label={
+              showConfirmPassword ? t("hidePassword") : t("showPassword")
             }
+          >
+            {showConfirmPassword ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+        {errors.confirmPassword && (
+          <p className="text-[#ff006e] text-[10px] font-mono">
+            {errors.confirmPassword.message}
+          </p>
+        )}
+      </div>
 
-            toast.success('Conta criada com sucesso!', {
-                description: 'Você já pode fazer login'
-            })
-
-            router.push('/login')
-        } catch (error) {
-            toast.error('Erro ao criar conta')
-        } finally {
-            setIsLoading(false)
-        }
-    }
-
-    return (
-        <Card className="w-full max-w-md">
-            <CardHeader>
-                <CardTitle className="text-2xl">Criar Conta</CardTitle>
-                <CardDescription>Preencha os dados para se cadastrar</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                        <label htmlFor="name" className="text-sm font-medium">
-                            Nome
-                        </label>
-                        <Input
-                            id="name"
-                            type="text"
-                            placeholder="Seu nome"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            disabled={isLoading}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <label htmlFor="email" className="text-sm font-medium">
-                            Email
-                        </label>
-                        <Input
-                            id="email"
-                            type="email"
-                            placeholder="seu@email.com"
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            required
-                            disabled={isLoading}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <label htmlFor="password" className="text-sm font-medium">
-                            Senha
-                        </label>
-                        <div className="relative">
-                            <Input
-                                id="password"
-                                type={showPassword ? "text" : "password"}
-                                placeholder="••••••••"
-                                value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                required
-                                disabled={isLoading}
-                                className="pr-10"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                                {showPassword ? (
-                                    <EyeOff className="h-4 w-4" />
-                                ) : (
-                                    <Eye className="h-4 w-4" />
-                                )}
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label htmlFor="confirmPassword" className="text-sm font-medium">
-                            Confirmar Senha
-                        </label>
-                        <div className="relative">
-                            <Input
-                                id="confirmPassword"
-                                type={showConfirmPassword ? "text" : "password"}
-                                placeholder="••••••••"
-                                value={formData.confirmPassword}
-                                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                required
-                                disabled={isLoading}
-                                className="pr-10"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                                {showConfirmPassword ? (
-                                    <EyeOff className="h-4 w-4" />
-                                ) : (
-                                    <Eye className="h-4 w-4" />
-                                )}
-                            </button>
-                        </div>
-                    </div>
-
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                        {isLoading ? 'Criando conta...' : 'Criar conta'}
-                    </Button>
-
-                    <p className="text-sm text-center text-muted-foreground">
-                        Já tem uma conta?{' '}
-                        <Link href="/login" className="text-primary hover:underline">
-                            Faça login
-                        </Link>
-                    </p>
-                </form>
-            </CardContent>
-        </Card>
-    )
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full font-pixel text-[10px] text-black bg-[#ff006e] h-12 flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+        style={{
+          boxShadow: "4px 4px 0px #6b0030, 0 0 15px rgba(255,0,110,0.3)",
+        }}
+      >
+        {isSubmitting ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" /> {t("creating")}
+          </>
+        ) : (
+          t("submit")
+        )}
+      </button>
+    </form>
+  );
 }

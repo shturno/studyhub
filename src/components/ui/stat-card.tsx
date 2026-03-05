@@ -1,30 +1,46 @@
-import { GlassCard } from "./glass-card"
-import { cn } from "@/lib/utils"
-import { LucideIcon } from 'lucide-react'
+import { cn } from "@/lib/utils";
+import type { LucideIcon } from "lucide-react";
 
 interface StatCardProps {
-    icon: LucideIcon
-    value: string | number
-    label: string
-    subValue?: string
-    iconColor?: string // Tailwind text color class e.g. "text-emerald-400"
-    iconBgColor?: string // Tailwind bg color class e.g. "bg-emerald-500/10"
-    className?: string
+  readonly icon: LucideIcon;
+  readonly value: string | number;
+  readonly label: string;
+  readonly subValue?: string;
+  readonly iconColor?: string;
+  readonly className?: string;
 }
 
-export function StatCard({ icon: Icon, value, label, subValue, iconColor = "text-brand-primary", iconBgColor = "bg-brand-primary/10", className }: StatCardProps) {
-    return (
-        <GlassCard className={cn("flex items-center gap-4", className)}>
-            <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center", iconBgColor, iconColor)}>
-                <Icon className="w-6 h-6" />
-            </div>
-            <div>
-                <div className="text-2xl font-bold text-white">{value}</div>
-                <div className="text-sm text-zinc-500">{label}</div>
-                {subValue && (
-                    <div className="text-xs text-zinc-600 mt-1">{subValue}</div>
-                )}
-            </div>
-        </GlassCard>
-    )
+export function StatCard({
+  icon: Icon,
+  value,
+  label,
+  subValue,
+  iconColor = "#00ff41",
+  className,
+}: StatCardProps) {
+  return (
+    <div
+      className={cn("flex items-center gap-4 p-5", className)}
+      style={{ border: `2px solid ${iconColor}30`, background: "#04000a" }}
+    >
+      <div
+        className="w-12 h-12 flex items-center justify-center flex-shrink-0"
+        style={{
+          border: `2px solid ${iconColor}40`,
+          background: `${iconColor}0a`,
+        }}
+      >
+        <Icon className="w-6 h-6" style={{ color: iconColor }} />
+      </div>
+      <div>
+        <div className="font-pixel text-xl" style={{ color: iconColor }}>
+          {value}
+        </div>
+        <div className="font-pixel text-[6px] text-[#7f7f9f] mt-1">{label}</div>
+        {subValue && (
+          <div className="font-mono text-sm text-[#555] mt-0.5">{subValue}</div>
+        )}
+      </div>
+    </div>
+  );
 }

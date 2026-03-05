@@ -1,172 +1,163 @@
-import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
-import { differenceInCalendarDays } from 'date-fns'
+import { prisma } from "@/lib/prisma";
+import { startOfWeek, endOfWeek } from "date-fns";
+import { getTranslations } from "next-intl/server";
+import { calculateLevel } from "@/features/gamification/utils/xpCalculator";
+import { getStudyRecommendations } from "@/features/ai/services/aiAdvisoryService";
+import type { DashboardData } from "@/features/dashboard/types";
 
-export interface DashboardData {
-    user: {
-        id: string
-        name: string | null
-        email: string
-        xp: number
-        level: number
-    } | null
-    randomTopic: {
-        id: string
-        name: string
-        subject: {
-            id: string
-            name: string
-        }
-    } | null
-    recentSessions: Array<{
-        id: string
-        xpEarned: number
-        completedAt: Date
-        topic: {
-            name: string
-            subject: {
-                name: string
-            }
-        }
-    }>
-    streak: number
-}
+export async function getDashboardData(userId: string, _contestId?: string): Promise<DashboardData> {
+  const t = await getTranslations("AIAdvisoryCard");
 
-/**
- * Busca todos os dados necessários para o dashboard
- */
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      xp: true,
+      level: true,
+    },
+  });
 
+  if (!user) {
+    throw new Error("User not found");
+  }
 
-/**
- * Busca todos os dados necessários para o dashboard
- */
-export async function getDashboardData(contestId?: string): Promise<DashboardData> {
-    const session = await auth()
-    if (!session?.user?.id) throw new Error("Unauthorized")
-    const userId = session.user.id
+  const effectiveLevel = calculateLevel(user.xp);
 
-    const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-            id: true,
-            name: true,
-            email: true,
-            xp: true,
-            level: true,
-            studySessions: {
-                orderBy: { completedAt: 'desc' },
-                take: 5,
-                where: contestId ? {
-                    topic: {
-                        subject: {
-                            contestId
-                        }
-                    }
-                } : undefined,
-                select: {
-                    id: true,
-                    xpEarned: true,
-                    completedAt: true,
-                    topic: {
-                        select: {
-                            name: true,
-                            subject: {
-                                select: {
-                                    name: true
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    })
+  const contestWithTopics = await prisma.contest.findFirst({
+    where: { userId },
+    orderBy: [{ isPrimary: "desc" }, { createdAt: "desc" }],
+    include: {
+      subjects: {
+        include: {
+          topics: {
+            include: {
+              studySessions: {
+                where: { userId },
+                take: 1,
+                select: { id: true },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
 
-    // Filter random topic by contest
-    const randomTopic = await prisma.topic.findFirst({
-        where: contestId ? {
-            subject: {
-                contestId
-            }
-        } : undefined,
-        select: {
-            id: true,
-            name: true,
-            subject: {
-                select: {
-                    id: true,
-                    name: true
-                }
-            }
-        }
-    })
+  const allTopics = contestWithTopics?.subjects.flatMap((s) => s.topics) ?? [];
+  const totalTopics = allTopics.length;
+  const studiedCount = allTopics.filter((t) => t.studySessions.length > 0).length;
+  const coveragePercent = totalTopics > 0 ? Math.round((studiedCount / totalTopics) * 100) : 0;
 
-    const streak = calculateStreak(user?.studySessions || [])
+  const priorities = allTopics
+    .filter((t) => t.studySessions.length === 0)
+    .slice(0, 10)
+    .map((t) => ({
+      topicId: t.id,
+      topicName: t.name,
+      priority: "high" as const,
+      reason: "Não estudado ainda",
+      recommendedHours: 2,
+    }));
 
-    return {
-        user: user ? {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            xp: user.xp,
-            level: user.level
-        } : null,
-        randomTopic,
-        recentSessions: user?.studySessions || [],
-        streak
+  const activeCycle = await prisma.studyCycle.findFirst({
+    where: {
+      userId,
+      isActive: true,
+    },
+  });
+
+  let nextTopic = null;
+  if (activeCycle) {
+    const config = activeCycle.config as { topicIds: string[] };
+    const topicIds = config.topicIds || [];
+
+    if (topicIds.length > 0) {
+      const topic = await prisma.topic.findUnique({
+        where: { id: topicIds[0] },
+        include: {
+          subject: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+
+      if (topic) {
+        nextTopic = {
+          id: topic.id,
+          name: topic.name,
+          subjectName: topic.subject.name,
+          estimatedMinutes: 25,
+        };
+      }
     }
-}
+  }
 
+  const weekStart = startOfWeek(new Date());
+  const weekEnd = endOfWeek(new Date());
 
+  const since = new Date();
+  since.setFullYear(since.getFullYear() - 1);
 
-/**
- * Calcula dias consecutivos de estudo
- */
-function calculateStreak(sessions: Array<{ completedAt: Date }>): number {
-    if (sessions.length === 0) return 0
+  const rawSessions = await prisma.studySession.findMany({
+    where: { userId, completedAt: { gte: since } },
+    select: { completedAt: true, minutes: true },
+  });
 
-    // Ordenar sessões da mais recente para a mais antiga (garantir)
-    const sortedSessions = [...sessions].sort((a, b) => b.completedAt.getTime() - a.completedAt.getTime())
+  const heatmapMap = new Map<string, { count: number; minutes: number }>();
+  for (const s of rawSessions) {
+    const key = s.completedAt.toISOString().slice(0, 10);
+    const cur = heatmapMap.get(key) ?? { count: 0, minutes: 0 };
+    heatmapMap.set(key, { count: cur.count + 1, minutes: cur.minutes + s.minutes });
+  }
 
-    let streak = 0
-    let currentDay = new Date()
+  const heatmap = Array.from(heatmapMap.entries()).map(([date, v]) => ({ date, ...v }));
 
-    // Verificar se estudou hoje (senão o streak pode ser 0 ou manter o de ontem)
-    // Se a última sessão foi hoje, começa a contar. Se foi ontem, também conta.
-    // Se foi antes de ontem, o streak quebrou.
+  const [weeklySessions, recentSessions, aiRecommendations] = await Promise.all([
+    prisma.studySession.findMany({
+      where: {
+        userId,
+        completedAt: { gte: weekStart, lte: weekEnd },
+      },
+    }),
+    prisma.studySession.findMany({
+      where: { userId },
+      take: 5,
+      orderBy: { completedAt: "desc" },
+      include: { topic: { select: { name: true } } },
+    }),
+    getStudyRecommendations(
+      contestWithTopics?.name ?? "concurso",
+      priorities,
+      coveragePercent,
+    ).catch(() => [
+      t("fallback1"),
+      t("fallback2"),
+      t("fallback3"),
+    ]),
+  ]);
 
-    const lastSessionDate = sortedSessions[0].completedAt
-    const daysSinceLastSession = differenceInCalendarDays(currentDay, lastSessionDate)
+  const weeklyStats = {
+    minutesStudied: weeklySessions.reduce((sum: number, s) => sum + s.minutes, 0),
+    sessionsCompleted: weeklySessions.length,
+    xpEarned: weeklySessions.reduce((sum: number, s) => sum + s.xpEarned, 0),
+  };
 
-    if (daysSinceLastSession > 1) {
-        return 0 // Streak quebrou
-    }
-
-    // Usar um Set para garantir dias únicos
-    const uniqueDays = new Set<string>()
-    sortedSessions.forEach(s => {
-        uniqueDays.add(s.completedAt.toISOString().split('T')[0])
-    })
-
-    const daysList = Array.from(uniqueDays).sort().reverse() // ['2023-10-05', '2023-10-04'...]
-
-    // Validar consecutividade a partir do dia mais recente
-    // Se o dia mais recente não for hoje nem ontem, já retornamos 0 acima.
-
-    let previousDate = new Date(daysList[0])
-    streak = 1 // Contamos o primeiro dia da lista (que é hoje ou ontem)
-
-    for (let i = 1; i < daysList.length; i++) {
-        const date = new Date(daysList[i])
-        const diff = differenceInCalendarDays(previousDate, date)
-
-        if (diff === 1) {
-            streak++
-            previousDate = date
-        } else {
-            break
-        }
-    }
-
-    return streak
+  return {
+    user: { ...user, name: user.name ?? "", level: effectiveLevel },
+    nextTopic,
+    weeklyStats,
+    recentSessions: recentSessions.map((s) => ({
+      id: s.id,
+      topicName: s.topic.name,
+      minutes: s.minutes,
+      xpEarned: s.xpEarned,
+      completedAt: s.completedAt,
+    })),
+    aiRecommendations,
+    coveragePercent,
+    heatmap,
+  };
 }

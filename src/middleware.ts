@@ -1,22 +1,30 @@
-import NextAuth from "next-auth"
-import { authConfig } from "@/lib/auth.config"
+import NextAuth from "next-auth";
+import { authConfig } from "@/lib/auth.config";
+import createMiddleware from "next-intl/middleware";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { routing } from "@/i18n/routing";
 
-import { NextResponse } from "next/server"
+const { auth } = NextAuth(authConfig);
 
-const { auth } = NextAuth(authConfig)
+const intlMiddleware = createMiddleware(routing);
 
 export default auth((req) => {
-    const response = NextResponse.next()
+  const intlResponse = intlMiddleware(req as NextRequest);
 
-    // Security Headers
-    response.headers.set('X-Frame-Options', 'DENY')
-    response.headers.set('X-Content-Type-Options', 'nosniff')
-    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-    response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  const response = intlResponse || NextResponse.next();
 
-    return response
-})
+  response.headers.set("X-Frame-Options", "DENY");
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set(
+    "Strict-Transport-Security",
+    "max-age=31536000; includeSubDomains",
+  );
+
+  return response;
+});
 
 export const config = {
-    matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
-}
+  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
+};
