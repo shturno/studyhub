@@ -39,7 +39,12 @@ Return as a JSON array of strings.
       return getDefaultRecommendations();
     }
 
-    return JSON.parse(jsonMatch[0]);
+    const parsed = JSON.parse(jsonMatch[0]);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return getDefaultRecommendations();
+    }
+
+    return parsed;
   } catch {
     return getDefaultRecommendations();
   }
