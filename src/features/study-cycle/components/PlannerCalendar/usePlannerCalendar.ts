@@ -56,8 +56,8 @@ export function usePlannerCalendar(sessions: PlannedSession[]) {
     for (const [dateStr, daySessions] of sorted) {
       const date = new Date(dateStr + "T12:00:00");
       const weekStart = new Date(date);
-      weekStart.setDate(date.getDate() - date.getDay() + 1);
-      const weekKey = `${weekStart.getFullYear()}-W${String(Math.ceil((date.getDate() - date.getDay() + 1) / 7)).padStart(2, "0")}`;
+      weekStart.setDate(date.getDate() - ((date.getDay() + 6) % 7));
+      const weekKey = `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, "0")}-${String(weekStart.getDate()).padStart(2, "0")}`;
 
       const existing = weeks.get(weekKey) ?? [];
       existing.push({ dateStr, sessions: daySessions });
