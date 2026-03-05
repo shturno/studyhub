@@ -5,9 +5,10 @@ import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { type DashboardViewProps } from "./types";
+import { AIAdvisoryCard } from "../AIAdvisoryCard";
 
 export function DashboardView({ data, contests = [] }: DashboardViewProps) {
-  const { user, nextTopic, recentSessions } = data;
+  const { user, nextTopic, recentSessions, aiRecommendations, coveragePercent } = data;
 
   if (!user) {
     return (
@@ -238,6 +239,13 @@ export function DashboardView({ data, contests = [] }: DashboardViewProps) {
           </div>
         )}
       </div>
+
+      {aiRecommendations.length > 0 && (
+        <AIAdvisoryCard
+          recommendations={aiRecommendations}
+          coverage={coveragePercent}
+        />
+      )}
     </div>
   );
 }

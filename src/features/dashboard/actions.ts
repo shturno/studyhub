@@ -4,32 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { startOfWeek, endOfWeek } from "date-fns";
 import { ok, err, type ActionResult } from "@/lib/result";
 import { calculateLevel } from "@/features/gamification/utils/xpCalculator";
+import { getStudyRecommendations } from "@/features/ai/services/aiAdvisoryService";
+import type { DashboardData } from "./types";
 
 export async function getDashboardData(
   userId: string,
-): Promise<
-  ActionResult<{
-    user: { id: string; name: string; xp: number; level: number };
-    nextTopic: {
-      id: string;
-      name: string;
-      subjectName: string;
-      estimatedMinutes: number;
-    } | null;
-    weeklyStats: {
-      minutesStudied: number;
-      sessionsCompleted: number;
-      xpEarned: number;
-    };
-    recentSessions: Array<{
-      id: string;
-      topicName: string;
-      minutes: number;
-      xpEarned: number;
-      completedAt: Date;
-    }>;
-  }>
-> {
+): Promise<ActionResult<DashboardData>> {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -46,6 +26,48 @@ export async function getDashboardData(
     }
 
     const effectiveLevel = calculateLevel(user.xp);
+
+    // Buscar concurso primário com tópicos para calcular cobertura
+    const contestWithTopics = await prisma.contest.findFirst({
+      where: { userId },
+      orderBy: [{ isPrimary: "desc" }, { createdAt: "desc" }],
+      include: {
+        subjects: {
+          include: {
+            topics: {
+              include: {
+                studySessions: {
+                  where: { userId },
+                  take: 1,
+                  select: { id: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const allTopics =
+      contestWithTopics?.subjects.flatMap((s) => s.topics) ?? [];
+    const totalTopics = allTopics.length;
+    const studiedCount = allTopics.filter(
+      (t) => t.studySessions.length > 0,
+    ).length;
+    const coveragePercent =
+      totalTopics > 0 ? Math.round((studiedCount / totalTopics) * 100) : 0;
+
+    // Tópicos não estudados como priorities para o Gemini
+    const priorities = allTopics
+      .filter((t) => t.studySessions.length === 0)
+      .slice(0, 10)
+      .map((t) => ({
+        topicId: t.id,
+        topicName: t.name,
+        priority: "high" as const,
+        reason: "Não estudado ainda",
+        recommendedHours: 2,
+      }));
 
     const activeCycle = await prisma.studyCycle.findFirst({
       where: {
@@ -85,15 +107,30 @@ export async function getDashboardData(
     const weekStart = startOfWeek(new Date());
     const weekEnd = endOfWeek(new Date());
 
-    const weeklySessions = await prisma.studySession.findMany({
-      where: {
-        userId,
-        completedAt: {
-          gte: weekStart,
-          lte: weekEnd,
-        },
-      },
-    });
+    const [weeklySessions, recentSessions, aiRecommendations] =
+      await Promise.all([
+        prisma.studySession.findMany({
+          where: {
+            userId,
+            completedAt: { gte: weekStart, lte: weekEnd },
+          },
+        }),
+        prisma.studySession.findMany({
+          where: { userId },
+          take: 5,
+          orderBy: { completedAt: "desc" },
+          include: { topic: { select: { name: true } } },
+        }),
+        getStudyRecommendations(
+          contestWithTopics?.name ?? "concurso",
+          priorities,
+          coveragePercent,
+        ).catch(() => [
+          "Foque nos tópicos com maior peso no edital",
+          "Pratique com questões de provas anteriores",
+          "Revise os tópicos estudados na última semana",
+        ]),
+      ]);
 
     const weeklyStats = {
       minutesStudied: weeklySessions.reduce(
@@ -103,19 +140,6 @@ export async function getDashboardData(
       sessionsCompleted: weeklySessions.length,
       xpEarned: weeklySessions.reduce((sum: number, s) => sum + s.xpEarned, 0),
     };
-
-    const recentSessions = await prisma.studySession.findMany({
-      where: { userId },
-      take: 5,
-      orderBy: { completedAt: "desc" },
-      include: {
-        topic: {
-          select: {
-            name: true,
-          },
-        },
-      },
-    });
 
     return ok({
       user: { ...user, name: user.name ?? "", level: effectiveLevel },
@@ -128,9 +152,10 @@ export async function getDashboardData(
         xpEarned: s.xpEarned,
         completedAt: s.completedAt,
       })),
+      aiRecommendations,
+      coveragePercent,
     });
-  } catch (error) {
-    console.error("getDashboardData error:", error);
+  } catch {
     return err("Erro ao carregar dados do dashboard");
   }
 }

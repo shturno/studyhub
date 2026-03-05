@@ -43,7 +43,7 @@ CLAUDE.md
 .agent/
 
 # docs
-NEXT-STEPS.md
+/docs/*
 
 # Testes
 coverage/

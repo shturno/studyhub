@@ -222,6 +222,14 @@
     "mappingSuccess": "{count} topics mapped successfully!",
     "mappingError": "Error mapping content"
   },
+  "AIAdvisoryCard": {
+    "title": "── AI ADVISOR ──",
+    "poweredBy": "GEMINI AI",
+    "coverageLabel": "SYLLABUS COVERAGE",
+    "fallback1": "Focus on the highest-weighted topics in the syllabus",
+    "fallback2": "Practice with questions from previous exams",
+    "fallback3": "Review topics studied in the last week"
+  },
   "Fusion": {
     "minContests": "Laboratory needs at least 2 editorials to merge!",
     "success": "Cosmic Power Achieved!",

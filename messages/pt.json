@@ -222,6 +222,14 @@
     "mappingSuccess": "{count} tópicos mapeados com sucesso!",
     "mappingError": "Erro ao mapear conteúdo"
   },
+  "AIAdvisoryCard": {
+    "title": "── AI ADVISOR ──",
+    "poweredBy": "GEMINI AI",
+    "coverageLabel": "COBERTURA DO EDITAL",
+    "fallback1": "Foque nos tópicos com maior peso no edital",
+    "fallback2": "Pratique com questões de provas anteriores",
+    "fallback3": "Revise os tópicos estudados na última semana"
+  },
   "Fusion": {
     "minContests": "O Laboratório precisa de pelo menos 2 editais para fundir!",
     "success": "Poder Cósmico Alcançado!",

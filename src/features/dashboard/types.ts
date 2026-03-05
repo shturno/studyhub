@@ -23,6 +23,8 @@ export interface DashboardData {
     xpEarned: number;
     completedAt: Date;
   }>;
+  aiRecommendations: string[];
+  coveragePercent: number;
 }
 
 export interface WeeklyData {

@@ -222,6 +222,14 @@
     "mappingSuccess": "¡{count} temas mapeados con éxito!",
     "mappingError": "Error al mapear contenido"
   },
+  "AIAdvisoryCard": {
+    "title": "── AI ADVISOR ──",
+    "poweredBy": "GEMINI AI",
+    "coverageLabel": "COBERTURA DEL TEMARIO",
+    "fallback1": "Enfócate en los temas con mayor peso en el temario",
+    "fallback2": "Practica con preguntas de exámenes anteriores",
+    "fallback3": "Repasa los temas estudiados en la última semana"
+  },
   "Fusion": {
     "minContests": "¡El Laboratorio necesita al menos 2 editorials para fusionar!",
     "success": "¡Poder Cósmico Alcanzado!",
