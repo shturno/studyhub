@@ -73,7 +73,7 @@ function buildMonthLabels(
 }
 
 export function StudyHeatmap({ heatmap }: StudyHeatmapProps) {
-  const weeks = buildGrid(heatmap);
+  const weeks = buildGrid(heatmap ?? []);
   const monthLabels = buildMonthLabels(weeks);
 
   return (
