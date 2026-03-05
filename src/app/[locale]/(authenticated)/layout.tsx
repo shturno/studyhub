@@ -8,6 +8,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { SessionModalProvider } from "@/features/timer/context/SessionModalContext";
+import { AchievementModalProvider } from "@/lib/achievement-modal-context";
 
 export default async function AuthenticatedLayout({
   children,
@@ -21,7 +22,8 @@ export default async function AuthenticatedLayout({
   }
 
   return (
-    <SessionModalProvider>
+    <AchievementModalProvider>
+      <SessionModalProvider>
       <div className="flex min-h-screen bg-[#080010] text-[#e0e0ff] flex-col">
         <div
           className="sticky top-0 left-0 right-0 h-14 z-50 flex items-center px-4 justify-between"
@@ -94,5 +96,6 @@ export default async function AuthenticatedLayout({
         </div>
       </div>
     </SessionModalProvider>
+    </AchievementModalProvider>
   );
 }

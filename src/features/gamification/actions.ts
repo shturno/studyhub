@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getXPForNextLevel } from "./utils/xpCalculator";
 import { auth } from "@/lib/auth";
 import { ok, err, type ActionResult } from "@/lib/result";
+import type { UnlockedAchievement } from "./services/achievementService";
 
 export async function getUserProfile(): Promise<
   ActionResult<{
@@ -48,7 +49,9 @@ export async function getUserProfile(): Promise<
     const allAchievements = await prisma.achievement.findMany();
 
     const unlockedIds = new Set(
-      user.achievements.map((ua: { achievementId: string }) => ua.achievementId),
+      user.achievements.map(
+        (ua: { achievementId: string }) => ua.achievementId,
+      ),
     );
 
     const achievementsWithStatus = allAchievements.map((ach) => ({
@@ -85,5 +88,32 @@ export async function getUserProfile(): Promise<
   } catch (error) {
     console.error("getUserProfile error:", error);
     return err("Erro ao carregar perfil");
+  }
+}
+
+export async function getUnlockedAchievements(): Promise<
+  ActionResult<UnlockedAchievement[]>
+> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return err("Não autorizado");
+
+    const rows = await prisma.userAchievement.findMany({
+      where: { userId: session.user.id },
+      include: { achievement: true },
+    });
+
+    return ok(
+      rows.map((ua) => ({
+        id: ua.achievement.id,
+        slug: ua.achievement.slug,
+        name: ua.achievement.name,
+        description: ua.achievement.description,
+        icon: ua.achievement.icon,
+        xpReward: ua.achievement.xpReward,
+      })),
+    );
+  } catch {
+    return err("Erro ao carregar conquistas");
   }
 }

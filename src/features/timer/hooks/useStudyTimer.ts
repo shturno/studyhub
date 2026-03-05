@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { saveStudySession } from "../actions";
+import { useAchievementModal } from "@/lib/achievement-modal-context";
 
 export interface UseStudyTimerOptions {
   topicId: string;
@@ -21,6 +22,7 @@ export function useStudyTimer({
   onComplete,
 }: UseStudyTimerOptions) {
   const t = useTranslations("Timer");
+  const { showAchievements } = useAchievementModal();
   const [timeLeft, setTimeLeft] = useState(initialMinutes * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [hasCompleted, setHasCompleted] = useState(false);
@@ -50,10 +52,8 @@ export function useStudyTimer({
               : t("xpToNextLevel", { xp: result.data.xpToNextLevel }),
           });
 
-          for (const ach of result.data.newAchievements) {
-            toast.success(t("achievementUnlocked"), {
-              description: `${ach.icon} ${ach.name} +${ach.xpReward} XP`,
-            });
+          if (result.data.newAchievements.length > 0) {
+            showAchievements(result.data.newAchievements);
           }
 
           if (onComplete) {
@@ -70,7 +70,7 @@ export function useStudyTimer({
     } finally {
       setIsSaving(false);
     }
-  }, [topicId, onComplete, t]);
+  }, [topicId, onComplete, t, showAchievements]);
 
   useEffect(() => {
     if (isRunning && timeLeft > 0) {

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { ok, err, type ActionResult } from "@/lib/result";
 import { unlockAchievementBySlug } from "@/features/gamification/services/achievementService";
+import type { UnlockedAchievement } from "@/features/gamification/services/achievementService";
 
 export async function getContests() {
   const session = await auth();
@@ -61,8 +62,14 @@ export async function createContest(data: {
 
     revalidatePath("/contests");
     revalidatePath("/dashboard");
-    await unlockAchievementBySlug(session.user.id, "first_contest");
-    return { success: true };
+    const newAchievement = await unlockAchievementBySlug(
+      session.user.id,
+      "first_contest",
+    );
+    const newAchievements: UnlockedAchievement[] = newAchievement
+      ? [newAchievement]
+      : [];
+    return { success: true as const, newAchievements };
   } catch {
     return { error: "Erro interno ao salvar no banco de dados." };
   }

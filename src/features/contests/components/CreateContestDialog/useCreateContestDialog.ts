@@ -7,10 +7,12 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { createContest } from "@/features/contests/actions";
 import { formSchema, type FormData } from "./types";
+import { useAchievementModal } from "@/lib/achievement-modal-context";
 
 export function useCreateContestDialog() {
   const t = useTranslations("CreateContestDialog");
   const [open, setOpen] = useState(false);
+  const { showAchievements } = useAchievementModal();
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -24,10 +26,13 @@ export function useCreateContestDialog() {
   async function onSubmit(values: FormData) {
     try {
       const res = await createContest(values);
-      if (res?.error) {
+      if ("error" in res) {
         toast.error(`${t("error")}: ${res.error}`);
       } else {
         toast.success(t("created"));
+        if (res.newAchievements.length > 0) {
+          showAchievements(res.newAchievements);
+        }
         setOpen(false);
         form.reset();
       }
