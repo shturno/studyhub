@@ -41,10 +41,10 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: pnpm exec playwright install-deps chromium
 
-      - name: Run database migrations
+      - name: Reset and migrate database
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: pnpm prisma migrate deploy
+        run: pnpm prisma migrate reset --force
 
       - name: Run E2E tests
         env:
