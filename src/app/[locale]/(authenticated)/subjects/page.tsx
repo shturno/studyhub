@@ -1,12 +1,24 @@
 import Link from "next/link";
 import { getUserSubjects } from "@/features/subjects/actions";
+import { getContests } from "@/features/contests/actions";
 import { SubjectCard } from "@/features/subjects/components/SubjectCard";
+import { ContestSelector } from "@/features/subjects/components/ContestSelector";
 import { ArrowLeft, BookOpen } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-export default async function SubjectsPage() {
-  const subjects = await getUserSubjects();
+interface SubjectsPageProps {
+  searchParams: Promise<{ contestId?: string }>;
+}
+
+export default async function SubjectsPage({
+  searchParams,
+}: SubjectsPageProps) {
+  const { contestId } = await searchParams;
+  const [subjects, contests] = await Promise.all([
+    getUserSubjects(contestId),
+    getContests(),
+  ]);
 
   return (
     <div className="min-h-screen bg-[#080010] text-[#e0e0ff]">
@@ -26,8 +38,11 @@ export default async function SubjectsPage() {
             CONTEUDOS
           </div>
         </div>
-        <div className="font-mono text-lg text-[#7f7f9f]">
-          Matérias do seu ciclo de estudos atual.
+        <div className="flex items-center justify-between">
+          <div className="font-mono text-lg text-[#7f7f9f]">
+            Matérias do seu ciclo de estudos atual.
+          </div>
+          <ContestSelector contests={contests} activeContestId={contestId} />
         </div>
       </div>
 

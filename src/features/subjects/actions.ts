@@ -6,27 +6,36 @@ import { revalidatePath } from "next/cache";
 import { ok, err, type ActionResult } from "@/lib/result";
 import { SubjectStats, TopicWithStatus } from "./types";
 
-export async function getUserSubjects(): Promise<
-  ActionResult<SubjectStats[]>
-> {
+const subjectInclude = {
+  subjects: {
+    include: {
+      topics: {
+        include: {
+          studySessions: true,
+        },
+      },
+    },
+  },
+} as const;
+
+export async function getUserSubjects(
+  contestId?: string,
+): Promise<ActionResult<SubjectStats[]>> {
   try {
     const session = await auth();
     if (!session?.user?.id) return err("Não autorizado");
+    const userId = session.user.id;
 
-    const contest = await prisma.contest.findFirst({
-      where: { userId: session.user.id },
-      include: {
-        subjects: {
-          include: {
-            topics: {
-              include: {
-                studySessions: true,
-              },
-            },
-          },
-        },
-      },
-    });
+    const contest = contestId
+      ? await prisma.contest.findUnique({
+          where: { id: contestId, userId },
+          include: subjectInclude,
+        })
+      : await prisma.contest.findFirst({
+          where: { userId },
+          orderBy: [{ isPrimary: "desc" }, { createdAt: "desc" }],
+          include: subjectInclude,
+        });
 
     if (!contest) return ok([]);
 
@@ -55,8 +64,7 @@ export async function getUserSubjects(): Promise<
     });
 
     return ok(subjects);
-  } catch (error) {
-    console.error("getUserSubjects error:", error);
+  } catch {
     return err("Erro ao carregar matérias");
   }
 }
@@ -114,8 +122,7 @@ export async function getSubjectDetails(
       subjectName: subject.name,
       topics,
     });
-  } catch (error) {
-    console.error("getSubjectDetails error:", error);
+  } catch {
     return err("Erro ao carregar detalhes da matéria");
   }
 }
@@ -145,8 +152,7 @@ export async function updateSubject(
 
     revalidatePath("/subjects", "page");
     return ok(undefined);
-  } catch (error) {
-    console.error("updateSubject error:", error);
+  } catch {
     return err("Erro ao atualizar matéria");
   }
 }
