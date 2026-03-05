@@ -73,8 +73,8 @@ export function AIAdvisoryCard({
               <span className="font-pixel text-[7px] text-[#7b61ff] mt-[3px] shrink-0">
                 ▸
               </span>
-              <span className="font-mono text-sm text-[#c0c0e0] leading-relaxed">
-                {rec}
+              <span className="font-pixel text-[7px] text-[#c0c0e0] leading-relaxed">
+                {rec.length > 80 ? rec.slice(0, 77) + "..." : rec}
               </span>
             </li>
           ))}

@@ -19,17 +19,21 @@ export async function getStudyRecommendations(
       .map((p) => `- ${p.topicName} (${p.priority})`)
       .join("\n");
 
-    const prompt = `
-As an expert study advisor for Brazilian civil service exams, provide 3-5 specific, actionable study recommendations for someone preparing for "${contestName}".
+    const prompt = `Você é um coach de concursos públicos num app estilo videogame retrô.
+Gere exatamente 3 dicas curtas e diretas para quem prepara "${contestName}".
 
-Current study profile:
-- Current content coverage: ${coverage}%
-- Top priority topics:
-${prioritiesText}
+Perfil:
+- Cobertura: ${coverage}%
+- Tópicos prioritários: ${prioritiesText}
 
-Provide practical, implementable recommendations that leverage the identified priority topics and address any gaps.
-Return as a JSON array of strings.
-`;
+Regras OBRIGATÓRIAS:
+- Máximo 12 palavras por dica
+- Tom direto, imperativo ("Estude X", "Foque em Y", "Revise Z")
+- Sem introdução, sem explicação, sem pontuação no final
+- Retorne SOMENTE um array JSON de 3 strings, nada mais
+
+Exemplo de formato correto:
+["Estude morfologia e sintaxe todos os dias", "Resolva 20 questões de interpretação por semana", "Revise classes de palavras antes da prova"]`;
 
     const result = await model.generateContent(prompt);
     const responseText = result.response.text();
