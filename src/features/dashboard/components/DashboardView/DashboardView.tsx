@@ -132,10 +132,10 @@ export function DashboardView({ data, contests = [] }: DashboardViewProps) {
             </>
           ) : (
             <div className="font-mono text-xl text-[#7f7f9f]">
-              Nenhum tópico no ciclo ativo.
+              Nenhum tópico disponível.
               <br />
               <Link href="/subjects" className="text-[#00ff41] hover:underline">
-                Configure um ciclo de estudo.
+                Adicione matérias ao seu concurso.
               </Link>
             </div>
           )}

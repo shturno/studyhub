@@ -69,38 +69,21 @@ export async function getDashboardData(
         recommendedHours: 2,
       }));
 
-    const activeCycle = await prisma.studyCycle.findFirst({
-      where: {
-        userId,
-        isActive: true,
-      },
-    });
+    const unstudiedTopic = allTopics.find((t) => t.studySessions.length === 0);
 
     let nextTopic = null;
-    if (activeCycle) {
-      const config = activeCycle.config as { topicIds: string[] };
-      const topicIds = config.topicIds || [];
-
-      if (topicIds.length > 0) {
-        const topic = await prisma.topic.findUnique({
-          where: { id: topicIds[0] },
-          include: {
-            subject: {
-              select: {
-                name: true,
-              },
-            },
-          },
-        });
-
-        if (topic) {
-          nextTopic = {
-            id: topic.id,
-            name: topic.name,
-            subjectName: topic.subject.name,
-            estimatedMinutes: 25,
-          };
-        }
+    if (unstudiedTopic) {
+      const topic = await prisma.topic.findUnique({
+        where: { id: unstudiedTopic.id },
+        include: { subject: { select: { name: true } } },
+      });
+      if (topic) {
+        nextTopic = {
+          id: topic.id,
+          name: topic.name,
+          subjectName: topic.subject.name,
+          estimatedMinutes: 25,
+        };
       }
     }
 
