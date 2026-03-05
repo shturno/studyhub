@@ -6,9 +6,10 @@ import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { type DashboardViewProps } from "./types";
 import { AIAdvisoryCard } from "../AIAdvisoryCard";
+import { StudyHeatmap } from "../StudyHeatmap";
 
 export function DashboardView({ data, contests = [] }: DashboardViewProps) {
-  const { user, nextTopic, recentSessions, aiRecommendations, coveragePercent } = data;
+  const { user, nextTopic, recentSessions, aiRecommendations, coveragePercent, heatmap } = data;
 
   if (!user) {
     return (
@@ -239,6 +240,8 @@ export function DashboardView({ data, contests = [] }: DashboardViewProps) {
           </div>
         )}
       </div>
+
+      <StudyHeatmap heatmap={heatmap} />
 
       {aiRecommendations.length > 0 && (
         <AIAdvisoryCard

@@ -107,6 +107,23 @@ export async function getDashboardData(
     const weekStart = startOfWeek(new Date());
     const weekEnd = endOfWeek(new Date());
 
+    const since = new Date();
+    since.setFullYear(since.getFullYear() - 1);
+
+    const rawSessions = await prisma.studySession.findMany({
+      where: { userId, completedAt: { gte: since } },
+      select: { completedAt: true, minutes: true },
+    });
+
+    const heatmapMap = new Map<string, { count: number; minutes: number }>();
+    for (const s of rawSessions) {
+      const key = s.completedAt.toISOString().slice(0, 10);
+      const cur = heatmapMap.get(key) ?? { count: 0, minutes: 0 };
+      heatmapMap.set(key, { count: cur.count + 1, minutes: cur.minutes + s.minutes });
+    }
+
+    const heatmap = Array.from(heatmapMap.entries()).map(([date, v]) => ({ date, ...v }));
+
     const [weeklySessions, recentSessions, aiRecommendations] =
       await Promise.all([
         prisma.studySession.findMany({
@@ -154,6 +171,7 @@ export async function getDashboardData(
       })),
       aiRecommendations,
       coveragePercent,
+      heatmap,
     });
   } catch {
     return err("Erro ao carregar dados do dashboard");

@@ -1,3 +1,9 @@
+export interface HeatmapDay {
+  date: string;    // 'YYYY-MM-DD'
+  count: number;   // número de sessões no dia
+  minutes: number; // minutos totais no dia
+}
+
 export interface DashboardData {
   user: {
     id: string;
@@ -25,6 +31,7 @@ export interface DashboardData {
   }>;
   aiRecommendations: string[];
   coveragePercent: number;
+  heatmap: HeatmapDay[];
 }
 
 export interface WeeklyData {
