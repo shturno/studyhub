@@ -21,7 +21,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -99,56 +98,31 @@ export function CreateContestDialog() {
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>DATA DA PROVA</FormLabel>
-                  <div className="flex items-center gap-2">
-                    <FormControl>
-                      <Input
-                        type="date"
-                        className="w-full font-mono text-base"
-                        value={
-                          field.value ? format(field.value, "yyyy-MM-dd") : ""
-                        }
-                        onChange={(e) => {
-                          const dateStr = e.target.value;
-                          if (dateStr) {
-                            const [year, month, day] = dateStr.split("-");
-                            field.onChange(
-                              new Date(
-                                Number.parseInt(year),
-                                Number.parseInt(month) - 1,
-                                Number.parseInt(day),
-                              ),
-                            );
-                          } else {
-                            field.onChange(undefined);
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    <Popover>
-                      <PopoverTrigger asChild>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
                         <Button
                           variant="outline"
-                          className="w-12 px-0 flex-shrink-0"
+                          className="w-full justify-start text-left font-mono text-base"
                         >
-                          <CalendarIcon className="h-4 w-4 opacity-50 text-[#00ff41]" />
+                          <CalendarIcon className="mr-2 h-4 w-4 text-[#00ff41]" />
+                          {field.value
+                            ? format(field.value, "dd/MM/yyyy")
+                            : "Selecione a data da prova"}
                         </Button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        className="w-auto p-0 z-50 pointer-events-auto"
-                        align="end"
-                      >
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) =>
-                            date < new Date(new Date().setHours(0, 0, 0, 0))
-                          }
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 z-50" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) =>
+                          date < new Date(new Date().setHours(0, 0, 0, 0))
+                        }
+                      />
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}
