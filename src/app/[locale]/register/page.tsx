@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import { RegisterForm } from "@/features/auth/components/RegisterForm";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Registrar — StudyHub",
+};
 
 export default function RegisterPage() {
   return (

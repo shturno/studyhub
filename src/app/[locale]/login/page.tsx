@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import { LoginForm } from "@/features/auth/components/LoginForm";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Entrar — StudyHub",
+};
 
 export default function LoginPage() {
   return (
