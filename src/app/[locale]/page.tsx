@@ -1,7 +1,9 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { getPublicStats } from "@/app/api/stats/public/getPublicStats";
+import { formatStat } from "@/app/api/stats/public/formatStat";
+import { BlinkCursor } from "./BlinkCursor";
+
+export const revalidate = 3600;
 
 const STARS = Array.from({ length: 80 }, (_, i) => ({
   id: i,
@@ -12,13 +14,6 @@ const STARS = Array.from({ length: 80 }, (_, i) => ({
   delay: `${(i * 0.4) % 6}s`,
   duration: `${3 + (i % 5)}s`,
 }));
-
-const SCORE_ENTRIES = [
-  { rank: "1ST", label: "FOCUS HOURS", value: "---", color: "#ffbe0b" },
-  { rank: "2ND", label: "QUESTIONS SOLVED", value: "---", color: "#00ff41" },
-  { rank: "3RD", label: "STREAK DAYS", value: "---", color: "#ff006e" },
-  { rank: "4TH", label: "SUBJECTS MASTERED", value: "---", color: "#00e5ff" },
-];
 
 const FEATURES = [
   {
@@ -47,13 +42,35 @@ const FEATURES = [
   },
 ];
 
-export default function HomePage() {
-  const [blink, setBlink] = useState(true);
+export default async function HomePage() {
+  const stats = await getPublicStats();
 
-  useEffect(() => {
-    const t = setInterval(() => setBlink((b) => !b), 600);
-    return () => clearInterval(t);
-  }, []);
+  const SCORE_ENTRIES = [
+    {
+      rank: "1ST",
+      label: "HORAS DE FOCO",
+      value: formatStat(stats.totalFocusHours),
+      color: "#ffbe0b",
+    },
+    {
+      rank: "2ND",
+      label: "SESSÕES",
+      value: formatStat(stats.totalSessions),
+      color: "#00ff41",
+    },
+    {
+      rank: "3RD",
+      label: "USUÁRIOS",
+      value: formatStat(stats.totalUsers),
+      color: "#ff006e",
+    },
+    {
+      rank: "4TH",
+      label: "MATÉRIAS CRIADAS",
+      value: formatStat(stats.totalSubjects),
+      color: "#00e5ff",
+    },
+  ];
 
   return (
     <div
@@ -201,19 +218,7 @@ export default function HomePage() {
             PREPARE. LEVEL UP. CONQUER.
           </p>
 
-          <div
-            className="mt-6 mb-10"
-            style={{
-              fontSize: 9,
-              color: "#ffbe0b",
-              textShadow: "0 0 12px #ffbe0b",
-              letterSpacing: "0.12em",
-              opacity: blink ? 1 : 0,
-              transition: "opacity 0.1s",
-            }}
-          >
-            ► INSERT COIN TO START ◄
-          </div>
+          <BlinkCursor text="► INSERT COIN TO START ◄" />
 
           <div
             className="w-full max-w-lg mb-10"
