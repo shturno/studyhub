@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { ok, err, type ActionResult } from "@/lib/result";
+import { unlockAchievementBySlug } from "@/features/gamification/services/achievementService";
 
 export async function getContests() {
   const session = await auth();
@@ -60,15 +61,14 @@ export async function createContest(data: {
 
     revalidatePath("/contests");
     revalidatePath("/dashboard");
+    await unlockAchievementBySlug(session.user.id, "first_contest");
     return { success: true };
   } catch {
     return { error: "Erro interno ao salvar no banco de dados." };
   }
 }
 
-export async function deleteContest(
-  id: string,
-): Promise<ActionResult<void>> {
+export async function deleteContest(id: string): Promise<ActionResult<void>> {
   try {
     const session = await auth();
     if (!session?.user?.id) return err("Não autorizado");

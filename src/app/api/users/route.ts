@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
+import { unlockAchievementBySlug } from "@/features/gamification/services/achievementService";
 
 export async function POST(request: Request) {
   try {
@@ -40,6 +41,8 @@ export async function POST(request: Request) {
         createdAt: true,
       },
     });
+
+    await unlockAchievementBySlug(user.id, "welcome");
 
     return NextResponse.json(
       {
