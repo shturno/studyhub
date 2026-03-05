@@ -67,12 +67,11 @@ export async function saveStudySession(
     const newLevel = calculateLevel(user.xp);
     const leveledUp = newLevel > user.level;
 
-    if (leveledUp) {
-      await prisma.user.update({
-        where: { id: userId },
-        data: { level: newLevel },
-      });
-    }
+    // Always sync level to DB — corrects stale levels from legacy accounts
+    await prisma.user.update({
+      where: { id: userId },
+      data: { level: newLevel },
+    });
 
     const xpToNextLevel = getXPForNextLevel(user.xp, newLevel);
 

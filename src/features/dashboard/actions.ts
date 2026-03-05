@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { startOfWeek, endOfWeek } from "date-fns";
 import { ok, err, type ActionResult } from "@/lib/result";
+import { calculateLevel } from "@/features/gamification/utils/xpCalculator";
 
 export async function getDashboardData(
   userId: string,
@@ -43,6 +44,8 @@ export async function getDashboardData(
     if (!user) {
       return err("Usuário não encontrado");
     }
+
+    const effectiveLevel = calculateLevel(user.xp);
 
     const activeCycle = await prisma.studyCycle.findFirst({
       where: {
@@ -115,7 +118,7 @@ export async function getDashboardData(
     });
 
     return ok({
-      user: { ...user, name: user.name ?? "" },
+      user: { ...user, name: user.name ?? "", level: effectiveLevel },
       nextTopic,
       weeklyStats,
       recentSessions: recentSessions.map((s) => ({

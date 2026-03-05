@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getXPForNextLevel } from "./utils/xpCalculator";
+import { calculateLevel, getXPForNextLevel } from "./utils/xpCalculator";
 import { auth } from "@/lib/auth";
 import { ok, err, type ActionResult } from "@/lib/result";
 import type { UnlockedAchievement } from "./services/achievementService";
@@ -68,7 +68,8 @@ export async function getUserProfile(): Promise<
       (acc: number, s: { minutes: number }) => acc + s.minutes,
       0,
     );
-    const xpToNext = getXPForNextLevel(user.xp, user.level + 1);
+    const effectiveLevel = calculateLevel(user.xp);
+    const xpToNext = getXPForNextLevel(user.xp, effectiveLevel);
 
     return ok({
       user: {
@@ -76,7 +77,7 @@ export async function getUserProfile(): Promise<
         name: user.name ?? "",
         email: user.email ?? "",
         xp: user.xp,
-        level: user.level,
+        level: effectiveLevel,
       },
       achievements: achievementsWithStatus,
       stats: {
