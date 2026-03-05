@@ -23,6 +23,7 @@ export function AppSidebar({ className, user }: AppSidebarProps) {
     { title: t("navPlanner"), href: "/planner", emoji: "📅" },
     { title: t("navSubjects"), href: "/subjects", emoji: "📖" },
     { title: t("navContests"), href: "/contests", emoji: "🎯" },
+    { title: t("navReviews"), href: "/reviews", emoji: "🔁" },
     { title: t("navAchievements"), href: "/gamification", emoji: "🏆" },
   ];
 

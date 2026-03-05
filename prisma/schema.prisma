@@ -30,6 +30,7 @@ model User {
   plannedSessions PlannedSession[]
   achievements   UserAchievement[]
   editorialItems EditorialItem[]
+  reviewQueue    ReviewQueue[]
   
   @@map("users")
 }
@@ -179,13 +180,22 @@ model ReviewQueue {
   id          String   @id @default(cuid())
   topicId     String
   topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   scheduledFor DateTime
   completed    Boolean  @default(false)
-  
+  completedAt  DateTime?
+
+  // SM-2 fields
+  interval     Int      @default(1)
+  easeFactor   Float    @default(2.5)
+  repetitions  Int      @default(0)
+
   createdAt    DateTime @default(now())
-  
+
   @@index([topicId])
+  @@index([userId])
   @@map("review_queue")
 }
 

@@ -14,6 +14,7 @@ import {
   checkAndUnlockAchievements,
   type UnlockedAchievement,
 } from "@/features/gamification/services/achievementService";
+import { scheduleReview } from "@/features/reviews/actions";
 
 export interface SaveStudySessionInput {
   topicId: string;
@@ -76,6 +77,8 @@ export async function saveStudySession(
     const xpToNextLevel = getXPForNextLevel(user.xp, newLevel);
 
     const newAchievements = await checkAndUnlockAchievements(userId);
+
+    await scheduleReview(parsed.data.topicId).catch(() => undefined);
 
     revalidatePath("/dashboard");
     revalidatePath("/gamification");
