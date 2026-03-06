@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { format } from "date-fns";
 import { CalendarIcon, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,6 +36,7 @@ import { parseDateBR } from "@/features/contests/utils";
 
 export function CreateContestDialog() {
   const { open, setOpen, form, onSubmit } = useCreateContestDialog();
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -112,7 +115,7 @@ export function CreateContestDialog() {
                         }}
                       />
                     </FormControl>
-                    <Popover>
+                    <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
@@ -125,11 +128,12 @@ export function CreateContestDialog() {
                         <Calendar
                           mode="single"
                           selected={parseDateBR(field.value ?? "")}
-                          onSelect={(date) =>
+                          onSelect={(date) => {
                             field.onChange(
                               date ? format(date, "dd/MM/yyyy") : undefined,
-                            )
-                          }
+                            );
+                            setCalendarOpen(false);
+                          }}
                           disabled={(date) =>
                             date < new Date(new Date().setHours(0, 0, 0, 0))
                           }
