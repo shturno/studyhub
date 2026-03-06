@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 import { format } from "date-fns";
 import { CalendarIcon, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,11 +30,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useCreateContestDialog } from "./useCreateContestDialog";
-import { parseDateBR } from "@/features/contests/utils";
 
 export function CreateContestDialog() {
   const { open, setOpen, form, onSubmit } = useCreateContestDialog();
-  const [calendarOpen, setCalendarOpen] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -106,16 +102,29 @@ export function CreateContestDialog() {
                   <div className="flex items-center gap-2">
                     <FormControl>
                       <Input
-                        type="text"
-                        placeholder="dd/mm/aaaa"
+                        type="date"
                         className="w-full font-mono text-base"
-                        value={field.value ?? ""}
+                        value={
+                          field.value ? format(field.value, "yyyy-MM-dd") : ""
+                        }
                         onChange={(e) => {
-                          field.onChange(e.target.value || undefined);
+                          const dateStr = e.target.value;
+                          if (dateStr) {
+                            const [year, month, day] = dateStr.split("-");
+                            field.onChange(
+                              new Date(
+                                Number.parseInt(year),
+                                Number.parseInt(month) - 1,
+                                Number.parseInt(day),
+                              ),
+                            );
+                          } else {
+                            field.onChange(undefined);
+                          }
                         }}
                       />
                     </FormControl>
-                    <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                    <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
@@ -124,16 +133,15 @@ export function CreateContestDialog() {
                           <CalendarIcon className="h-4 w-4 opacity-50 text-[#00ff41]" />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 z-50" align="end">
+                      <PopoverContent
+                        className="w-auto p-0 z-50 pointer-events-auto"
+                        align="end"
+                      >
                         <Calendar
                           mode="single"
-                          selected={parseDateBR(field.value ?? "")}
-                          onSelect={(date) => {
-                            field.onChange(
-                              date ? format(date, "dd/MM/yyyy") : undefined,
-                            );
-                            setCalendarOpen(false);
-                          }}
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          className="pointer-events-auto"
                           disabled={(date) =>
                             date < new Date(new Date().setHours(0, 0, 0, 0))
                           }
