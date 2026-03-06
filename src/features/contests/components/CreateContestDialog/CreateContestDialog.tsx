@@ -102,26 +102,13 @@ export function CreateContestDialog() {
                   <div className="flex items-center gap-2">
                     <FormControl>
                       <Input
-                        type="date"
-                        className="w-full font-mono text-base"
+                        type="text"
+                        readOnly
+                        placeholder="dd/mm/aaaa"
+                        className="w-full font-mono text-base cursor-pointer"
                         value={
-                          field.value ? format(field.value, "yyyy-MM-dd") : ""
+                          field.value ? format(field.value, "dd/MM/yyyy") : ""
                         }
-                        onChange={(e) => {
-                          const dateStr = e.target.value;
-                          if (dateStr) {
-                            const [year, month, day] = dateStr.split("-");
-                            field.onChange(
-                              new Date(
-                                Number.parseInt(year),
-                                Number.parseInt(month) - 1,
-                                Number.parseInt(day),
-                              ),
-                            );
-                          } else {
-                            field.onChange(undefined);
-                          }
-                        }}
                       />
                     </FormControl>
                     <Popover>
