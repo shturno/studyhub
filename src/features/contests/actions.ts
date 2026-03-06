@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { ok, err, type ActionResult } from "@/lib/result";
 import { unlockAchievementBySlug } from "@/features/gamification/services/achievementService";
 import type { UnlockedAchievement } from "@/features/gamification/services/achievementService";
+import { parseDateBR } from "./utils";
 
 export async function getContests() {
   const session = await auth();
@@ -25,7 +26,7 @@ export async function createContest(data: {
   name: string;
   institution: string;
   role: string;
-  examDate?: Date;
+  examDate?: string;
   isPrimary?: boolean;
 }) {
   try {
@@ -48,12 +49,15 @@ export async function createContest(data: {
       .padStart(4, "0");
     const finalSlug = `${baseSlug}-${uniqueSuffix}`;
 
+    const examDate = data.examDate ? parseDateBR(data.examDate) : undefined;
+
     await prisma.contest.create({
       data: {
         name: data.name,
         institution: data.institution,
         role: data.role,
-        examDate: data.examDate,
+        examDate,
+
         isPrimary: data.isPrimary,
         slug: finalSlug,
         userId: session.user.id,

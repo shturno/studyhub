@@ -30,6 +30,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useCreateContestDialog } from "./useCreateContestDialog";
+import { parseDateBR } from "@/features/contests/utils";
 
 export function CreateContestDialog() {
   const { open, setOpen, form, onSubmit } = useCreateContestDialog();
@@ -102,25 +103,12 @@ export function CreateContestDialog() {
                   <div className="flex items-center gap-2">
                     <FormControl>
                       <Input
-                        type="date"
-                        className="w-full font-mono text-base [&::-webkit-calendar-picker-indicator]:hidden"
-                        value={
-                          field.value ? format(field.value, "yyyy-MM-dd") : ""
-                        }
+                        type="text"
+                        placeholder="dd/mm/aaaa"
+                        className="w-full font-mono text-base"
+                        value={field.value ?? ""}
                         onChange={(e) => {
-                          const dateStr = e.target.value;
-                          if (dateStr) {
-                            const [year, month, day] = dateStr.split("-");
-                            field.onChange(
-                              new Date(
-                                Number.parseInt(year),
-                                Number.parseInt(month) - 1,
-                                Number.parseInt(day),
-                              ),
-                            );
-                          } else {
-                            field.onChange(undefined);
-                          }
+                          field.onChange(e.target.value || undefined);
                         }}
                       />
                     </FormControl>
@@ -136,8 +124,12 @@ export function CreateContestDialog() {
                       <PopoverContent className="w-auto p-0 z-50" align="end">
                         <Calendar
                           mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
+                          selected={parseDateBR(field.value ?? "")}
+                          onSelect={(date) =>
+                            field.onChange(
+                              date ? format(date, "dd/MM/yyyy") : undefined,
+                            )
+                          }
                           disabled={(date) =>
                             date < new Date(new Date().setHours(0, 0, 0, 0))
                           }

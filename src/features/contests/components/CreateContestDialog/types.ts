@@ -6,7 +6,7 @@ export const formSchema = z.object({
     .string()
     .min(2, "Instituição deve ter pelo menos 2 caracteres"),
   role: z.string().min(2, "Cargo deve ter pelo menos 2 caracteres"),
-  examDate: z.date().optional(),
+  examDate: z.string().optional(),
   isPrimary: z.boolean().default(false),
 });
 
