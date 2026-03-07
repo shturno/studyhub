@@ -15,8 +15,7 @@ export function useStatsCharts() {
         setStats(data);
         setError(false);
       })
-      .catch((err) => {
-        console.error("Failed to fetch stats:", err);
+      .catch(() => {
         setError(true);
       })
       .finally(() => setLoading(false));

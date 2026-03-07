@@ -7,9 +7,10 @@ import { ptBR } from "date-fns/locale";
 import { type DashboardViewProps } from "./types";
 import { AIAdvisoryCard } from "../AIAdvisoryCard";
 import { StudyHeatmap } from "../StudyHeatmap";
+import { StatsChartsLazy } from "../StatsCharts";
 
 export function DashboardView({ data, contests = [] }: DashboardViewProps) {
-  const { user, nextTopic, recentSessions, aiRecommendations, coveragePercent, heatmap } = data;
+  const { user, nextTopic, recentSessions, aiRecommendations, coveragePercent, heatmap, statsData } = data;
 
   if (!user) {
     return (
@@ -242,6 +243,8 @@ export function DashboardView({ data, contests = [] }: DashboardViewProps) {
       </div>
 
       <StudyHeatmap heatmap={heatmap} />
+
+      <StatsChartsLazy stats={statsData} />
 
       {aiRecommendations.length > 0 && (
         <AIAdvisoryCard

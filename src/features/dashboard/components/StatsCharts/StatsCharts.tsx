@@ -10,55 +10,14 @@ import {
   PieChart,
   Pie,
 } from "recharts";
-import { Loader2 } from "lucide-react";
-import { useStatsCharts } from "./useStatsCharts";
+import { type StatsData } from "@/features/dashboard/types";
 import { COLORS } from "./types";
 
-export function StatsCharts() {
-  const { stats, loading, error } = useStatsCharts();
+interface StatsChartsProps {
+  stats: StatsData;
+}
 
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {[0, 1].map((i) => (
-          <div
-            key={i}
-            className="p-6 flex items-center justify-center h-64"
-            style={{
-              border: "2px solid rgba(0,255,65,0.2)",
-              background: "#04000a",
-            }}
-          >
-            <Loader2 className="h-6 w-6 text-[#00ff41] animate-spin" />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {[0, 1].map((i) => (
-          <div
-            key={i}
-            className="p-6 flex flex-col items-center justify-center h-64"
-            style={{
-              border: "2px solid rgba(255,0,110,0.2)",
-              background: "#04000a",
-            }}
-          >
-            <div className="text-3xl mb-2">⚠️</div>
-            <div className="text-center font-mono text-sm text-[#ff006e]">
-              Erro ao carregar dados
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (!stats) return null;
+export function StatsCharts({ stats }: StatsChartsProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

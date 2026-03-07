@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { subMonths } from "date-fns";
 import type { PlannerData, Lesson, Track } from "@/features/study-cycle/types";
 
 export async function getPlannerData(): Promise<PlannerData> {
@@ -20,12 +21,16 @@ export async function getPlannerData(): Promise<PlannerData> {
 
   const [plannedSessionsDb, studySessions] = await Promise.all([
     prisma.plannedSession.findMany({
-      where: { userId },
+      where: {
+        userId,
+        scheduledDate: { gte: subMonths(new Date(), 1) },
+      },
       include: { topic: { include: { subject: true } } },
     }),
     prisma.studySession.findMany({
       where: { userId },
       select: { topicId: true },
+      distinct: ["topicId"],
     }),
   ]);
 

@@ -1,30 +1,23 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { unstable_cache } from "next/cache";
 import { type StudyAreaPriority } from "@/features/editorials/types";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-/**
- * Get AI-generated study recommendations based on priorities and coverage
- */
-export async function getStudyRecommendations(
+async function fetchStudyRecommendations(
   contestName: string,
-  priorities: StudyAreaPriority[],
+  prioritiesKey: string,
   coverage: number,
 ): Promise<string[]> {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-    const prioritiesText = priorities
-      .slice(0, 10)
-      .map((p) => `- ${p.topicName} (${p.priority})`)
-      .join("\n");
 
     const prompt = `Você é um coach de concursos públicos num app estilo videogame retrô.
 Gere exatamente 3 dicas curtas e diretas para quem prepara "${contestName}".
 
 Perfil:
 - Cobertura: ${coverage}%
-- Tópicos prioritários: ${prioritiesText}
+- Tópicos prioritários: ${prioritiesKey.split("|").map((t) => `- ${t}`).join("\n")}
 
 Regras OBRIGATÓRIAS:
 - Máximo 12 palavras por dica
@@ -39,19 +32,38 @@ Exemplo de formato correto:
     const responseText = result.response.text();
 
     const jsonMatch = responseText.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-      return [];
-    }
+    if (!jsonMatch) return [];
 
     const parsed = JSON.parse(jsonMatch[0]);
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      return [];
-    }
+    if (!Array.isArray(parsed) || parsed.length === 0) return [];
 
     return parsed;
   } catch {
     return [];
   }
+}
+
+const cachedFetchStudyRecommendations = unstable_cache(
+  fetchStudyRecommendations,
+  ["ai-study-reco"],
+  { revalidate: 3600 },
+);
+
+export async function getStudyRecommendations(
+  contestName: string,
+  priorities: StudyAreaPriority[],
+  coverage: number,
+): Promise<string[]> {
+  const prioritiesKey = priorities
+    .slice(0, 10)
+    .map((p) => p.topicName)
+    .join("|");
+  const roundedCoverage = Math.round(coverage / 5) * 5;
+  return cachedFetchStudyRecommendations(
+    contestName,
+    prioritiesKey,
+    roundedCoverage,
+  );
 }
 
 /**

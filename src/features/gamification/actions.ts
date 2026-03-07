@@ -34,19 +34,24 @@ export async function getUserProfile(): Promise<
 
     const userId = session.user.id;
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        achievements: {
-          include: { achievement: true },
+    const [user, allAchievements, sessionStats] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+          achievements: {
+            include: { achievement: true },
+          },
         },
-        studySessions: true,
-      },
-    });
+      }),
+      prisma.achievement.findMany(),
+      prisma.studySession.aggregate({
+        where: { userId },
+        _sum: { minutes: true },
+        _count: { id: true },
+      }),
+    ]);
 
     if (!user) return ok(null);
-
-    const allAchievements = await prisma.achievement.findMany();
 
     const unlockedIds = new Set(
       user.achievements.map(
@@ -63,11 +68,8 @@ export async function getUserProfile(): Promise<
         )?.unlockedAt || null,
     }));
 
-    const totalSessions = user.studySessions.length;
-    const totalMinutes = user.studySessions.reduce(
-      (acc: number, s: { minutes: number }) => acc + s.minutes,
-      0,
-    );
+    const totalSessions = sessionStats._count.id;
+    const totalMinutes = sessionStats._sum.minutes ?? 0;
     const effectiveLevel = calculateLevel(user.xp);
     const xpToNext = getXPForNextLevel(user.xp, effectiveLevel);
 
@@ -86,8 +88,7 @@ export async function getUserProfile(): Promise<
         xpToNextLevel: xpToNext,
       },
     });
-  } catch (error) {
-    console.error("getUserProfile error:", error);
+  } catch {
     return err("Erro ao carregar perfil");
   }
 }

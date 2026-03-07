@@ -1,7 +1,7 @@
 export interface HeatmapDay {
-  date: string;    // 'YYYY-MM-DD'
-  count: number;   // número de sessões no dia
-  minutes: number; // minutos totais no dia
+  date: string;
+  count: number;
+  minutes: number;
 }
 
 export interface DashboardData {
@@ -11,6 +11,7 @@ export interface DashboardData {
     xp: number;
     level: number;
   };
+  statsData: StatsData;
   nextTopic: {
     id: string;
     name: string;

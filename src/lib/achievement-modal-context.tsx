@@ -7,7 +7,15 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { AchievementModal } from "@/features/gamification/components/AchievementModal";
+import dynamic from "next/dynamic";
+
+const AchievementModal = dynamic(
+  () =>
+    import("@/features/gamification/components/AchievementModal").then(
+      (m) => ({ default: m.AchievementModal }),
+    ),
+  { ssr: false },
+);
 import { NEXT_HINT } from "@/features/gamification/utils/achievementProgression";
 import { getUnlockedAchievements } from "@/features/gamification/actions";
 import type { UnlockedAchievement } from "@/features/gamification/services/achievementService";

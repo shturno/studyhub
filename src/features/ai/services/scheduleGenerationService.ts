@@ -7,9 +7,6 @@ import { type StudyAreaPriority } from "@/features/editorials/types";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-/**
- * Generate schedule for a specific 4-week chunk (used for chunked generation)
- */
 export async function generateScheduleChunk(
   contestName: string,
   priorities: StudyAreaPriority[],
@@ -83,32 +80,22 @@ export async function generateScheduleChunk(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to generate schedule chunk";
-    console.error(`Gemini schedule generation error (chunk ${chunkNumber}):`, message, error);
     throw new Error(`Failed to generate schedule chunk ${chunkNumber}: ${message}`);
   }
 }
 
-/**
- * Generate complete schedule by chunking 4 weeks at a time
- */
 export async function generateScheduleWithGemini(
   request: ScheduleRequest,
 ): Promise<GeneratedSchedule> {
   try {
-    // Calculate chunks: 4 weeks per chunk
     const startDate = new Date();
     const endDate = request.examDate;
     const totalDays = Math.ceil(
       (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
     );
-    const CHUNK_DAYS = 28; // 4 weeks
+    const CHUNK_DAYS = 28;
     const chunkCount = Math.ceil(totalDays / CHUNK_DAYS);
 
-    console.log(
-      `Generating ${chunkCount} chunks (${totalDays} days total, ${CHUNK_DAYS} days per chunk)`,
-    );
-
-    // Generate each chunk in parallel
     const chunkPromises = [];
     for (let i = 0; i < chunkCount; i++) {
       const chunkStartDate = new Date(
@@ -118,7 +105,6 @@ export async function generateScheduleWithGemini(
         chunkStartDate.getTime() + CHUNK_DAYS * 24 * 60 * 60 * 1000,
       );
 
-      // Don't exceed exam date
       if (chunkEndDate > endDate) {
         chunkEndDate = endDate;
       }
@@ -137,20 +123,15 @@ export async function generateScheduleWithGemini(
 
     const chunkResults = await Promise.all(chunkPromises);
 
-    // Merge all chunks into single schedule
     const mergedSchedule = mergeScheduleChunks(chunkResults, request.examDate);
     return mergedSchedule;
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to generate schedule";
-    console.error("Gemini schedule generation error:", message, error);
     throw new Error(`Failed to generate schedule: ${message}`);
   }
 }
 
-/**
- * Merge multiple schedule chunks into a single unified schedule
- */
 function mergeScheduleChunks(
   chunks: GeneratedSchedule[],
   examDate: Date,
@@ -159,11 +140,9 @@ function mergeScheduleChunks(
   const allWeeklySummaries = chunks.flatMap((c) => c.weeklySummary);
   const allMonthlySummaries = chunks.flatMap((c) => c.monthlySummary);
 
-  // Recalculate overview across all chunks
   const totalHours = allDailySessions.reduce((sum, s) => sum + s.duration, 0) / 60;
   const uniqueDays = new Set(allDailySessions.map((s) => s.day.split(" ")[0])).size;
 
-  // Group by topic
   const topicCoverageMap = new Map<
     string,
     { sessions: number; totalHours: number }
@@ -180,7 +159,6 @@ function mergeScheduleChunks(
     }
   }
 
-  // Find peak week
   const weeklySessions = allWeeklySummaries.sort(
     (a, b) => b.totalHours - a.totalHours,
   );
@@ -219,9 +197,6 @@ function mergeScheduleChunks(
   };
 }
 
-/**
- * Helper to build the Gemini prompt for schedule chunk generation
- */
 function buildScheduleChunkPrompt(
   contestName: string,
   prioritiesText: string,

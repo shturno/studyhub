@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { subDays } from "date-fns";
 
 export interface UnlockedAchievement {
   id: string;
@@ -12,34 +13,41 @@ export interface UnlockedAchievement {
 export async function checkAndUnlockAchievements(
   userId: string,
 ): Promise<UnlockedAchievement[]> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: {
-      studySessions: {
-        select: { id: true, minutes: true, startedAt: true },
-      },
-      contests: { select: { id: true } },
-      achievements: { select: { achievementId: true } },
-    },
-  });
+  const [user, sessionStats, recentSessionDates, allAchievements] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          level: true,
+          achievements: { select: { achievementId: true } },
+          contests: { select: { id: true } },
+        },
+      }),
+      prisma.studySession.aggregate({
+        where: { userId },
+        _sum: { minutes: true },
+        _count: { id: true },
+      }),
+      prisma.studySession.findMany({
+        where: { userId, startedAt: { gte: subDays(new Date(), 35) } },
+        select: { startedAt: true },
+        orderBy: { startedAt: "desc" },
+      }),
+      prisma.achievement.findMany(),
+    ]);
 
   if (!user) return [];
 
   const alreadyUnlocked = new Set(
     user.achievements.map((ua) => ua.achievementId),
   );
-  const allAchievements = await prisma.achievement.findMany();
 
-  const totalSessions = user.studySessions.length;
-  const totalMinutes = user.studySessions.reduce(
-    (acc, s) => acc + s.minutes,
-    0,
-  );
+  const totalSessions = sessionStats._count.id;
+  const totalMinutes = sessionStats._sum.minutes ?? 0;
   const totalHours = totalMinutes / 60;
   const currentLevel = user.level;
   const totalContests = user.contests.length;
   const streak = calculateStudyStreak(
-    user.studySessions.map((s) => s.startedAt),
+    recentSessionDates.map((s) => s.startedAt),
   );
 
   const rules: Record<string, boolean> = {

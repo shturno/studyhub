@@ -1,7 +1,15 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useState } from "react";
-import { LevelUpAnimation } from "@/features/gamification/components/LevelUpAnimation";
+import dynamic from "next/dynamic";
+
+const LevelUpAnimation = dynamic(
+  () =>
+    import("@/features/gamification/components/LevelUpAnimation").then(
+      (m) => ({ default: m.LevelUpAnimation }),
+    ),
+  { ssr: false },
+);
 
 interface LevelUpContextType {
   showLevelUp: (newLevel: number) => void;

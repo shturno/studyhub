@@ -174,6 +174,8 @@ model StudySession {
   
   @@index([userId])
   @@index([topicId])
+  @@index([userId, completedAt])
+  @@index([userId, startedAt])
   @@map("study_sessions")
 }
 
@@ -197,6 +199,7 @@ model ReviewQueue {
 
   @@index([topicId])
   @@index([userId])
+  @@index([userId, scheduledFor])
   @@map("review_queue")
 }
 
@@ -258,6 +261,7 @@ model Material {
   
   createdAt   DateTime @default(now())
   
+  @@index([topicId])
   @@map("materials")
 }
 

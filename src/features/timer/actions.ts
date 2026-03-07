@@ -58,23 +58,21 @@ export async function saveStudySession(
       },
     });
 
-    const user = await prisma.user.update({
+    const currentUser = await prisma.user.findUnique({
       where: { id: userId },
-      data: {
-        xp: { increment: xpEarned },
-      },
+      select: { xp: true, level: true },
     });
+    const prevXp = currentUser?.xp ?? 0;
+    const prevLevel = currentUser?.level ?? 1;
+    const newXp = prevXp + xpEarned;
+    const newLevel = calculateLevel(newXp);
+    const leveledUp = newLevel > prevLevel;
+    const xpToNextLevel = getXPForNextLevel(newXp, newLevel);
 
-    const newLevel = calculateLevel(user.xp);
-    const leveledUp = newLevel > user.level;
-
-    // Always sync level to DB — corrects stale levels from legacy accounts
     await prisma.user.update({
       where: { id: userId },
-      data: { level: newLevel },
+      data: { xp: { increment: xpEarned }, level: newLevel },
     });
-
-    const xpToNextLevel = getXPForNextLevel(user.xp, newLevel);
 
     const newAchievements = await checkAndUnlockAchievements(userId);
 
@@ -122,8 +120,7 @@ export async function updateSessionDifficulty(
 
     revalidatePath("/dashboard");
     return ok(undefined);
-  } catch (error) {
-    console.error("updateSessionDifficulty error:", error);
+  } catch {
     return err("Erro ao atualizar dificuldade");
   }
 }

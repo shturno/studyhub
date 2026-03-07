@@ -4,7 +4,6 @@ const {
   mockUserFindUnique,
   mockContestFindFirst,
   mockContestFindUnique,
-  mockTopicFindUnique,
   mockSessionFindMany,
   mockGetTranslations,
   mockCalculateLevel,
@@ -13,7 +12,6 @@ const {
   mockUserFindUnique: vi.fn(),
   mockContestFindFirst: vi.fn(),
   mockContestFindUnique: vi.fn(),
-  mockTopicFindUnique: vi.fn(),
   mockSessionFindMany: vi.fn(),
   mockGetTranslations: vi.fn(),
   mockCalculateLevel: vi.fn(),
@@ -27,7 +25,6 @@ vi.mock("@/lib/prisma", () => ({
       findFirst: mockContestFindFirst,
       findUnique: mockContestFindUnique,
     },
-    topic: { findUnique: mockTopicFindUnique },
     studySession: { findMany: mockSessionFindMany },
   },
 }));
@@ -63,7 +60,6 @@ beforeEach(() => {
   mockUserFindUnique.mockResolvedValue(baseUser);
   mockContestFindFirst.mockResolvedValue(emptyContest);
   mockContestFindUnique.mockResolvedValue(emptyContest);
-  mockTopicFindUnique.mockResolvedValue(null);
   mockSessionFindMany.mockResolvedValue([]);
 });
 

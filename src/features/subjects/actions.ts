@@ -11,7 +11,10 @@ const subjectInclude = {
     include: {
       topics: {
         include: {
-          studySessions: true,
+          // Only fetch what's needed for stats — avoids loading all columns for every session row
+          studySessions: {
+            select: { minutes: true },
+          },
         },
       },
     },
@@ -85,8 +88,8 @@ export async function getSubjectDetails(
         topics: {
           include: {
             studySessions: {
+              select: { minutes: true, xpEarned: true, completedAt: true },
               orderBy: { completedAt: "desc" },
-              take: 1,
             },
           },
         },

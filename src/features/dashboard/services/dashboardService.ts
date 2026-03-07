@@ -1,9 +1,9 @@
 import { prisma } from "@/lib/prisma";
-import { startOfWeek, endOfWeek } from "date-fns";
+import { startOfWeek, endOfWeek, format, subWeeks, startOfDay } from "date-fns";
 import { getTranslations } from "next-intl/server";
 import { calculateLevel } from "@/features/gamification/utils/xpCalculator";
 import { getStudyRecommendations } from "@/features/ai/services/aiAdvisoryService";
-import type { DashboardData } from "@/features/dashboard/types";
+import type { DashboardData, WeeklyData, TrackData } from "@/features/dashboard/types";
 
 export async function getDashboardData(
   userId: string,
@@ -66,7 +66,10 @@ export async function getDashboardData(
         },
       });
 
-  const allTopics = contestWithTopics?.subjects.flatMap((s) => s.topics) ?? [];
+  const allTopics =
+    contestWithTopics?.subjects.flatMap((s) =>
+      s.topics.map((topic) => ({ ...topic, subjectName: s.name })),
+    ) ?? [];
   const totalTopics = allTopics.length;
   const studiedCount = allTopics.filter(
     (t) => t.studySessions.length > 0,
@@ -86,22 +89,14 @@ export async function getDashboardData(
     }));
 
   const unstudiedTopic = allTopics.find((t) => t.studySessions.length === 0);
-
-  let nextTopic = null;
-  if (unstudiedTopic) {
-    const topic = await prisma.topic.findUnique({
-      where: { id: unstudiedTopic.id },
-      include: { subject: { select: { name: true } } },
-    });
-    if (topic) {
-      nextTopic = {
-        id: topic.id,
-        name: topic.name,
-        subjectName: topic.subject.name,
+  const nextTopic = unstudiedTopic
+    ? {
+        id: unstudiedTopic.id,
+        name: unstudiedTopic.name,
+        subjectName: unstudiedTopic.subjectName,
         estimatedMinutes: 25,
-      };
-    }
-  }
+      }
+    : null;
 
   const weekStart = startOfWeek(new Date());
   const weekEnd = endOfWeek(new Date());
@@ -109,19 +104,43 @@ export async function getDashboardData(
   const since = new Date();
   since.setFullYear(since.getFullYear() - 1);
 
-  const rawSessions = await prisma.studySession.findMany({
-    where: { userId, completedAt: { gte: since } },
-    select: { completedAt: true, minutes: true },
-  });
+  const [allSessions, aiRecommendations] = await Promise.all([
+    prisma.studySession.findMany({
+      where: { userId, completedAt: { gte: since } },
+      select: {
+        id: true,
+        completedAt: true,
+        minutes: true,
+        xpEarned: true,
+        topic: { select: { name: true } },
+      },
+      orderBy: { completedAt: "desc" },
+    }),
+    getStudyRecommendations(
+      contestWithTopics?.name ?? "concurso",
+      priorities,
+      coveragePercent,
+    ).catch(() => [t("fallback1"), t("fallback2"), t("fallback3")]),
+  ]);
 
   const heatmapMap = new Map<string, { count: number; minutes: number }>();
-  for (const s of rawSessions) {
+  let weekMinutes = 0;
+  let weekSessions = 0;
+  let weekXP = 0;
+
+  for (const s of allSessions) {
     const key = s.completedAt.toISOString().slice(0, 10);
     const cur = heatmapMap.get(key) ?? { count: 0, minutes: 0 };
     heatmapMap.set(key, {
       count: cur.count + 1,
       minutes: cur.minutes + s.minutes,
     });
+
+    if (s.completedAt >= weekStart && s.completedAt <= weekEnd) {
+      weekMinutes += s.minutes;
+      weekSessions += 1;
+      weekXP += s.xpEarned;
+    }
   }
 
   const heatmap = Array.from(heatmapMap.entries()).map(([date, v]) => ({
@@ -129,39 +148,40 @@ export async function getDashboardData(
     ...v,
   }));
 
-  const [weeklySessions, recentSessions, aiRecommendations] = await Promise.all(
-    [
-      prisma.studySession.findMany({
-        where: {
-          userId,
-          completedAt: { gte: weekStart, lte: weekEnd },
-        },
-      }),
-      prisma.studySession.findMany({
-        where: { userId },
-        take: 5,
-        orderBy: { completedAt: "desc" },
-        include: { topic: { select: { name: true } } },
-      }),
-      getStudyRecommendations(
-        contestWithTopics?.name ?? "concurso",
-        priorities,
-        coveragePercent,
-      ).catch(() => [t("fallback1"), t("fallback2"), t("fallback3")]),
-    ],
-  );
-
   const weeklyStats = {
-    minutesStudied: weeklySessions.reduce(
-      (sum: number, s) => sum + s.minutes,
-      0,
-    ),
-    sessionsCompleted: weeklySessions.length,
-    xpEarned: weeklySessions.reduce((sum: number, s) => sum + s.xpEarned, 0),
+    minutesStudied: weekMinutes,
+    sessionsCompleted: weekSessions,
+    xpEarned: weekXP,
   };
+
+  const recentSessions = allSessions.slice(0, 5);
+
+  const weeklyStatsData: WeeklyData[] = Array.from({ length: 8 }, (_, i) => {
+    const weekAgo = subWeeks(new Date(), 7 - i);
+    const wStart = startOfWeek(weekAgo);
+    const wEnd = endOfWeek(weekAgo);
+    const minutes = allSessions
+      .filter((s) => s.completedAt >= wStart && s.completedAt <= wEnd)
+      .reduce((sum, s) => sum + s.minutes, 0);
+    return { week: format(wStart, "dd/MM"), hours: Math.round(minutes / 60) };
+  });
+
+  const trackMinutesMap = new Map<string, number>();
+  for (const s of allSessions) {
+    const name = s.topic.name;
+    trackMinutesMap.set(name, (trackMinutesMap.get(name) ?? 0) + s.minutes);
+  }
+  const trackDistribution: TrackData[] = Array.from(
+    trackMinutesMap.entries(),
+  ).map(([name, minutes]) => ({
+    name,
+    minutes,
+    hours: Math.round(minutes / 60),
+  }));
 
   return {
     user: { ...user, name: user.name ?? "", level: effectiveLevel },
+    statsData: { weeklyStats: weeklyStatsData, trackDistribution },
     nextTopic,
     weeklyStats,
     recentSessions: recentSessions.map((s) => ({
