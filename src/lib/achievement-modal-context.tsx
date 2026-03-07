@@ -4,7 +4,6 @@ import React, {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useState,
 } from "react";
 import dynamic from "next/dynamic";
@@ -17,7 +16,6 @@ const AchievementModal = dynamic(
   { ssr: false },
 );
 import { NEXT_HINT } from "@/features/gamification/utils/achievementProgression";
-import { getUnlockedAchievements } from "@/features/gamification/actions";
 import type { UnlockedAchievement } from "@/features/gamification/services/achievementService";
 
 interface AchievementModalContextType {
@@ -57,12 +55,6 @@ export function AchievementModalProvider({
       setQueue((prev) => [...prev, ...unseen]);
     }
   }, []);
-
-  useEffect(() => {
-    getUnlockedAchievements().then((result) => {
-      if (result.success) enqueue(result.data);
-    });
-  }, [enqueue]);
 
   const handleClose = () => {
     setQueue((prev) => {
