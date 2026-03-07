@@ -19,8 +19,7 @@ export function useLessonPanel(lessonId: string | null, open: boolean) {
           setLesson(data);
           setLoading(false);
         })
-        .catch((err) => {
-          console.error("Failed to load lesson:", err);
+        .catch(() => {
           setError(true);
           setLoading(false);
           toast.error("Erro ao carregar lição");
@@ -35,8 +34,7 @@ export function useLessonPanel(lessonId: string | null, open: boolean) {
         if (!res.ok) throw new Error("Failed to refresh lesson");
         const data = (await res.json()) as Lesson;
         setLesson(data);
-      } catch (err) {
-        console.error("Failed to refresh lesson:", err);
+      } catch {
         toast.error("Erro ao atualizar lição");
       }
     }
