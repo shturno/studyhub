@@ -63,7 +63,7 @@ export async function getDashboardData(
         TO_CHAR("completedAt" AT TIME ZONE 'UTC', 'YYYY-MM-DD') AS date,
         COUNT(*)::int                                            AS count,
         SUM(minutes)::int                                        AS minutes
-      FROM "StudySession"
+      FROM study_sessions
       WHERE "userId" = ${userId}
         AND "completedAt" >= ${since}
       GROUP BY TO_CHAR("completedAt" AT TIME ZONE 'UTC', 'YYYY-MM-DD')
@@ -92,7 +92,7 @@ export async function getDashboardData(
       SELECT
         DATE_TRUNC('week', "completedAt" AT TIME ZONE 'UTC') AS week_start,
         SUM(minutes)::int                                     AS minutes
-      FROM "StudySession"
+      FROM study_sessions
       WHERE "userId" = ${userId}
         AND "completedAt" >= ${subWeeks(new Date(), 8)}
       GROUP BY DATE_TRUNC('week', "completedAt" AT TIME ZONE 'UTC')
@@ -103,8 +103,8 @@ export async function getDashboardData(
       SELECT
         t.name,
         SUM(s.minutes)::int AS minutes
-      FROM "StudySession" s
-      JOIN "Topic" t ON s."topicId" = t.id
+      FROM study_sessions s
+      JOIN topics t ON s."topicId" = t.id
       WHERE s."userId" = ${userId}
         AND s."completedAt" >= ${since}
       GROUP BY t.name
