@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { auth } from "@/lib/auth";
 import { getDashboardData } from "@/features/dashboard/services/dashboardService";
 import { DashboardView } from "@/features/dashboard/components/DashboardView";
+import { AIAdvisoryServer } from "@/features/dashboard/components/AIAdvisoryCard/AIAdvisoryServer";
+import { AIAdvisorySkeleton } from "@/features/dashboard/components/AIAdvisoryCard/AIAdvisorySkeleton";
 import { getContests } from "@/features/contests/actions";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +34,15 @@ export default async function DashboardPage(props: DashboardPageProps) {
       data={dashboardData}
       contests={contests}
       activeContestId={contestId}
+      aiSlot={
+        <Suspense fallback={<AIAdvisorySkeleton />}>
+          <AIAdvisoryServer
+            contestName={dashboardData.contestName}
+            priorities={dashboardData.priorities}
+            coveragePercent={dashboardData.coveragePercent}
+          />
+        </Suspense>
+      }
     />
   );
 }

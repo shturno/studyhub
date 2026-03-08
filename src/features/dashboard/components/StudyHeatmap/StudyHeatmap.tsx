@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -73,8 +74,8 @@ function buildMonthLabels(
 }
 
 export function StudyHeatmap({ heatmap }: StudyHeatmapProps) {
-  const weeks = buildGrid(heatmap ?? []);
-  const monthLabels = buildMonthLabels(weeks);
+  const weeks = useMemo(() => buildGrid(heatmap ?? []), [heatmap]);
+  const monthLabels = useMemo(() => buildMonthLabels(weeks), [weeks]);
 
   return (
     <div

@@ -30,7 +30,7 @@ export async function scheduleReview(
     data: { topicId, userId, scheduledFor },
   });
 
-  revalidatePath("/reviews");
+  revalidatePath("/[locale]/reviews", "page");
   return ok(undefined);
 }
 
@@ -136,6 +136,6 @@ export async function completeReview(
     },
   });
 
-  revalidatePath("/reviews");
+  revalidatePath("/[locale]/reviews", "page");
   return ok(undefined);
 }

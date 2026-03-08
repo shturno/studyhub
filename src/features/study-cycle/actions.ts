@@ -24,7 +24,7 @@ export async function savePlannedSession(data: {
       },
     });
 
-    revalidatePath("/planner");
+    revalidatePath("/[locale]/planner", "page");
     return ok({
       id: newSession.id,
       lessonId: newSession.topicId,
@@ -51,7 +51,7 @@ export async function removePlannedSession(
       where: { id: sessionId, userId: session.user.id },
     });
 
-    revalidatePath("/planner");
+    revalidatePath("/[locale]/planner", "page");
     return ok(undefined);
   } catch (error) {
     console.error("removePlannedSession error:", error);

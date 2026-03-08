@@ -24,7 +24,7 @@ export async function createMaterial(data: {
     },
   });
 
-  revalidatePath("/study/[id]", "page");
+  revalidatePath("/[locale]/study/[id]", "page");
 }
 
 export async function getMaterials(topicId: string) {

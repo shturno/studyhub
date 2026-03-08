@@ -22,7 +22,7 @@ export async function createTopic(data: {
       },
     });
 
-    revalidatePath("/subjects/[id]", "page");
+    revalidatePath("/[locale]/subjects/[id]", "page");
     return ok(undefined);
   } catch (error) {
     console.error("createTopic error:", error);
@@ -46,7 +46,7 @@ export async function deleteTopic(id: string): Promise<ActionResult<void>> {
 
     await prisma.topic.delete({ where: { id } });
 
-    revalidatePath("/subjects/[id]", "page");
+    revalidatePath("/[locale]/subjects/[id]", "page");
     return ok(undefined);
   } catch (error) {
     console.error("deleteTopic error:", error);
@@ -77,7 +77,7 @@ export async function updateTopic(
 
     await prisma.topic.update({ where: { id }, data: { name: trimmed } });
 
-    revalidatePath("/subjects/[id]", "page");
+    revalidatePath("/[locale]/subjects/[id]", "page");
     return ok(undefined);
   } catch (error) {
     console.error("updateTopic error:", error);

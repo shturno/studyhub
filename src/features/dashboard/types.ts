@@ -30,8 +30,15 @@ export interface DashboardData {
     xpEarned: number;
     completedAt: Date;
   }>;
-  aiRecommendations: string[];
   coveragePercent: number;
+  contestName: string;
+  priorities: Array<{
+    topicId: string;
+    topicName: string;
+    priority: "high";
+    reason: string;
+    recommendedHours: number;
+  }>;
   heatmap: HeatmapDay[];
 }
 

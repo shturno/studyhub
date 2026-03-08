@@ -107,8 +107,8 @@ export async function fuseContests(
       return fusedContest;
     });
 
-    revalidatePath("/contests");
-    revalidatePath("/dashboard");
+    revalidatePath("/[locale]/contests", "page");
+    revalidatePath("/[locale]/dashboard", "page");
 
     return ok(result);
   } catch (error) {

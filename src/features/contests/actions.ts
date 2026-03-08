@@ -61,8 +61,8 @@ export async function createContest(data: {
       },
     });
 
-    revalidatePath("/contests");
-    revalidatePath("/dashboard");
+    revalidatePath("/[locale]/contests", "page");
+    revalidatePath("/[locale]/dashboard", "page");
     const newAchievement = await unlockAchievementBySlug(
       session.user.id,
       "first_contest",

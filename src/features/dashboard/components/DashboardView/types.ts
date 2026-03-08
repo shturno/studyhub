@@ -11,4 +11,5 @@ export interface DashboardViewProps {
     [key: string]: unknown;
   }[];
   readonly activeContestId?: string;
+  readonly aiSlot?: React.ReactNode;
 }

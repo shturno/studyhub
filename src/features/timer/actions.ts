@@ -48,38 +48,42 @@ export async function saveStudySession(
     const userId = session.user.id;
     const xpEarned = calculateXP(parsed.data.minutes);
 
-    const newSession = await prisma.studySession.create({
-      data: {
-        userId,
-        topicId: parsed.data.topicId,
-        minutes: parsed.data.minutes,
-        xpEarned,
-        difficulty: parsed.data.difficulty,
-      },
-    });
+    const [newSession, updatedUser] = await prisma.$transaction([
+      prisma.studySession.create({
+        data: {
+          userId,
+          topicId: parsed.data.topicId,
+          minutes: parsed.data.minutes,
+          xpEarned,
+          difficulty: parsed.data.difficulty,
+        },
+      }),
+      prisma.user.update({
+        where: { id: userId },
+        data: { xp: { increment: xpEarned } },
+        select: { xp: true, level: true },
+      }),
+    ]);
 
-    const currentUser = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { xp: true, level: true },
-    });
-    const prevXp = currentUser?.xp ?? 0;
-    const prevLevel = currentUser?.level ?? 1;
-    const newXp = prevXp + xpEarned;
+    const newXp = updatedUser.xp;
+    const prevLevel = updatedUser.level;
     const newLevel = calculateLevel(newXp);
     const leveledUp = newLevel > prevLevel;
     const xpToNextLevel = getXPForNextLevel(newXp, newLevel);
 
-    await prisma.user.update({
-      where: { id: userId },
-      data: { xp: { increment: xpEarned }, level: newLevel },
-    });
+    if (newLevel !== prevLevel) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { level: newLevel },
+      });
+    }
 
     const newAchievements = await checkAndUnlockAchievements(userId);
 
     await scheduleReview(parsed.data.topicId).catch(() => undefined);
 
-    revalidatePath("/dashboard");
-    revalidatePath("/gamification");
+    revalidatePath("/[locale]/dashboard", "page");
+    revalidatePath("/[locale]/gamification", "page");
 
     return ok({
       sessionId: newSession.id,
