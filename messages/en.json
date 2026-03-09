@@ -104,6 +104,7 @@
     "removeErrorPrefix": "Error removing contest:",
     "mainFocus": "★ MAIN FOCUS",
     "removeLabel": "Remove contest",
+    "editLabel": "Edit contest",
     "dateNotSet": "Date not set",
     "viewButton": "► VIEW"
   },
@@ -137,6 +138,21 @@
       "institutionMin": "Institution must be at least 2 characters",
       "roleMin": "Role must be at least 2 characters"
     }
+  },
+  "EditContestDialog": {
+    "title": "EDIT CONTEST",
+    "description": "Update the contest details.",
+    "nameLabel": "CONTEST NAME",
+    "institutionLabel": "INSTITUTION",
+    "roleLabel": "ROLE",
+    "examDateLabel": "EXAM DATE",
+    "mainFocusLabel": "MAIN FOCUS",
+    "mainFocusDescription": "Set as current main goal",
+    "submit": "SAVE CHANGES",
+    "editLabel": "Edit contest",
+    "saved": "Contest updated!",
+    "error": "Error updating contest",
+    "unexpectedError": "An unexpected error occurred while saving."
   },
   "Common": {
     "close": "Close"

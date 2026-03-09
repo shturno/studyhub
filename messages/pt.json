@@ -104,6 +104,7 @@
     "removeErrorPrefix": "Erro ao remover concurso:",
     "mainFocus": "★ FOCO PRINCIPAL",
     "removeLabel": "Remover concurso",
+    "editLabel": "Editar concurso",
     "dateNotSet": "Data não definida",
     "viewButton": "► VER"
   },
@@ -137,6 +138,21 @@
       "institutionMin": "Instituição deve ter pelo menos 2 caracteres",
       "roleMin": "Cargo deve ter pelo menos 2 caracteres"
     }
+  },
+  "EditContestDialog": {
+    "title": "EDITAR CONCURSO",
+    "description": "Atualize os dados do edital.",
+    "nameLabel": "NOME DO CONCURSO",
+    "institutionLabel": "BANCA",
+    "roleLabel": "CARGO",
+    "examDateLabel": "DATA DA PROVA",
+    "mainFocusLabel": "FOCO PRINCIPAL",
+    "mainFocusDescription": "Definir como meta principal atual",
+    "submit": "SALVAR ALTERAÇÕES",
+    "editLabel": "Editar concurso",
+    "saved": "Concurso atualizado!",
+    "error": "Erro ao atualizar concurso",
+    "unexpectedError": "Ocorreu um erro inesperado ao salvar."
   },
   "Common": {
     "close": "Fechar"

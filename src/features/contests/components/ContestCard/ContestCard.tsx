@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useContestCard } from "./useContestCard";
+import { EditContestDialog } from "@/features/contests/components/EditContestDialog";
 import type { ContestCardProps } from "./types";
 
 export function ContestCard({ contest }: ContestCardProps) {
@@ -40,13 +41,16 @@ export function ContestCard({ contest }: ContestCardProps) {
           </div>
         </div>
 
-        <button
-          onClick={handleDelete}
-          className="opacity-0 group-hover:opacity-100 text-[#555] hover:text-[#ff006e] transition-all p-1"
-          aria-label={t("removeLabel")}
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1">
+          <EditContestDialog contest={contest} />
+          <button
+            onClick={handleDelete}
+            className="opacity-0 group-hover:opacity-100 text-[#555] hover:text-[#ff006e] transition-all p-1"
+            aria-label={t("removeLabel")}
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       <div

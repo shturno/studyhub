@@ -104,6 +104,7 @@
     "removeErrorPrefix": "Error al eliminar el concurso:",
     "mainFocus": "★ ENFOQUE PRINCIPAL",
     "removeLabel": "Eliminar concurso",
+    "editLabel": "Editar concurso",
     "dateNotSet": "Fecha no establecida",
     "viewButton": "► VER"
   },
@@ -137,6 +138,21 @@
       "institutionMin": "La institución debe tener al menos 2 caracteres",
       "roleMin": "El cargo debe tener al menos 2 caracteres"
     }
+  },
+  "EditContestDialog": {
+    "title": "EDITAR CONCURSO",
+    "description": "Actualiza los datos del concurso.",
+    "nameLabel": "NOMBRE DEL CONCURSO",
+    "institutionLabel": "INSTITUCIÓN",
+    "roleLabel": "CARGO",
+    "examDateLabel": "FECHA DEL EXAMEN",
+    "mainFocusLabel": "ENFOQUE PRINCIPAL",
+    "mainFocusDescription": "Establecer como meta principal actual",
+    "submit": "GUARDAR CAMBIOS",
+    "editLabel": "Editar concurso",
+    "saved": "¡Concurso actualizado!",
+    "error": "Error al actualizar el concurso",
+    "unexpectedError": "Ocurrió un error inesperado al guardar."
   },
   "Common": {
     "close": "Cerrar"

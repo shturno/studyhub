@@ -74,14 +74,14 @@ describe("getUserSubjects", () => {
       if (result.success) expect(result.data).toEqual([]);
     });
 
-    it("calls findFirst with isPrimary desc then createdAt desc orderBy", async () => {
+    it("calls findFirst with isPrimary desc then createdAt asc orderBy", async () => {
       mockAuth.mockResolvedValue(mockSession);
       mockContestFindFirst.mockResolvedValue(makeContest());
       await getUserSubjects();
       expect(mockContestFindFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { userId: USER_ID },
-          orderBy: [{ isPrimary: "desc" }, { createdAt: "desc" }],
+          orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
         }),
       );
     });

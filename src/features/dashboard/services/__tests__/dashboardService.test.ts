@@ -25,7 +25,8 @@ vi.mock("@/lib/prisma", () => ({
       findFirst: mockContestFindFirst,
       findUnique: mockContestFindUnique,
     },
-    studySession: { findMany: mockSessionFindMany },
+    studySession: { findMany: mockSessionFindMany, aggregate: vi.fn().mockResolvedValue({ _sum: { minutes: 0, xpEarned: 0 }, _count: { id: 0 } }) },
+    $queryRaw: vi.fn().mockResolvedValue([]),
   },
 }));
 
@@ -65,12 +66,12 @@ beforeEach(() => {
 
 describe("getDashboardData", () => {
   describe("contest selection without contestId", () => {
-    it("calls contest.findFirst with isPrimary desc + createdAt desc when no contestId", async () => {
+    it("calls contest.findFirst with isPrimary desc + createdAt asc when no contestId", async () => {
       await getDashboardData(USER_ID);
       expect(mockContestFindFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { userId: USER_ID },
-          orderBy: [{ isPrimary: "desc" }, { createdAt: "desc" }],
+          orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
         }),
       );
     });

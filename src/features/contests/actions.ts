@@ -99,11 +99,25 @@ export async function deleteContest(id: string): Promise<ActionResult<void>> {
 
 export async function updateContest(
   id: string,
-  data: { examDate?: Date | null; manualPriority?: number; name?: string },
+  data: {
+    examDate?: Date | null;
+    manualPriority?: number;
+    name?: string;
+    institution?: string;
+    role?: string;
+    isPrimary?: boolean;
+  },
 ): Promise<ActionResult<void>> {
   try {
     const session = await auth();
     if (!session?.user?.id) return err("Não autorizado");
+
+    if (data.isPrimary) {
+      await prisma.contest.updateMany({
+        where: { userId: session.user.id, isPrimary: true, id: { not: id } },
+        data: { isPrimary: false },
+      });
+    }
 
     await prisma.contest.update({
       where: { id, userId: session.user.id },
@@ -113,6 +127,9 @@ export async function updateContest(
           ? { manualPriority: data.manualPriority }
           : {}),
         ...(data.name !== undefined ? { name: data.name } : {}),
+        ...(data.institution !== undefined ? { institution: data.institution } : {}),
+        ...(data.role !== undefined ? { role: data.role } : {}),
+        ...(data.isPrimary !== undefined ? { isPrimary: data.isPrimary } : {}),
       },
     });
 
