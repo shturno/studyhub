@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import {
   savePlannedSession,
   removePlannedSession,
+  clearAllPlannedSessions,
 } from "@/features/study-cycle/actions";
 import type { Lesson, PlannedSession } from "@/features/study-cycle/types";
 
@@ -82,6 +83,19 @@ export function usePlannerContent(data: {
     openModal(session.lessonId, session.lessonId);
   };
 
+  const handleClearAll = async () => {
+    if (plannedSessions.length === 0) return;
+    const previous = [...plannedSessions];
+    setPlannedSessions([]);
+    const result = await clearAllPlannedSessions();
+    if (!result.success) {
+      setPlannedSessions(previous);
+      toast.error(t("removeError"));
+    } else {
+      toast.success(t("allSessionsCleared"));
+    }
+  };
+
   return {
     availableLessons,
     plannedSessions,
@@ -92,5 +106,6 @@ export function usePlannerContent(data: {
     handleDragEnd,
     handleRemoveSession,
     handleEditSession,
+    handleClearAll,
   };
 }

@@ -140,29 +140,35 @@ export function useSmartScheduleGenerator(
         generatedSchedule.priorities.map((p) => [p.topicName.toLowerCase(), p]),
       );
 
-      const savePromises = generatedSchedule.schedule.dailySessions.map(
-        async (session) => {
+      const savePromises = generatedSchedule.schedule.dailySessions.flatMap(
+        (session) => {
           const dateStr = session.day.split(" ")[0];
-          const topicName = session.topics[0];
+          const topics = session.topics.filter(Boolean);
+          const durationPerTopic = Math.max(
+            Math.round(session.duration / Math.max(topics.length, 1)),
+            15,
+          );
 
-          // Try to find the matching priority by name
-          const priority =
-            priorityByName.get(topicName?.toLowerCase() ?? "") ??
-            // Strip the [Contest] tag if present and retry
-            priorityByName.get(
-              topicName?.replace(/\s*\[.*?\]\s*$/, "").toLowerCase() ?? "",
-            );
+          return topics.map(async (topicName) => {
+            // Try to find the matching priority by name
+            const priority =
+              priorityByName.get(topicName?.toLowerCase() ?? "") ??
+              // Strip the [Contest] tag if present and retry
+              priorityByName.get(
+                topicName?.replace(/\s*\[.*?\]\s*$/, "").toLowerCase() ?? "",
+              );
 
-          if (!priority) return { success: false };
+            if (!priority) return { success: false };
 
-          // Prefer topicId from priority map to guarantee correct DB record
-          const resolvedPriority = priorityByTopicId.get(priority.topicId) ?? priority;
+            // Prefer topicId from priority map to guarantee correct DB record
+            const resolvedPriority = priorityByTopicId.get(priority.topicId) ?? priority;
 
-          return savePlannedSession({
-            lessonId: resolvedPriority.topicId,
-            date: dateStr,
-            duration: session.duration,
-            contestId: resolvedPriority.contestId,
+            return savePlannedSession({
+              lessonId: resolvedPriority.topicId,
+              date: dateStr,
+              duration: durationPerTopic,
+              contestId: resolvedPriority.contestId,
+            });
           });
         },
       );

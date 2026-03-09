@@ -231,6 +231,7 @@
     "sessionScheduledDescription": "Added to your planner",
     "saveError": "Error saving",
     "sessionRemoved": "Session removed",
+    "allSessionsCleared": "All sessions cleared",
     "removeError": "Error removing"
   },
   "StudyCycle": {

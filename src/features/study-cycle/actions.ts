@@ -49,6 +49,23 @@ export async function savePlannedSession(data: {
   }
 }
 
+export async function clearAllPlannedSessions(): Promise<ActionResult<void>> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return err("Não autorizado");
+
+    await prisma.plannedSession.deleteMany({
+      where: { userId: session.user.id },
+    });
+
+    revalidatePath("/[locale]/planner", "page");
+    return ok(undefined);
+  } catch (error) {
+    console.error("clearAllPlannedSessions error:", error);
+    return err("Erro ao limpar sessões planejadas");
+  }
+}
+
 export async function removePlannedSession(
   sessionId: string,
 ): Promise<ActionResult<void>> {

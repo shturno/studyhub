@@ -27,6 +27,7 @@ export function PlannerContent({ data }: PlannerContentProps) {
     handleDragEnd,
     handleRemoveSession,
     handleEditSession,
+    handleClearAll,
   } = usePlannerContent(data);
 
   return (
@@ -111,13 +112,24 @@ export function PlannerContent({ data }: PlannerContentProps) {
             }}
           >
             <div
-              className="flex items-center gap-2 px-5 py-3"
+              className="flex items-center justify-between px-5 py-3"
               style={{ borderBottom: "1px solid rgba(0,255,65,0.15)" }}
             >
-              <Calendar className="h-4 w-4 text-[#00ff41]" />
-              <span className="font-pixel text-[8px] text-[#00ff41]">
-                SESSOES PLANEJADAS
-              </span>
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-[#00ff41]" />
+                <span className="font-pixel text-[8px] text-[#00ff41]">
+                  SESSOES PLANEJADAS
+                </span>
+              </div>
+              {plannedSessions.length > 0 && (
+                <button
+                  onClick={handleClearAll}
+                  className="font-pixel text-[6px] text-[#ff006e] px-2 py-1 hover:bg-[#ff006e] hover:text-black transition-all"
+                  style={{ border: "1px solid rgba(255,0,110,0.4)" }}
+                >
+                  LIMPAR TUDO
+                </button>
+              )}
             </div>
             <div className="p-4">
               <DroppableArea id="planner-area">
