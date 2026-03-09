@@ -206,73 +206,57 @@ export async function POST(request: NextRequest) {
 
     let result;
     try {
-      console.log("[Editorial Parse] Starting Prisma transaction");
-      result = await prisma.$transaction(
-        async (tx) => {
-          const editorial = await tx.editorialItem.create({
-            data: {
-              userId: session.user.id,
-              contestId: contestId,
-              title:
-                parsedData.title || `Edital Extraído (${fileName || "document"})`,
-              description: "Mapeamento automático via Inteligência Artificial.",
-            },
+      console.log("[Editorial Parse] Starting DB writes");
+
+      const editorial = await prisma.editorialItem.create({
+        data: {
+          userId: session.user.id,
+          contestId: contestId,
+          title:
+            parsedData.title || `Edital Extraído (${fileName || "document"})`,
+          description: "Mapeamento automático via Inteligência Artificial.",
+        },
+      });
+      console.log(`[Editorial Parse] Editorial created: ${editorial.id}`);
+
+      let subjectCount = 0;
+      let topicCount = 0;
+
+      for (const parsedSubject of parsedData.subjects) {
+        let subject = await prisma.subject.findFirst({
+          where: { contestId, name: parsedSubject.name },
+        });
+        if (!subject) {
+          subject = await prisma.subject.create({
+            data: { contestId, name: parsedSubject.name, weight: 1 },
           });
-          console.log(`[Editorial Parse] Editorial created: ${editorial.id}`);
+          subjectCount++;
+        }
 
-          let subjectCount = 0;
-          let topicCount = 0;
-
-          for (const parsedSubject of parsedData.subjects) {
-            let subject = await tx.subject.findFirst({
-              where: { contestId, name: parsedSubject.name },
+        for (const parsedTopic of parsedSubject.topics) {
+          let topic = await prisma.topic.findFirst({
+            where: { subjectId: subject.id, name: parsedTopic.name },
+          });
+          if (!topic) {
+            topic = await prisma.topic.create({
+              data: { subjectId: subject.id, name: parsedTopic.name },
             });
-
-            if (!subject) {
-              subject = await tx.subject.create({
-                data: {
-                  contestId,
-                  name: parsedSubject.name,
-                  weight: 1,
-                },
-              });
-              subjectCount++;
-            }
-
-            for (const parsedTopic of parsedSubject.topics) {
-              let topic = await tx.topic.findFirst({
-                where: { subjectId: subject.id, name: parsedTopic.name },
-              });
-
-              if (!topic) {
-                topic = await tx.topic.create({
-                  data: {
-                    subjectId: subject.id,
-                    name: parsedTopic.name,
-                  },
-                });
-                topicCount++;
-              }
-
-              await tx.contentMapping.create({
-                data: {
-                  editorialItemId: editorial.id,
-                  topicId: topic.id,
-                  contentSummary: "Mapeamento automático extraído do fluxo AI.",
-                  relevance: 50,
-                },
-              });
-            }
+            topicCount++;
           }
 
-          console.log(`[Editorial Parse] Transaction completed: ${subjectCount} subjects, ${topicCount} topics created`);
-          return editorial;
-        },
-        {
-          timeout: 30000,
-        },
-      );
-      console.log("[Editorial Parse] Prisma transaction successful");
+          await prisma.contentMapping.create({
+            data: {
+              editorialItemId: editorial.id,
+              topicId: topic.id,
+              contentSummary: "Mapeamento automático extraído do fluxo AI.",
+              relevance: 50,
+            },
+          });
+        }
+      }
+
+      console.log(`[Editorial Parse] DB writes completed: ${subjectCount} subjects, ${topicCount} topics`);
+      result = editorial;
     } catch (transactionError) {
       console.error("[Editorial Parse] Prisma transaction error:", transactionError);
       return NextResponse.json(
