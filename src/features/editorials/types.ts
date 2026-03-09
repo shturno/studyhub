@@ -39,6 +39,9 @@ export interface StudyAreaPriority {
   topicName: string;
   subjectId?: string;
   subjectName?: string;
+  /** Origin contest — populated when generating multi-contest schedules */
+  contestId?: string;
+  contestName?: string;
   priority: "high" | "medium" | "low";
   reason: string;
   recommendedHours: number;

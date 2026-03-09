@@ -26,6 +26,14 @@ export interface StudyLog {
 
 export type ViewMode = "diario" | "semanal" | "mensal" | "completo";
 
+export interface ContestSummary {
+  readonly id: string;
+  readonly name: string;
+  readonly examDate: string | null;
+  readonly manualPriority: number;
+  readonly isPrimary: boolean;
+}
+
 export interface PlannedSession {
   readonly id: string;
   readonly lessonId: string;
@@ -34,6 +42,8 @@ export interface PlannedSession {
   readonly duration: number;
   readonly scheduledDate: string;
   readonly draft: boolean;
+  readonly contestId?: string;
+  readonly contestName?: string;
 }
 
 export interface SessionsByDate {
@@ -53,10 +63,13 @@ export interface SessionsByMonth {
 
 export interface PlannerData {
   readonly primaryContestId?: string;
+  readonly contests: ContestSummary[];
   readonly tracks: Array<{
     readonly id: string;
     readonly name: string;
     readonly lessons: Lesson[];
+    readonly contestId?: string;
+    readonly contestName?: string;
   }>;
   readonly availableLessons: Lesson[];
   readonly plannedSessions: PlannedSession[];

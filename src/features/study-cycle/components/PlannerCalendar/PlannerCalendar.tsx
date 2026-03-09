@@ -4,7 +4,29 @@ import { Calendar as CalendarIcon, Clock } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { usePlannerCalendar } from "./usePlannerCalendar";
 import type { PlannerCalendarProps } from "./types";
-import type { PlannedSession } from "@/features/study-cycle/types";
+import type { PlannedSession, ContestSummary } from "@/features/study-cycle/types";
+
+// ── Contest colour palette ─────────────────────────────────────────────────
+const CONTEST_COLORS = [
+  "#7b61ff", // purple
+  "#00c8ff", // cyan
+  "#ff6b6b", // red
+  "#ffd166", // yellow
+  "#06d6a0", // teal
+  "#ff9f1c", // orange
+  "#e040fb", // pink
+  "#69db7c", // green
+];
+
+function buildContestColorMap(
+  contests: ContestSummary[],
+): Map<string, string> {
+  const map = new Map<string, string>();
+  contests.forEach((c, idx) => {
+    map.set(c.id, CONTEST_COLORS[idx % CONTEST_COLORS.length]);
+  });
+  return map;
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function plural(n: number, singular: string, pluralForm: string): string {
@@ -36,27 +58,41 @@ function formatMonthLabel(monthKey: string): string {
   );
 }
 
-function SessionTitles({ sessions }: { sessions: PlannedSession[] }) {
+function SessionTitles({
+  sessions,
+  colorMap,
+}: {
+  sessions: PlannedSession[];
+  colorMap: Map<string, string>;
+}) {
   const visible = sessions.slice(0, 3);
   const extra = sessions.length - 3;
   return (
     <div className="mt-1 space-y-0.5">
-      {visible.map((s) => (
-        <div key={s.id} className="font-mono text-[11px] text-[#555] truncate">
-          · {s.lessonTitle}
-        </div>
-      ))}
+      {visible.map((s) => {
+        const color = s.contestId ? (colorMap.get(s.contestId) ?? "#555") : "#555";
+        return (
+          <div key={s.id} className="flex items-center gap-1.5">
+            <div
+              className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+              style={{ background: color }}
+            />
+            <div className="font-mono text-[11px] text-[#555] truncate">
+              {s.lessonTitle}
+            </div>
+          </div>
+        );
+      })}
       {extra > 0 && (
-        <div className="font-mono text-[11px] text-[#555]">
-          + {extra} mais
-        </div>
+        <div className="font-mono text-[11px] text-[#555]">+ {extra} mais</div>
       )}
     </div>
   );
 }
 
 // ── Component ──────────────────────────────────────────────────────────────
-export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
+export function PlannerCalendar({ sessions, contests = [] }: PlannerCalendarProps) {
+  const colorMap = buildContestColorMap(contests);
   const {
     viewMode,
     setViewMode,
@@ -158,20 +194,42 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
               </div>
               <div className="space-y-2">
                 {sessionsForDay.length > 0 ? (
-                  sessionsForDay.map((s: PlannedSession) => (
-                    <div
-                      key={s.id}
-                      className="font-mono p-2"
-                      style={{ border: "1px solid rgba(0,255,65,0.1)" }}
-                    >
-                      <div className="text-sm text-[#e0e0ff]">
-                        {s.lessonTitle}
+                  sessionsForDay.map((s: PlannedSession) => {
+                    const contestColor = s.contestId
+                      ? (colorMap.get(s.contestId) ?? "rgba(0,255,65,0.1)")
+                      : "rgba(0,255,65,0.1)";
+                    return (
+                      <div
+                        key={s.id}
+                        className="font-mono p-2"
+                        style={{
+                          border: "1px solid rgba(0,255,65,0.1)",
+                          borderLeft: `3px solid ${contestColor}`,
+                        }}
+                      >
+                        <div className="text-sm text-[#e0e0ff]">
+                          {s.lessonTitle}
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs text-[#7f7f9f]">
+                            {s.trackName} · {s.duration} min
+                          </span>
+                          {s.contestName && (
+                            <span
+                              className="font-mono text-[10px] px-1"
+                              style={{
+                                background: `${contestColor}22`,
+                                color: contestColor,
+                                border: `1px solid ${contestColor}44`,
+                              }}
+                            >
+                              {s.contestName}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className="text-xs text-[#7f7f9f] mt-0.5">
-                        {s.trackName} · {s.duration} min
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="text-xs font-mono text-[#555]">
                     Sem sessões neste dia
@@ -278,7 +336,7 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
                               )}
                             </span>
                           </div>
-                          <SessionTitles sessions={entry.sessions} />
+                          <SessionTitles sessions={entry.sessions} colorMap={colorMap} />
                         </div>
                       ))}
                     </div>
@@ -337,7 +395,7 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
                               )}
                             </span>
                           </div>
-                          <SessionTitles sessions={entry.sessions} />
+                          <SessionTitles sessions={entry.sessions} colorMap={colorMap} />
                         </div>
                       ))}
                     </div>
@@ -372,22 +430,42 @@ export function PlannerCalendar({ sessions }: PlannerCalendarProps) {
                         </span>
                       </div>
                       <div className="space-y-1.5">
-                        {entry.sessions.map((s) => (
-                          <div
-                            key={s.id}
-                            className="font-mono px-2 py-1.5"
-                            style={{
-                              border: "1px solid rgba(0,255,65,0.1)",
-                            }}
-                          >
-                            <div className="text-xs text-[#e0e0ff] truncate">
-                              {s.lessonTitle}
+                        {entry.sessions.map((s) => {
+                          const contestColor = s.contestId
+                            ? (colorMap.get(s.contestId) ?? "rgba(0,255,65,0.2)")
+                            : "rgba(0,255,65,0.2)";
+                          return (
+                            <div
+                              key={s.id}
+                              className="font-mono px-2 py-1.5"
+                              style={{
+                                border: "1px solid rgba(0,255,65,0.1)",
+                                borderLeft: `3px solid ${contestColor}`,
+                              }}
+                            >
+                              <div className="text-xs text-[#e0e0ff] truncate">
+                                {s.lessonTitle}
+                              </div>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-[11px] text-[#555]">
+                                  {s.trackName} · {s.duration} min
+                                </span>
+                                {s.contestName && (
+                                  <span
+                                    className="font-mono text-[10px] px-1"
+                                    style={{
+                                      background: `${contestColor}22`,
+                                      color: contestColor,
+                                      border: `1px solid ${contestColor}44`,
+                                    }}
+                                  >
+                                    {s.contestName}
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                            <div className="text-[11px] text-[#555]">
-                              {s.trackName} · {s.duration} min
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   );

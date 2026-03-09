@@ -17,7 +17,6 @@ export default async function PlannerPage() {
   return (
     <PlannerContent
       data={plannerData}
-      contestId={plannerData.primaryContestId}
     />
   );
 }

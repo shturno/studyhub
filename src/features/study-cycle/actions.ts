@@ -10,6 +10,7 @@ export async function savePlannedSession(data: {
   lessonId: string;
   date: string;
   duration: number;
+  contestId?: string;
 }): Promise<ActionResult<PlannedSession>> {
   try {
     const session = await auth();
@@ -21,6 +22,12 @@ export async function savePlannedSession(data: {
         topicId: data.lessonId,
         scheduledDate: new Date(data.date),
         durationMinutes: data.duration,
+        ...(data.contestId ? { contestId: data.contestId } : {}),
+      },
+      include: {
+        topic: {
+          include: { subject: { include: { contest: true } } },
+        },
       },
     });
 
@@ -28,11 +35,13 @@ export async function savePlannedSession(data: {
     return ok({
       id: newSession.id,
       lessonId: newSession.topicId,
-      lessonTitle: "",
-      trackName: "",
+      lessonTitle: newSession.topic.name,
+      trackName: newSession.topic.subject.name,
       duration: newSession.durationMinutes,
-      scheduledDate: newSession.scheduledDate.toISOString(),
+      scheduledDate: newSession.scheduledDate.toISOString().split("T")[0],
       draft: false,
+      contestId: newSession.contestId ?? undefined,
+      contestName: newSession.topic.subject.contest.name,
     } satisfies PlannedSession);
   } catch (error) {
     console.error("savePlannedSession error:", error);

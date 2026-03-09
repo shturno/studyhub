@@ -8,7 +8,7 @@ import { type StudyAreaPriority } from "@/features/editorials/types";
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function generateScheduleChunk(
-  contestName: string,
+  contestsDescription: string,
   priorities: StudyAreaPriority[],
   startDate: Date,
   endDate: Date,
@@ -23,8 +23,10 @@ export async function generateScheduleChunk(
 
     const prioritiesText = priorities
       .map(
-        (p) =>
-          `- ${p.topicName}: ${p.priority} priority (${p.recommendedHours}h/semana) - ${p.reason}`,
+        (p) => {
+          const contestTag = p.contestName ? ` [${p.contestName}]` : "";
+          return `- ${p.topicName}${contestTag} (${p.subjectName ?? ""}): ${p.priority} priority (${p.recommendedHours}h/semana) - ${p.reason}`;
+        },
       )
       .join("\n");
 
@@ -58,7 +60,7 @@ export async function generateScheduleChunk(
       .join("\n");
 
     const prompt = buildScheduleChunkPrompt(
-      contestName,
+      contestsDescription,
       prioritiesText,
       dailyBreakdown,
       daysUntilExamEnd,
@@ -96,6 +98,16 @@ export async function generateScheduleWithGemini(
     const CHUNK_DAYS = 28;
     const chunkCount = Math.ceil(totalDays / CHUNK_DAYS);
 
+    // Build human-readable contest description for the Gemini prompt
+    const contestsDescription = request.contestsInfo
+      .map((c) => {
+        const examStr = c.examDate
+          ? `(prova: ${c.examDate.toLocaleDateString("pt-BR")})`
+          : "(sem data definida)";
+        return `${c.name} ${examStr}`;
+      })
+      .join(", ");
+
     const chunkPromises = [];
     for (let i = 0; i < chunkCount; i++) {
       const chunkStartDate = new Date(
@@ -111,7 +123,7 @@ export async function generateScheduleWithGemini(
 
       chunkPromises.push(
         generateScheduleChunk(
-          request.contestName,
+          contestsDescription,
           request.priorities,
           chunkStartDate,
           chunkEndDate,
@@ -198,7 +210,7 @@ function mergeScheduleChunks(
 }
 
 function buildScheduleChunkPrompt(
-  contestName: string,
+  contestsDescription: string,
   prioritiesText: string,
   dailyBreakdown: string,
   daysUntilExamEnd: number,
@@ -207,18 +219,22 @@ function buildScheduleChunkPrompt(
   chunkNumber: number,
 ): string {
   return `
-You are an expert study planner helping a Brazilian civil service exam candidate prepare for "${contestName}".
+You are an expert study planner helping a Brazilian civil service exam candidate prepare for: ${contestsDescription}.
 
 THIS IS CHUNK ${chunkNumber} of a multi-part study schedule.
 Period: ${startDate.toLocaleDateString("pt-BR")} to ${endDate.toLocaleDateString("pt-BR")} (approximately 4 weeks / 28 days)
 
-## Study Priorities (by frequency & importance):
+## Study Priorities (weighted by exam proximity, subject weight and current progress):
 ${prioritiesText}
+
+## CRITICAL: Topic Names Rule
+You MUST use the EXACT topic names as listed above (including contest tag like [Concurso X]).
+Do NOT paraphrase, abbreviate or invent topic names.
 
 ## Study Parameters for this chunk:
 Daily Study Availability:
 ${dailyBreakdown}
-- Time until exam: ${daysUntilExamEnd} days remaining
+- Time until nearest exam: ${daysUntilExamEnd} days remaining
 - Days with 0h are rest days — DO NOT schedule sessions on these days
 
 ## Critical Rules:
@@ -226,11 +242,12 @@ ${dailyBreakdown}
 2. **DAILY SESSIONS**: Create ONE entry per day with specific times and durations
 3. **SPACED REPETITION**: High-priority topics should repeat 2-3 times within this chunk
 4. **PROGRESSION**: Build on previous weeks' topics (assume prior chunks covered foundations if chunk > 1)
+5. **MULTI-CONTEST BALANCE**: Distribute topics across contests proportionally to their assigned hours
 
 ## Task:
 Create a complete day-by-day study schedule for THIS PERIOD ONLY that:
 1. Covers every calendar day from startDate to endDate (approximately 28 days)
-2. Allocates exact topics for each study session
+2. Allocates exact topics for each study session using the exact names from the priorities list
 3. Incorporates review sessions (every 3-4 days for high-priority topics)
 4. Provides clear justification for each day's focus
 5. Adjusts intensity based on proximity to exam
@@ -243,10 +260,10 @@ Provide the schedule in this JSON format (for this 4-week chunk only):
     {
       "day": "2026-03-02 (Monday)",
       "timeSlot": "08:00-10:00",
-      "topics": ["Specific Topic Name"],
+      "topics": ["Exact Topic Name [Contest Name]"],
       "duration": 120,
       "focus": "Initial learning / Deep study / Practice / Review / Mock exam",
-      "reason": "Foundation phase: high-priority topic appearing in 3 editorials"
+      "reason": "Foundation phase: high-priority topic"
     }
   ],
   "weeklySummary": [
@@ -282,7 +299,7 @@ Provide the schedule in this JSON format (for this 4-week chunk only):
 - Return ONLY valid JSON, no additional text
 - Generate schedule ONLY for the provided date range (this 4-week chunk)
 - Generate dailySessions for EVERY DAY in the period (approximately 28 entries)
-- Include specific topic names (not generic "Topic 1")
+- Use EXACT topic names from the priorities list
 - Each dailySessions entry is ONE DAY of study with explicit time slots
 - weeklySummary: group daily sessions into weeks (4 weeks in this chunk)
 - monthlySummary: leave empty [] unless chunk crosses month boundary

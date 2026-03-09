@@ -1,6 +1,5 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { subMonths } from "date-fns";
 import type { PlannerData, Lesson, Track } from "@/features/study-cycle/types";
 
 export async function getPlannerData(): Promise<PlannerData> {
@@ -17,15 +16,17 @@ export async function getPlannerData(): Promise<PlannerData> {
         },
       },
     },
+    orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
   });
 
   const [plannedSessionsDb, studySessions] = await Promise.all([
     prisma.plannedSession.findMany({
-      where: {
-        userId,
-        scheduledDate: { gte: subMonths(new Date(), 1) },
+      where: { userId },
+      include: {
+        topic: { include: { subject: true } },
+        contest: { select: { name: true } },
       },
-      include: { topic: { include: { subject: true } } },
+      orderBy: { scheduledDate: "asc" },
     }),
     prisma.studySession.findMany({
       where: { userId },
@@ -61,7 +62,11 @@ export async function getPlannerData(): Promise<PlannerData> {
 
       track.lessons = trackLessons;
 
-      tracks.push(track);
+      tracks.push({
+        ...track,
+        contestId: contest.id,
+        contestName: contest.name,
+      });
       availableLessons.push(...trackLessons);
     }
   }
@@ -74,12 +79,21 @@ export async function getPlannerData(): Promise<PlannerData> {
     duration: session.durationMinutes,
     scheduledDate: session.scheduledDate.toISOString().split("T")[0],
     draft: false,
+    contestId: session.contestId ?? undefined,
+    contestName: session.contest?.name ?? undefined,
   }));
 
   const primaryContest = contests.find((c) => c.isPrimary) ?? contests[0];
 
   return {
     primaryContestId: primaryContest?.id,
+    contests: contests.map((c) => ({
+      id: c.id,
+      name: c.name,
+      examDate: c.examDate ? c.examDate.toISOString() : null,
+      manualPriority: c.manualPriority,
+      isPrimary: c.isPrimary,
+    })),
     tracks,
     availableLessons,
     plannedSessions,

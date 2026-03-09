@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { generateScheduleWithGemini } from "@/features/ai/services/scheduleGenerationService";
+import { getMultiContestScheduleData } from "@/features/contests/actions";
 import {
-  generateStudyPriorities,
-  calculateCoveragePercentage,
-} from "@/features/editorials/services/contentCrossingService";
+  computeMultiContestPriorities,
+} from "@/features/study-cycle/services/multiContestPriorityService";
+import type { DayKey } from "@/features/ai/types";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,72 +15,121 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { contestId, examDate, weeklyHours = 40, focusAreas } = body;
+    const {
+      contestIds,
+      // Legacy single-contest support (fallback)
+      contestId,
+      examDate,
+      weeklyHours = 40,
+      focusAreas,
+      dailyHours,
+    } = body as {
+      contestIds?: string[];
+      contestId?: string;
+      examDate?: string;
+      weeklyHours?: number;
+      focusAreas?: string[];
+      dailyHours?: Partial<Record<DayKey, number>>;
+    };
 
-    if (!contestId || !examDate) {
+    const resolvedContestIds =
+      contestIds && contestIds.length > 0
+        ? contestIds
+        : contestId
+          ? [contestId]
+          : null;
+
+    if (!resolvedContestIds || resolvedContestIds.length === 0) {
       return NextResponse.json(
-        { error: "Missing required fields: contestId, examDate" },
+        { error: "Missing required field: contestIds" },
         { status: 400 },
       );
     }
 
-    const priorities = await generateStudyPriorities(
-      contestId,
-      session.user.id,
-      weeklyHours,
-    );
+    // Fetch enriched contest data (subjects, topics, studied minutes)
+    const contestsData = await getMultiContestScheduleData(resolvedContestIds);
+    if (contestsData.length === 0) {
+      return NextResponse.json(
+        { error: "No contests found for the provided IDs." },
+        { status: 400 },
+      );
+    }
 
-    const coverage = await calculateCoveragePercentage(
-      contestId,
-      session.user.id,
-    );
+    // Determine exam date: use provided or pick earliest from contests
+    let resolvedExamDate: Date;
+    if (examDate) {
+      resolvedExamDate = new Date(examDate);
+    } else {
+      const dates = contestsData
+        .map((c) => c.examDate)
+        .filter((d): d is Date => d !== null)
+        .sort((a, b) => a.getTime() - b.getTime());
+
+      if (dates.length === 0) {
+        // Default to 6 months from now if no exam date is set
+        resolvedExamDate = new Date();
+        resolvedExamDate.setMonth(resolvedExamDate.getMonth() + 6);
+      } else {
+        resolvedExamDate = dates[0];
+      }
+    }
+
+    // Compute priorities across all contests
+    const priorities = computeMultiContestPriorities(contestsData, weeklyHours);
 
     if (priorities.length === 0) {
       return NextResponse.json(
         {
           error:
-            "No content mappings found. Add editorial items and map content first.",
+            "No topics found. Add subjects and topics to your contests first.",
         },
         { status: 400 },
       );
     }
 
-    // Calculate daily hours from weekly total (distribute evenly Mon-Fri)
-    const dailyHours = weeklyHours / 5;
-    const dailyAvailableHours = {
-      monday: dailyHours,
-      tuesday: dailyHours,
-      wednesday: dailyHours,
-      thursday: dailyHours,
-      friday: dailyHours,
-      saturday: 0,
-      sunday: 0,
+    // Build daily hours map
+    const defaultDailyHours = weeklyHours / 5;
+    const dailyAvailableHours: Record<DayKey, number> = {
+      monday: dailyHours?.monday ?? defaultDailyHours,
+      tuesday: dailyHours?.tuesday ?? defaultDailyHours,
+      wednesday: dailyHours?.wednesday ?? defaultDailyHours,
+      thursday: dailyHours?.thursday ?? defaultDailyHours,
+      friday: dailyHours?.friday ?? defaultDailyHours,
+      saturday: dailyHours?.saturday ?? 0,
+      sunday: dailyHours?.sunday ?? 0,
     };
 
     const schedule = await generateScheduleWithGemini({
-      contestName: "Civil Service Exam",
+      contestsInfo: contestsData.map((c) => ({
+        id: c.id,
+        name: c.name,
+        examDate: c.examDate,
+      })),
       priorities,
       weeklyAvailableHours: weeklyHours,
       dailyAvailableHours,
-      examDate: new Date(examDate),
+      examDate: resolvedExamDate,
       focusAreas,
     });
 
     return NextResponse.json({
       success: true,
       schedule,
-      coverage,
       priorities,
+      contests: contestsData.map((c) => ({
+        id: c.id,
+        name: c.name,
+        examDate: c.examDate?.toISOString() ?? null,
+      })),
     });
   } catch (error) {
     console.error("[Generate Schedule] Error:", error);
-    const errorDetails = error instanceof Error ? error.message : "Unknown error";
+    const errorDetails =
+      error instanceof Error ? error.message : "Unknown error";
     console.error(`[Generate Schedule] Details: ${errorDetails}`);
 
     return NextResponse.json(
-      {
-        error: "Failed to generate schedule",
-      },
+      { error: "Failed to generate schedule" },
       { status: 500 },
     );
   }

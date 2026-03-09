@@ -1,14 +1,25 @@
-import type { GeneratedSchedule } from "@/features/ai/types";
+import type { GeneratedSchedule, DayKey } from "@/features/ai/types";
 import type { StudyAreaPriority } from "@/features/editorials/types";
+import type { ContestSummary } from "@/features/study-cycle/types";
+
+export type { ContestSummary };
 
 export interface SmartScheduleGeneratorProps {
-  readonly contestId: string;
+  readonly contests: ContestSummary[];
   readonly isOpen: boolean;
   readonly onOpenChange: (open: boolean) => void;
 }
 
+export type DayHours = Record<DayKey, number>;
+
+export interface ScheduleContest {
+  readonly id: string;
+  readonly name: string;
+  readonly examDate: string | null;
+}
+
 export interface ScheduleData {
   readonly schedule: GeneratedSchedule;
-  readonly coverage: { readonly coverage: number };
   readonly priorities: StudyAreaPriority[];
+  readonly contests: ScheduleContest[];
 }

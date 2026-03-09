@@ -15,7 +15,8 @@ import { Calendar, Clock, BookOpen, Target, Brain } from "lucide-react";
 import { usePlannerContent } from "./usePlannerContent";
 import type { PlannerContentProps } from "./types";
 
-export function PlannerContent({ data, contestId }: PlannerContentProps) {
+export function PlannerContent({ data }: PlannerContentProps) {
+  const contests = data.contests ?? [];
   const {
     availableLessons,
     plannedSessions,
@@ -46,7 +47,7 @@ export function PlannerContent({ data, contestId }: PlannerContentProps) {
           </div>
         </div>
         <div className="flex gap-3">
-          {contestId && (
+          {contests.length > 0 && (
             <Button
               variant="secondary"
               onClick={() => setIsScheduleGeneratorOpen(true)}
@@ -217,11 +218,11 @@ export function PlannerContent({ data, contestId }: PlannerContentProps) {
         </DragOverlay>
       </DndContext>
 
-      <PlannerCalendar sessions={plannedSessions} />
+      <PlannerCalendar sessions={plannedSessions} contests={contests} />
 
-      {contestId && (
+      {contests.length > 0 && (
         <SmartScheduleGenerator
-          contestId={contestId}
+          contests={contests}
           isOpen={isScheduleGeneratorOpen}
           onOpenChange={setIsScheduleGeneratorOpen}
         />

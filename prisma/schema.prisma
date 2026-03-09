@@ -84,17 +84,19 @@ model Contest {
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  name        String
-  slug        String   @unique
-  institution String
-  role        String
-  examDate    DateTime?
-  isPrimary   Boolean  @default(false)
+  name           String
+  slug           String   @unique
+  institution    String
+  role           String
+  examDate       DateTime?
+  isPrimary      Boolean  @default(false)
+  manualPriority Int      @default(0)
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  subjects       Subject[]
-  editorialItems EditorialItem[]
+  subjects        Subject[]
+  editorialItems  EditorialItem[]
+  plannedSessions PlannedSession[]
   
   @@index([userId])
   @@map("contests")
@@ -210,6 +212,9 @@ model PlannedSession {
   
   topicId         String
   topic           Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  contestId       String?
+  contest         Contest? @relation(fields: [contestId], references: [id], onDelete: SetNull)
   
   scheduledDate   DateTime
   durationMinutes Int
@@ -219,6 +224,7 @@ model PlannedSession {
   
   @@index([userId])
   @@index([scheduledDate])
+  @@index([contestId])
   @@map("planned_sessions")
 }
 

@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       : new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000);
 
     const schedule = await generateScheduleWithGemini({
-      contestName: contest.name,
+      contestsInfo: [{ id: contest.id, name: contest.name, examDate: contest.examDate }],
       priorities,
       weeklyAvailableHours: weeklyTotal,
       dailyAvailableHours: dailyAvailableHours as Record<
