@@ -103,7 +103,6 @@ export function CreateContestDialog() {
                     <FormControl>
                       <Input
                         type="text"
-                        readOnly
                         placeholder="dd/mm/aaaa"
                         className="w-full font-mono text-base cursor-pointer"
                         value={
