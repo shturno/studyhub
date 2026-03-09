@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { format } from "date-fns";
 import { CalendarIcon, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ import { useCreateContestDialog } from "./useCreateContestDialog";
 
 export function CreateContestDialog() {
   const { open, setOpen, form, onSubmit } = useCreateContestDialog();
+  const [examDateText, setExamDateText] = useState("");
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -104,10 +106,18 @@ export function CreateContestDialog() {
                       <Input
                         type="text"
                         placeholder="dd/mm/aaaa"
-                        className="w-full font-mono text-base cursor-pointer"
-                        value={
-                          field.value ? format(field.value, "dd/MM/yyyy") : ""
-                        }
+                        className="w-full font-mono text-base"
+                        value={examDateText}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setExamDateText(val);
+                          if (!val) { field.onChange(undefined); return; }
+                          const match = val.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+                          if (match) {
+                            const d = new Date(+match[3], +match[2] - 1, +match[1]);
+                            if (!isNaN(d.getTime())) field.onChange(d);
+                          }
+                        }}
                       />
                     </FormControl>
                     <Popover>
@@ -126,7 +136,10 @@ export function CreateContestDialog() {
                         <Calendar
                           mode="single"
                           selected={field.value}
-                          onSelect={field.onChange}
+                          onSelect={(date) => {
+                            field.onChange(date);
+                            setExamDateText(date ? format(date, "dd/MM/yyyy") : "");
+                          }}
                           className="pointer-events-auto"
                           disabled={(date) =>
                             date < new Date(new Date().setHours(0, 0, 0, 0))
