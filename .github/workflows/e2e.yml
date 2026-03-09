@@ -8,7 +8,9 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-
+    env:
+      PRISMA_DATABASE_URL: ${{ vars.E2E_DATABASE_URL }}
+      DATABASE_URL: ${{ vars.E2E_DATABASE_URL }}
     services:
       postgres:
         image: postgres:16-alpine
@@ -57,13 +59,10 @@ jobs:
         run: pnpm exec playwright install-deps chromium
 
       - name: Reset and migrate database
-        env:
-          DATABASE_URL: ${{ vars.E2E_DATABASE_URL }}
         run: pnpm prisma migrate reset --force
 
       - name: Run E2E tests
         env:
-          DATABASE_URL: ${{ vars.E2E_DATABASE_URL }}
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           NEXTAUTH_URL: http://localhost:3000
         run: pnpm test:e2e
