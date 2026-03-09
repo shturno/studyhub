@@ -36,7 +36,7 @@ export async function getUserSubjects(
         })
       : await prisma.contest.findFirst({
           where: { userId },
-          orderBy: [{ isPrimary: "desc" }, { createdAt: "desc" }],
+          orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
           include: subjectInclude,
         });
 

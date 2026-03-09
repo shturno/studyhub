@@ -11,7 +11,7 @@ import { useAchievementModal } from "@/lib/achievement-modal-context";
 
 export function useCreateContestDialog() {
   const t = useTranslations("CreateContestDialog");
-  const [open, setOpen] = useState(false);
+  const [open, setOpenRaw] = useState(false);
   const { showAchievements } = useAchievementModal();
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -22,6 +22,11 @@ export function useCreateContestDialog() {
       isPrimary: false,
     },
   });
+
+  function setOpen(value: boolean) {
+    if (!value) form.reset();
+    setOpenRaw(value);
+  }
 
   async function onSubmit(values: FormData) {
     try {
@@ -34,7 +39,6 @@ export function useCreateContestDialog() {
           showAchievements(res.newAchievements);
         }
         setOpen(false);
-        form.reset();
       }
     } catch {
       toast.error(t("unexpectedError"));
