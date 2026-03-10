@@ -9,8 +9,8 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     env:
-      PRISMA_DATABASE_URL: ${{ vars.E2E_DATABASE_URL || '${{ vars.E2E_DATABASE_URL }}' }}
-      DATABASE_URL: ${{ vars.E2E_DATABASE_URL || '${{ vars.E2E_DATABASE_URL }}' }}
+      PRISMA_DATABASE_URL: ${{ vars.E2E_DATABASE_URL }}
+      DATABASE_URL: ${{ vars.E2E_DATABASE_URL }}
     services:
       postgres:
         image: postgres:16-alpine
