@@ -96,7 +96,8 @@ export async function generateScheduleWithGemini(
       (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
     );
     const CHUNK_DAYS = 28;
-    const chunkCount = Math.ceil(totalDays / CHUNK_DAYS);
+    // Ensure at least 1 chunk even if exam date is very close or in the past
+    const chunkCount = Math.max(1, Math.ceil(totalDays / CHUNK_DAYS));
 
     // Build human-readable contest description for the Gemini prompt
     const contestsDescription = request.contestsInfo
