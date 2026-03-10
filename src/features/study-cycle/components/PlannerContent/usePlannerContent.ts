@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import { useTranslations } from "next-intl";
 import { useSessionModal } from "@/features/timer/context/SessionModalContext";
@@ -19,6 +19,11 @@ export function usePlannerContent(data: {
   const t = useTranslations("Planner");
   const [availableLessons] = useState(data.availableLessons);
   const [plannedSessions, setPlannedSessions] = useState(data.plannedSessions);
+
+  // Sync when server data changes (e.g. after router.refresh() from SmartScheduleGenerator)
+  useEffect(() => {
+    setPlannedSessions(data.plannedSessions);
+  }, [data.plannedSessions]);
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
   const [isScheduleGeneratorOpen, setIsScheduleGeneratorOpen] = useState(false);
   const { openModal } = useSessionModal();
