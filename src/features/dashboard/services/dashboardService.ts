@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { startOfWeek, endOfWeek, format, subWeeks } from "date-fns";
-import { calculateLevel } from "@/features/gamification/utils/xpCalculator";
+import { calculateLevel, getLevelProgress, getXPForNextLevel } from "@/features/gamification/utils/xpCalculator";
 import type { DashboardData, WeeklyData, TrackData } from "@/features/dashboard/types";
 
 export async function getDashboardData(
@@ -195,5 +195,7 @@ export async function getDashboardData(
     priorities,
     heatmap,
     streak: user.streakDays,
+    xpProgress: getLevelProgress(user.xp, effectiveLevel),
+    xpToNextLevel: getXPForNextLevel(user.xp, effectiveLevel),
   };
 }

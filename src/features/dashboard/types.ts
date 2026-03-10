@@ -41,6 +41,8 @@ export interface DashboardData {
   }>;
   heatmap: HeatmapDay[];
   streak: number;
+  xpProgress: number;
+  xpToNextLevel: number;
 }
 
 export interface WeeklyData {

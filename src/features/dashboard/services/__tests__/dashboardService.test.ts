@@ -36,6 +36,8 @@ vi.mock("next-intl/server", () => ({
 
 vi.mock("@/features/gamification/utils/xpCalculator", () => ({
   calculateLevel: mockCalculateLevel,
+  getLevelProgress: vi.fn().mockReturnValue(42),
+  getXPForNextLevel: vi.fn().mockReturnValue(500),
 }));
 
 vi.mock("@/features/ai/services/aiAdvisoryService", () => ({

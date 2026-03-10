@@ -10,7 +10,7 @@ import { StatsChartsLazy } from "../StatsCharts";
 import { getStreakTier } from "@/features/gamification/utils/streakCalculator";
 
 export function DashboardView({ data, contests = [], aiSlot }: DashboardViewProps) {
-  const { user, nextTopic, recentSessions, coveragePercent, heatmap, statsData, streak } = data;
+  const { user, nextTopic, recentSessions, coveragePercent, heatmap, statsData, streak, xpProgress, xpToNextLevel } = data;
 
   const streakTier = getStreakTier(streak ?? 0);
   const streakColor =
@@ -120,6 +120,42 @@ export function DashboardView({ data, contests = [], aiSlot }: DashboardViewProp
           >
             {user.xp.toString().padStart(6, "0")} XP
           </div>
+        </div>
+      </div>
+
+      {/* XP Progress bar */}
+      <div
+        className="-mt-4 px-3 pb-3"
+        style={{ border: "2px solid #00ff41", borderTop: "none", background: "#04000a" }}
+      >
+        <div className="flex items-center justify-between mb-1">
+          <span className="font-pixel text-[6px] text-[#7f7f9f]">
+            LVL {user.level} → LVL {user.level + 1}
+          </span>
+          <span className="font-pixel text-[6px]" style={{ color: xpProgress >= 90 ? "#ffbe0b" : "#7f7f9f" }}>
+            {xpProgress}% · {xpToNextLevel} XP
+          </span>
+        </div>
+        <div
+          className="w-full h-3 relative overflow-hidden"
+          style={{ background: "#1a1a00", border: "1px solid rgba(255,190,11,0.2)" }}
+        >
+          <div
+            className="h-full transition-all duration-700"
+            style={{
+              width: `${xpProgress}%`,
+              background: "linear-gradient(90deg, #ff9f00, #ffbe0b)",
+              boxShadow: xpProgress >= 90 ? "0 0 8px rgba(255,190,11,0.8)" : undefined,
+            }}
+          />
+          {/* Pixel tick marks every 25% */}
+          {[25, 50, 75].map((pct) => (
+            <div
+              key={pct}
+              className="absolute top-0 h-full w-px"
+              style={{ left: `${pct}%`, background: "rgba(0,0,0,0.4)" }}
+            />
+          ))}
         </div>
       </div>
 
