@@ -5,6 +5,7 @@ const {
   mockContestFindFirst,
   mockContestFindUnique,
   mockSessionFindMany,
+  mockPlannedSessionFindFirst,
   mockGetTranslations,
   mockCalculateLevel,
   mockGetStudyRecommendations,
@@ -13,6 +14,7 @@ const {
   mockContestFindFirst: vi.fn(),
   mockContestFindUnique: vi.fn(),
   mockSessionFindMany: vi.fn(),
+  mockPlannedSessionFindFirst: vi.fn(),
   mockGetTranslations: vi.fn(),
   mockCalculateLevel: vi.fn(),
   mockGetStudyRecommendations: vi.fn(),
@@ -26,6 +28,7 @@ vi.mock("@/lib/prisma", () => ({
       findUnique: mockContestFindUnique,
     },
     studySession: { findMany: mockSessionFindMany, aggregate: vi.fn().mockResolvedValue({ _sum: { minutes: 0, xpEarned: 0 }, _count: { id: 0 } }) },
+    plannedSession: { findFirst: mockPlannedSessionFindFirst },
     $queryRaw: vi.fn().mockResolvedValue([]),
   },
 }));
@@ -72,6 +75,7 @@ beforeEach(() => {
   mockContestFindFirst.mockResolvedValue(emptyContest);
   mockContestFindUnique.mockResolvedValue(emptyContest);
   mockSessionFindMany.mockResolvedValue([]);
+  mockPlannedSessionFindFirst.mockResolvedValue(null);
 });
 
 describe("getDashboardData", () => {
