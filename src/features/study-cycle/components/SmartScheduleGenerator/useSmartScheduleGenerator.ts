@@ -135,10 +135,20 @@ export function useSmartScheduleGenerator(
       const priorityByTopicId = new Map(
         generatedSchedule.priorities.map((p) => [p.topicId, p]),
       );
-      // Also index by exact topic name (fallback)
-      const priorityByName = new Map(
-        generatedSchedule.priorities.map((p) => [p.topicName.toLowerCase(), p]),
-      );
+
+      // Index by every name variant the Gemini might use:
+      //   1. plain name:              "direito constitucional"
+      //   2. with contest tag:        "direito constitucional [concurso federal]"
+      // This prevents misses when Gemini returns the fully-tagged form.
+      const priorityByName = new Map<string, (typeof generatedSchedule.priorities)[0]>();
+      for (const p of generatedSchedule.priorities) {
+        const plain = p.topicName.toLowerCase().trim();
+        priorityByName.set(plain, p);
+        if (p.contestName) {
+          const tagged = `${plain} [${p.contestName.toLowerCase().trim()}]`;
+          priorityByName.set(tagged, p);
+        }
+      }
 
       const savePromises = generatedSchedule.schedule.dailySessions.flatMap(
         (session) => {
@@ -151,14 +161,16 @@ export function useSmartScheduleGenerator(
 
           return topics.map(async (topicName) => {
             // Try to find the matching priority by name
+            const nameKey = topicName?.toLowerCase().trim() ?? "";
+            const nameKeyStripped = nameKey.replace(/\s*[\[(].*?[\])]?\s*$/, "").trim();
             const priority =
-              priorityByName.get(topicName?.toLowerCase() ?? "") ??
-              // Strip the [Contest] tag if present and retry
-              priorityByName.get(
-                topicName?.replace(/\s*\[.*?\]\s*$/, "").toLowerCase() ?? "",
-              );
+              priorityByName.get(nameKey) ??
+              priorityByName.get(nameKeyStripped);
 
-            if (!priority) return { success: false };
+            if (!priority) {
+              console.warn("[SmartSchedule] No priority match for topic:", topicName);
+              return { success: false as const };
+            }
 
             // Prefer topicId from priority map to guarantee correct DB record
             const resolvedPriority = priorityByTopicId.get(priority.topicId) ?? priority;
