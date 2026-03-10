@@ -106,16 +106,24 @@ export function computeMultiContestPriorities(
 ): MultiContestTopicPriority[] {
   if (contests.length === 0) return [];
 
+  // Exclude contests whose exam date has already passed — no point studying for them.
+  const now = new Date();
+  const activeContests = contests.filter(
+    (c) => !c.examDate || c.examDate.getTime() > now.getTime(),
+  );
+  // Fall back to all contests if every single one is in the past (edge case)
+  const effectiveContests = activeContests.length > 0 ? activeContests : contests;
+
   const totalWeeklyMinutes = totalWeeklyHours * 60;
 
   // 1 — Contest-level shares
-  const contestUrgencies = contests.map((c) => computeContestUrgency(c));
+  const contestUrgencies = effectiveContests.map((c) => computeContestUrgency(c));
   const totalUrgency = contestUrgencies.reduce((s, u) => s + u, 0) || 1;
 
   const rawEntries: MultiContestTopicPriority[] = [];
 
-  for (let ci = 0; ci < contests.length; ci++) {
-    const contest = contests[ci];
+  for (let ci = 0; ci < effectiveContests.length; ci++) {
+    const contest = effectiveContests[ci];
     const contestMinutes =
       totalWeeklyMinutes * (contestUrgencies[ci] / totalUrgency);
 

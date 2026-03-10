@@ -8,8 +8,8 @@ import { type StudyAreaPriority } from "@/features/editorials/types";
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function generateScheduleChunk(
-  contestsDescription: string,
-  priorities: StudyAreaPriority[],
+  contestsInfo: import("@/features/ai/types").ContestScheduleInfo[],
+  allPriorities: StudyAreaPriority[],
   startDate: Date,
   endDate: Date,
   dailyAvailableHours: Record<
@@ -21,14 +21,52 @@ export async function generateScheduleChunk(
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
+    // Only include topics from contests that haven't had their exam yet
+    // at the start of this chunk. This ensures post-exam contests are excluded.
+    const activeContestIds = new Set(
+      contestsInfo
+        .filter((c) => !c.examDate || c.examDate.getTime() > startDate.getTime())
+        .map((c) => c.id),
+    );
+    const priorities = allPriorities.filter(
+      (p) => !p.contestId || activeContestIds.has(p.contestId),
+    );
+
+    // Contests that expire mid-chunk need a cutoff instruction for the prompt
+    const midChunkCutoffs = contestsInfo.filter(
+      (c) =>
+        c.examDate &&
+        c.examDate.getTime() > startDate.getTime() &&
+        c.examDate.getTime() < endDate.getTime(),
+    );
+
     const prioritiesText = priorities
-      .map(
-        (p) => {
-          const contestTag = p.contestName ? ` [${p.contestName}]` : "";
-          return `- ${p.topicName}${contestTag} (${p.subjectName ?? ""}): ${p.priority} priority (${p.recommendedHours}h/semana) - ${p.reason}`;
-        },
-      )
+      .map((p) => {
+        const contestTag = p.contestName ? ` [${p.contestName}]` : "";
+        return `- ${p.topicName}${contestTag} (${p.subjectName ?? ""}): ${p.priority} priority (${p.recommendedHours}h/semana) - ${p.reason}`;
+      })
       .join("\n");
+
+    const cutoffText =
+      midChunkCutoffs.length > 0
+        ? midChunkCutoffs
+            .map(
+              (c) =>
+                `- ${c.name}: exam on ${c.examDate!.toLocaleDateString("pt-BR")} — DO NOT schedule [${c.name}] topics after this date`,
+            )
+            .join("\n")
+        : null;
+
+    // Build human-readable description of contests active in this chunk
+    const contestsDescription = contestsInfo
+      .filter((c) => activeContestIds.has(c.id))
+      .map((c) => {
+        const examStr = c.examDate
+          ? `(prova: ${c.examDate.toLocaleDateString("pt-BR")})`
+          : "(sem data definida)";
+        return `${c.name} ${examStr}`;
+      })
+      .join(", ");
 
     const daysUntilExamEnd = Math.ceil(
       (endDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24),
@@ -67,6 +105,7 @@ export async function generateScheduleChunk(
       startDate,
       endDate,
       chunkNumber,
+      cutoffText,
     );
 
     const result = await model.generateContent(prompt);
@@ -99,16 +138,6 @@ export async function generateScheduleWithGemini(
     // Ensure at least 1 chunk even if exam date is very close or in the past
     const chunkCount = Math.max(1, Math.ceil(totalDays / CHUNK_DAYS));
 
-    // Build human-readable contest description for the Gemini prompt
-    const contestsDescription = request.contestsInfo
-      .map((c) => {
-        const examStr = c.examDate
-          ? `(prova: ${c.examDate.toLocaleDateString("pt-BR")})`
-          : "(sem data definida)";
-        return `${c.name} ${examStr}`;
-      })
-      .join(", ");
-
     const chunkPromises = [];
     for (let i = 0; i < chunkCount; i++) {
       const chunkStartDate = new Date(
@@ -124,7 +153,7 @@ export async function generateScheduleWithGemini(
 
       chunkPromises.push(
         generateScheduleChunk(
-          contestsDescription,
+          request.contestsInfo,
           request.priorities,
           chunkStartDate,
           chunkEndDate,
@@ -218,9 +247,14 @@ function buildScheduleChunkPrompt(
   startDate: Date,
   endDate: Date,
   chunkNumber: number,
+  cutoffText: string | null,
 ): string {
+  const cutoffSection = cutoffText
+    ? `\n## Contest Cutoff Dates (CRITICAL):\n${cutoffText}\n`
+    : "";
+
   return `
-You are an expert study planner helping a Brazilian civil service exam candidate prepare for: ${contestsDescription}.
+You are an expert study planner helping a Brazilian civil service exam candidate prepare for: ${contestsDescription}.${cutoffSection}
 
 THIS IS CHUNK ${chunkNumber} of a multi-part study schedule.
 Period: ${startDate.toLocaleDateString("pt-BR")} to ${endDate.toLocaleDateString("pt-BR")} (approximately 4 weeks / 28 days)
