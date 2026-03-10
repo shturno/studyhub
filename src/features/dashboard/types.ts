@@ -43,6 +43,10 @@ export interface DashboardData {
   streak: number;
   xpProgress: number;
   xpToNextLevel: number;
+  dailyGoal: {
+    targetMinutes: number;
+    studiedTodayMinutes: number;
+  };
 }
 
 export interface WeeklyData {

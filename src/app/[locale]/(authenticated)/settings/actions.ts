@@ -9,6 +9,7 @@ interface UpdateSettingsParams {
   name: string;
   pomodoroDefault: number;
   breakDefault: number;
+  dailyGoalMinutes: number;
   locale?: string;
 }
 
@@ -21,13 +22,16 @@ export async function updateProfileSettings(
       return err("Não autorizado");
     }
 
-    const { name, pomodoroDefault, breakDefault, locale } = data;
+    const { name, pomodoroDefault, breakDefault, dailyGoalMinutes, locale } = data;
 
     if (pomodoroDefault < 5 || pomodoroDefault > 120) {
       return err("O tempo de foco deve estar entre 5 e 120 minutos");
     }
     if (breakDefault < 1 || breakDefault > 60) {
       return err("O tempo de pausa deve estar entre 1 e 60 minutos");
+    }
+    if (dailyGoalMinutes < 10 || dailyGoalMinutes > 1440) {
+      return err("A meta diária deve estar entre 10 e 1440 minutos");
     }
 
     const user = await prisma.user.findUnique({
@@ -47,6 +51,7 @@ export async function updateProfileSettings(
       ...currentSettings,
       pomodoroDefault,
       breakDefault,
+      dailyGoalMinutes,
       ...(locale && { locale }),
     };
 

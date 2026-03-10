@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { startOfWeek, endOfWeek, format, subWeeks } from "date-fns";
+import { startOfWeek, endOfWeek, startOfDay, endOfDay, format, subWeeks } from "date-fns";
 import { calculateLevel, getLevelProgress, getXPForNextLevel } from "@/features/gamification/utils/xpCalculator";
 import type { DashboardData, WeeklyData, TrackData } from "@/features/dashboard/types";
 
@@ -18,13 +18,14 @@ export async function getDashboardData(
     contestWithTopics,
     heatmapRaw,
     weeklyAgg,
+    todayAgg,
     recentSessions,
     weeklyChartRaw,
     trackRaw,
   ] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, name: true, xp: true, level: true, streakDays: true, lastStudyDate: true },
+      select: { id: true, name: true, xp: true, level: true, streakDays: true, lastStudyDate: true, settings: true },
     }),
 
     contestId
@@ -75,6 +76,11 @@ export async function getDashboardData(
       _count: { id: true },
     }),
 
+    prisma.studySession.aggregate({
+      where: { userId, completedAt: { gte: startOfDay(new Date()), lte: endOfDay(new Date()) } },
+      _sum: { minutes: true },
+    }),
+
     prisma.studySession.findMany({
       where: { userId },
       select: {
@@ -114,6 +120,13 @@ export async function getDashboardData(
   ]);
 
   if (!user) throw new Error("User not found");
+
+  const userSettings =
+    typeof user.settings === "object" && user.settings !== null
+      ? (user.settings as Record<string, unknown>)
+      : {};
+  const dailyGoalMinutes = Number(userSettings.dailyGoalMinutes) || 120;
+  const studiedTodayMinutes = todayAgg._sum.minutes ?? 0;
 
   const effectiveLevel = calculateLevel(user.xp);
 
@@ -197,5 +210,9 @@ export async function getDashboardData(
     streak: user.streakDays,
     xpProgress: getLevelProgress(user.xp, effectiveLevel),
     xpToNextLevel: getXPForNextLevel(user.xp, effectiveLevel),
+    dailyGoal: {
+      targetMinutes: dailyGoalMinutes,
+      studiedTodayMinutes,
+    },
   };
 }

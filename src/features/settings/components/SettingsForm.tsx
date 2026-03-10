@@ -20,6 +20,7 @@ interface SettingsFormProps {
   initialEmail: string;
   initialPomodoro: number;
   initialBreak: number;
+  initialDailyGoal: number;
   initialLocale: string;
 }
 
@@ -28,6 +29,7 @@ export function SettingsForm({
   initialEmail,
   initialPomodoro,
   initialBreak,
+  initialDailyGoal,
   initialLocale,
 }: Readonly<SettingsFormProps>) {
   const t = useTranslations("Settings");
@@ -44,13 +46,14 @@ export function SettingsForm({
       name: initialName,
       pomodoroDefault: initialPomodoro,
       breakDefault: initialBreak,
-      dailyGoalMinutes: 60,
+      dailyGoalMinutes: initialDailyGoal,
     },
   });
 
   const name = watch("name");
   const pomodoro = watch("pomodoroDefault");
   const breakTime = watch("breakDefault");
+  const dailyGoal = watch("dailyGoalMinutes");
   const [locale, setLocale] = useState(initialLocale);
 
   const onSubmit = async (data: SettingsFormData) => {
@@ -59,6 +62,7 @@ export function SettingsForm({
         name: data.name ?? initialName,
         pomodoroDefault: data.pomodoroDefault,
         breakDefault: data.breakDefault,
+        dailyGoalMinutes: data.dailyGoalMinutes,
         locale,
       });
 
@@ -78,6 +82,7 @@ export function SettingsForm({
     name !== initialName ||
     pomodoro !== initialPomodoro ||
     breakTime !== initialBreak ||
+    dailyGoal !== initialDailyGoal ||
     locale !== initialLocale;
 
   return (
@@ -215,6 +220,34 @@ export function SettingsForm({
               </p>
             )}
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label
+            htmlFor="dailyGoal"
+            className="font-pixel text-[7px] text-[#7f7f9f]"
+          >
+            META DIÁRIA (min)
+          </Label>
+          <Input
+            id="dailyGoal"
+            type="number"
+            {...register("dailyGoalMinutes", { valueAsNumber: true })}
+            min={10}
+            max={1440}
+            className="bg-[#020008] border-[#333] text-[#00ff41] focus-visible:ring-[#00ff41] rounded-none font-mono"
+            style={{
+              borderColor: errors.dailyGoalMinutes ? "#ff006e" : undefined,
+            }}
+          />
+          <p className="text-[#555] text-[10px] font-mono">
+            Minutos de estudo que você quer completar por dia. Ex: 120 = 2 horas.
+          </p>
+          {errors.dailyGoalMinutes && (
+            <p className="text-[#ff006e] text-[10px] font-mono">
+              {errors.dailyGoalMinutes.message}
+            </p>
+          )}
         </div>
 
         <div className="flex justify-end pt-4">

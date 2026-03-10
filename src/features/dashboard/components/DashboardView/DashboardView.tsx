@@ -8,9 +8,10 @@ import { type DashboardViewProps } from "./types";
 import { StudyHeatmap } from "../StudyHeatmap";
 import { StatsChartsLazy } from "../StatsCharts";
 import { getStreakTier } from "@/features/gamification/utils/streakCalculator";
+import { DailyGoalCard } from "../DailyGoalCard/DailyGoalCard";
 
 export function DashboardView({ data, contests = [], aiSlot }: DashboardViewProps) {
-  const { user, nextTopic, recentSessions, coveragePercent, heatmap, statsData, streak, xpProgress, xpToNextLevel } = data;
+  const { user, nextTopic, recentSessions, coveragePercent, heatmap, statsData, streak, xpProgress, xpToNextLevel, dailyGoal } = data;
 
   const streakTier = getStreakTier(streak ?? 0);
   const streakColor =
@@ -239,6 +240,11 @@ export function DashboardView({ data, contests = [], aiSlot }: DashboardViewProp
           </Link>
         </div>
       </div>
+
+      <DailyGoalCard
+        targetMinutes={dailyGoal.targetMinutes}
+        studiedTodayMinutes={dailyGoal.studiedTodayMinutes}
+      />
 
       <div
         style={{

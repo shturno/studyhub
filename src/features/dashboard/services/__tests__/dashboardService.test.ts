@@ -49,7 +49,15 @@ import { getDashboardData } from "../dashboardService";
 const USER_ID = "user-1";
 const CONTEST_ID = "contest-1";
 
-const baseUser = { id: USER_ID, name: "Estudante", xp: 100, level: 1 };
+const baseUser = {
+  id: USER_ID,
+  name: "Estudante",
+  xp: 100,
+  level: 1,
+  streakDays: 0,
+  lastStudyDate: null,
+  settings: {},
+};
 
 const emptyContest = { id: CONTEST_ID, name: "Concurso", subjects: [] };
 
@@ -127,4 +135,40 @@ describe("getDashboardData", () => {
       expect(result.coveragePercent).toBe(50);
     });
   });
-});
+
+  describe("dailyGoal", () => {
+    it("returns default targetMinutes of 120 when settings is empty", async () => {
+      const result = await getDashboardData(USER_ID);
+      expect(result.dailyGoal.targetMinutes).toBe(120);
+    });
+
+    it("returns targetMinutes from user settings", async () => {
+      mockUserFindUnique.mockResolvedValue({
+        ...baseUser,
+        settings: { dailyGoalMinutes: 60 },
+      });
+      const result = await getDashboardData(USER_ID);
+      expect(result.dailyGoal.targetMinutes).toBe(60);
+    });
+
+    it("returns studiedTodayMinutes from today aggregate", async () => {
+      const { prisma } = await import("@/lib/prisma");
+      vi.mocked(prisma.studySession.aggregate)
+        .mockResolvedValueOnce({
+          _sum: { minutes: 200, xpEarned: 500 },
+          _count: { id: 4 },
+          _avg: {},
+          _max: {},
+          _min: {},
+        } as never)
+        .mockResolvedValueOnce({
+          _sum: { minutes: 45, xpEarned: null },
+          _count: { id: 2 },
+          _avg: {},
+          _max: {},
+          _min: {},
+        } as never);
+      const result = await getDashboardData(USER_ID);
+      expect(result.dailyGoal.studiedTodayMinutes).toBe(45);
+    });
+  });});

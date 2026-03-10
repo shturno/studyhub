@@ -31,6 +31,7 @@ export default async function SettingsPage({
       : {};
   const pomodoroDefault = Number(settings.pomodoroDefault) || 25;
   const breakDefault = Number(settings.breakDefault) || 5;
+  const dailyGoalMinutes = Number(settings.dailyGoalMinutes) || 120;
   const userLocale = (settings.locale as string) || locale || "pt";
 
   return (
@@ -55,6 +56,7 @@ export default async function SettingsPage({
         initialEmail={user.email || ""}
         initialPomodoro={pomodoroDefault}
         initialBreak={breakDefault}
+        initialDailyGoal={dailyGoalMinutes}
         initialLocale={userLocale}
       />
     </div>
