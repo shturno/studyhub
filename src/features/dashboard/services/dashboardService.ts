@@ -23,6 +23,7 @@ export async function getDashboardData(
     recentSessions,
     weeklyChartRaw,
     trackRaw,
+    nextPlannedSession,
   ] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
@@ -118,6 +119,18 @@ export async function getDashboardData(
       ORDER BY minutes DESC
       LIMIT 20
     `,
+
+    // Next planned session from today onward
+    prisma.plannedSession.findFirst({
+      where: {
+        userId,
+        scheduledDate: { gte: startOfDay(new Date()) },
+      },
+      orderBy: { scheduledDate: "asc" },
+      include: {
+        topic: { include: { subject: true } },
+      },
+    }),
   ]);
 
   if (!user) throw new Error("User not found");
@@ -152,14 +165,21 @@ export async function getDashboardData(
     }));
 
   const unstudiedTopic = allTopics.find((t) => t.studySessions.length === 0);
-  const nextTopic = unstudiedTopic
+  const nextTopic = nextPlannedSession
     ? {
-        id: unstudiedTopic.id,
-        name: unstudiedTopic.name,
-        subjectName: unstudiedTopic.subjectName,
-        estimatedMinutes: 25,
+        id: nextPlannedSession.topic.id,
+        name: nextPlannedSession.topic.name,
+        subjectName: nextPlannedSession.topic.subject.name,
+        estimatedMinutes: nextPlannedSession.durationMinutes,
       }
-    : null;
+    : unstudiedTopic
+      ? {
+          id: unstudiedTopic.id,
+          name: unstudiedTopic.name,
+          subjectName: unstudiedTopic.subjectName,
+          estimatedMinutes: 25,
+        }
+      : null;
 
   const heatmap = heatmapRaw.map((r) => ({
     date: r.date,

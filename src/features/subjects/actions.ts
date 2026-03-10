@@ -130,6 +130,41 @@ export async function getSubjectDetails(
   }
 }
 
+export async function markTopicAsStudied(
+  topicId: string,
+): Promise<ActionResult<void>> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return err("Não autorizado");
+    const userId = session.user.id;
+
+    const topic = await prisma.topic.findUnique({
+      where: { id: topicId },
+      select: { subject: { select: { contest: { select: { userId: true } } } } },
+    });
+
+    if (!topic || topic.subject.contest.userId !== userId) {
+      return err("Não autorizado");
+    }
+
+    await prisma.studySession.create({
+      data: {
+        topicId,
+        userId,
+        minutes: 1,
+        xpEarned: 2,
+        completedAt: new Date(),
+      },
+    });
+
+    revalidatePath("/subjects", "page");
+    revalidatePath("/dashboard", "page");
+    return ok(undefined);
+  } catch {
+    return err("Erro ao marcar tópico");
+  }
+}
+
 export async function updateSubject(
   id: string,
   data: { name: string },

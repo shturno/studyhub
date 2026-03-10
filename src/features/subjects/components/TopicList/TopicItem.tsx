@@ -42,7 +42,10 @@ export function TopicItem({ node, level }: TopicItemProps) {
     isSaving,
     handleSaveEdit,
     handleCancelEdit,
-  } = useTopicItem(node.id, node.name);
+    optimisticStatus,
+    isMarking,
+    handleMarkStudied,
+  } = useTopicItem(node.id, node.name, node.status);
 
   return (
     <div className={cn("space-y-2", level > 0 && "ml-6")}>
@@ -68,14 +71,21 @@ export function TopicItem({ node, level }: TopicItemProps) {
             )}
           </button>
 
-          {node.status === "mastered" && (
+          {optimisticStatus === "mastered" && (
             <CheckCircle2 className="w-4 h-4" style={{ color: "#00ff41" }} />
           )}
-          {node.status === "studied" && (
+          {optimisticStatus === "studied" && (
             <CheckCircle2 className="w-4 h-4" style={{ color: "#7b61ff" }} />
           )}
-          {node.status !== "mastered" && node.status !== "studied" && (
-            <Circle className="w-4 h-4 text-[#333] group-hover:text-[#555] transition-colors" />
+          {optimisticStatus === "pending" && (
+            <button
+              onClick={() => void handleMarkStudied()}
+              disabled={isMarking}
+              title="Marcar como visto"
+              className="text-[#333] hover:text-[#7b61ff] transition-colors disabled:opacity-50"
+            >
+              <Circle className="w-4 h-4" />
+            </button>
           )}
 
           {isEditing ? (
