@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // ---------------------------------------------------------------------------
 // Mock Prisma
 // ---------------------------------------------------------------------------
-const mockDailyMissions: Array<{
+type MockMission = {
   id: string;
   userId: string;
   date: string;
@@ -15,21 +15,41 @@ const mockDailyMissions: Array<{
   xpReward: number;
   completedAt: Date | null;
   createdAt: Date;
-}> = [];
+};
 
+const SENTINEL = "_BONUS_AWARDED";
+const mockDailyMissions: MockMission[] = [];
 const mockStudySessions: Array<{ minutes: number; topicId: string }> = [];
+const mockPlannedSessions: Array<{ topicId: string }> = [];
+
+function applyFindManyWhere(
+  all: MockMission[],
+  where: Record<string, unknown>,
+): MockMission[] {
+  let results = [...all];
+  if (where.userId) results = results.filter((m) => m.userId === where.userId);
+  if (where.date)   results = results.filter((m) => m.date === where.date);
+  if (where.completed === false) results = results.filter((m) => !m.completed);
+  if (where.NOT) {
+    const notClause = where.NOT as Record<string, unknown>;
+    if (notClause.type) results = results.filter((m) => m.type !== notClause.type);
+  }
+  if (where.type) results = results.filter((m) => m.type === where.type);
+  return results;
+}
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
+    user: {
+      findUnique: vi.fn(() => Promise.resolve({ streakDays: 0, level: 1 })),
+    },
     dailyMission: {
-      findMany: vi.fn(({ where }: { where: { userId: string; date: string; completed?: boolean } }) => {
-        let results = mockDailyMissions.filter(
-          (m) => m.userId === where.userId && m.date === where.date,
-        );
-        if (where.completed === false) {
-          results = results.filter((m) => !m.completed);
-        }
-        return Promise.resolve(results);
+      findMany: vi.fn(({ where }: { where: Record<string, unknown> }) =>
+        Promise.resolve(applyFindManyWhere(mockDailyMissions, where)),
+      ),
+      findFirst: vi.fn(({ where }: { where: Record<string, unknown> }) => {
+        const found = applyFindManyWhere(mockDailyMissions, where)[0] ?? null;
+        return Promise.resolve(found);
       }),
       createMany: vi.fn(({ data }: { data: Array<Record<string, unknown>> }) => {
         for (const d of data) {
@@ -49,6 +69,23 @@ vi.mock("@/lib/prisma", () => ({
         }
         return Promise.resolve({ count: data.length });
       }),
+      create: vi.fn(({ data }: { data: Record<string, unknown> }) => {
+        const m: MockMission = {
+          id: `mission-${mockDailyMissions.length + 1}`,
+          userId: data.userId as string,
+          date: data.date as string,
+          type: data.type as string,
+          label: data.label as string,
+          targetValue: data.targetValue as number,
+          progress: data.progress as number ?? 0,
+          completed: data.completed as boolean ?? false,
+          xpReward: data.xpReward as number,
+          completedAt: data.completedAt as Date | null ?? null,
+          createdAt: new Date(),
+        };
+        mockDailyMissions.push(m);
+        return Promise.resolve(m);
+      }),
       update: vi.fn(({ where, data }: { where: { id: string }; data: Record<string, unknown> }) => {
         const mission = mockDailyMissions.find((m) => m.id === where.id);
         if (mission) Object.assign(mission, data);
@@ -59,8 +96,9 @@ vi.mock("@/lib/prisma", () => ({
       findMany: vi.fn(() => Promise.resolve(mockStudySessions)),
     },
     plannedSession: {
-      count: vi.fn(() => Promise.resolve(0)),
+      findMany: vi.fn(() => Promise.resolve(mockPlannedSessions)),
     },
+    $transaction: vi.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
   },
 }));
 
@@ -80,6 +118,7 @@ import {
 beforeEach(() => {
   mockDailyMissions.length = 0;
   mockStudySessions.length = 0;
+  mockPlannedSessions.length = 0;
   vi.clearAllMocks();
 });
 
