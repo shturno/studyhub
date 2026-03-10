@@ -58,38 +58,6 @@ function formatMonthLabel(monthKey: string): string {
   );
 }
 
-function SessionTitles({
-  sessions,
-  colorMap,
-}: {
-  sessions: PlannedSession[];
-  colorMap: Map<string, string>;
-}) {
-  const visible = sessions.slice(0, 3);
-  const extra = sessions.length - 3;
-  return (
-    <div className="mt-1 space-y-0.5">
-      {visible.map((s) => {
-        const color = s.contestId ? (colorMap.get(s.contestId) ?? "#555") : "#555";
-        return (
-          <div key={s.id} className="flex items-center gap-1.5">
-            <div
-              className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-              style={{ background: color }}
-            />
-            <div className="font-mono text-[11px] text-[#555] truncate">
-              {s.lessonTitle}
-            </div>
-          </div>
-        );
-      })}
-      {extra > 0 && (
-        <div className="font-mono text-[11px] text-[#555]">+ {extra} mais</div>
-      )}
-    </div>
-  );
-}
-
 // ── Component ──────────────────────────────────────────────────────────────
 export function PlannerCalendar({ sessions, contests = [] }: PlannerCalendarProps) {
   const colorMap = buildContestColorMap(contests);
@@ -316,29 +284,68 @@ export function PlannerCalendar({ sessions, contests = [] }: PlannerCalendarProp
                           {(totalMins / 60).toFixed(1)}h
                         </span>
                       </div>
-                      {entries.map((entry) => (
-                        <div
-                          key={entry.dateStr}
-                          className="px-4 py-2"
-                          style={{
-                            borderBottom: "1px solid rgba(0,255,65,0.05)",
-                          }}
-                        >
-                          <div className="flex justify-between items-baseline">
-                            <span className="font-mono text-xs text-[#e0e0ff]">
-                              {formatDate(entry.dateStr)}
-                            </span>
-                            <span className="font-mono text-[11px] text-[#00ff41]">
-                              {plural(
-                                entry.sessions.length,
-                                "sessão",
-                                "sessões",
-                              )}
-                            </span>
+                      {entries.map((entry) => {
+                        const entryMins = entry.sessions.reduce(
+                          (sum, s) => sum + s.duration,
+                          0,
+                        );
+                        return (
+                          <div
+                            key={entry.dateStr}
+                            className="px-4 py-3"
+                            style={{
+                              borderBottom: "1px solid rgba(0,255,65,0.05)",
+                            }}
+                          >
+                            <div className="flex justify-between items-baseline mb-2">
+                              <span className="font-mono text-xs text-[#e0e0ff]">
+                                {formatDate(entry.dateStr)}
+                              </span>
+                              <span className="font-mono text-[11px] text-[#7f7f9f]">
+                                {(entryMins / 60).toFixed(1)}h
+                              </span>
+                            </div>
+                            <div className="space-y-1.5">
+                              {entry.sessions.map((s) => {
+                                const contestColor = s.contestId
+                                  ? (colorMap.get(s.contestId) ?? "rgba(0,255,65,0.2)")
+                                  : "rgba(0,255,65,0.2)";
+                                return (
+                                  <div
+                                    key={s.id}
+                                    className="font-mono px-2 py-1.5"
+                                    style={{
+                                      border: "1px solid rgba(0,255,65,0.1)",
+                                      borderLeft: `3px solid ${contestColor}`,
+                                    }}
+                                  >
+                                    <div className="text-xs text-[#e0e0ff] truncate">
+                                      {s.lessonTitle}
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                      <span className="text-[11px] text-[#555]">
+                                        {s.trackName} · {s.duration} min
+                                      </span>
+                                      {s.contestName && (
+                                        <span
+                                          className="font-mono text-[10px] px-1"
+                                          style={{
+                                            background: `${contestColor}22`,
+                                            color: contestColor,
+                                            border: `1px solid ${contestColor}44`,
+                                          }}
+                                        >
+                                          {s.contestName}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
-                          <SessionTitles sessions={entry.sessions} colorMap={colorMap} />
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   );
                 })
@@ -375,29 +382,68 @@ export function PlannerCalendar({ sessions, contests = [] }: PlannerCalendarProp
                           {(totalMins / 60).toFixed(1)}h
                         </span>
                       </div>
-                      {entries.map((entry) => (
-                        <div
-                          key={entry.dateStr}
-                          className="px-4 py-2"
-                          style={{
-                            borderBottom: "1px solid rgba(0,255,65,0.05)",
-                          }}
-                        >
-                          <div className="flex justify-between items-baseline">
-                            <span className="font-mono text-xs text-[#e0e0ff]">
-                              {formatDate(entry.dateStr)}
-                            </span>
-                            <span className="font-mono text-[11px] text-[#7f7f9f]">
-                              {plural(
-                                entry.sessions.length,
-                                "sessão",
-                                "sessões",
-                              )}
-                            </span>
+                      {entries.map((entry) => {
+                        const entryMins = entry.sessions.reduce(
+                          (sum, s) => sum + s.duration,
+                          0,
+                        );
+                        return (
+                          <div
+                            key={entry.dateStr}
+                            className="px-4 py-3"
+                            style={{
+                              borderBottom: "1px solid rgba(0,255,65,0.05)",
+                            }}
+                          >
+                            <div className="flex justify-between items-baseline mb-2">
+                              <span className="font-mono text-xs text-[#e0e0ff]">
+                                {formatDate(entry.dateStr)}
+                              </span>
+                              <span className="font-mono text-[11px] text-[#7f7f9f]">
+                                {(entryMins / 60).toFixed(1)}h
+                              </span>
+                            </div>
+                            <div className="space-y-1.5">
+                              {entry.sessions.map((s) => {
+                                const contestColor = s.contestId
+                                  ? (colorMap.get(s.contestId) ?? "rgba(0,255,65,0.2)")
+                                  : "rgba(0,255,65,0.2)";
+                                return (
+                                  <div
+                                    key={s.id}
+                                    className="font-mono px-2 py-1.5"
+                                    style={{
+                                      border: "1px solid rgba(0,255,65,0.1)",
+                                      borderLeft: `3px solid ${contestColor}`,
+                                    }}
+                                  >
+                                    <div className="text-xs text-[#e0e0ff] truncate">
+                                      {s.lessonTitle}
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                      <span className="text-[11px] text-[#555]">
+                                        {s.trackName} · {s.duration} min
+                                      </span>
+                                      {s.contestName && (
+                                        <span
+                                          className="font-mono text-[10px] px-1"
+                                          style={{
+                                            background: `${contestColor}22`,
+                                            color: contestColor,
+                                            border: `1px solid ${contestColor}44`,
+                                          }}
+                                        >
+                                          {s.contestName}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
-                          <SessionTitles sessions={entry.sessions} colorMap={colorMap} />
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   );
                 })
