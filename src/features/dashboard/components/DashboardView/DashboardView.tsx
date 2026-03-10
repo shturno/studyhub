@@ -130,10 +130,10 @@ export function DashboardView({ data, contests = [], aiSlot }: DashboardViewProp
       >
         <div className="flex items-center justify-between mb-1">
           <span className="font-pixel text-[6px] text-[#7f7f9f]">
-            LVL {user.level} → LVL {user.level + 1}
+            LVL {user.level}
           </span>
           <span className="font-pixel text-[6px]" style={{ color: xpProgress >= 90 ? "#ffbe0b" : "#7f7f9f" }}>
-            {xpProgress}% · {xpToNextLevel} XP
+            {xpProgress}% · {xpToNextLevel} XP para LVL {user.level + 1}
           </span>
         </div>
         <div
