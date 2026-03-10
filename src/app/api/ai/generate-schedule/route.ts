@@ -55,7 +55,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Determine exam date: use provided or pick earliest from contests
+    // Determine exam date: use provided or pick the LATEST across all contests.
+    // The schedule should cover the full prep period — even after the first exam
+    // the user continues studying for the remaining contests.
     let resolvedExamDate: Date;
     if (examDate) {
       resolvedExamDate = new Date(examDate);
@@ -70,7 +72,7 @@ export async function POST(request: NextRequest) {
         resolvedExamDate = new Date();
         resolvedExamDate.setMonth(resolvedExamDate.getMonth() + 6);
       } else {
-        resolvedExamDate = dates[0];
+        resolvedExamDate = dates[dates.length - 1];
       }
     }
 
