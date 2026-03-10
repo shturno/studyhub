@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { startOfWeek, endOfWeek, startOfDay, endOfDay, format, subWeeks } from "date-fns";
 import { calculateLevel, getLevelProgress, getXPForNextLevel } from "@/features/gamification/utils/xpCalculator";
+import { computeWeeklyComparison } from "@/features/dashboard/utils/weeklyComparisonUtils";
 import type { DashboardData, WeeklyData, TrackData } from "@/features/dashboard/types";
 
 export async function getDashboardData(
@@ -179,6 +180,8 @@ export async function getDashboardData(
     ]),
   );
 
+  const weeklyComparison = computeWeeklyComparison(weeklyChartRaw);
+
   const weeklyStatsData: WeeklyData[] = Array.from({ length: 8 }, (_, i) => {
     const wStart = startOfWeek(subWeeks(new Date(), 7 - i));
     const minutes = weeklyChartMap.get(wStart.toISOString()) ?? 0;
@@ -214,5 +217,6 @@ export async function getDashboardData(
       targetMinutes: dailyGoalMinutes,
       studiedTodayMinutes,
     },
+    weeklyComparison,
   };
 }

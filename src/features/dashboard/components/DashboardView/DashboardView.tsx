@@ -9,9 +9,10 @@ import { StudyHeatmap } from "../StudyHeatmap";
 import { StatsChartsLazy } from "../StatsCharts";
 import { getStreakTier } from "@/features/gamification/utils/streakCalculator";
 import { DailyGoalCard } from "../DailyGoalCard/DailyGoalCard";
+import { WeeklyComparisonCard } from "../WeeklyComparisonCard/WeeklyComparisonCard";
 
 export function DashboardView({ data, contests = [], aiSlot }: DashboardViewProps) {
-  const { user, nextTopic, recentSessions, coveragePercent, heatmap, statsData, streak, xpProgress, xpToNextLevel, dailyGoal } = data;
+  const { user, nextTopic, recentSessions, coveragePercent, heatmap, statsData, streak, xpProgress, xpToNextLevel, dailyGoal, weeklyComparison } = data;
 
   const streakTier = getStreakTier(streak ?? 0);
   const streakColor =
@@ -310,6 +311,15 @@ export function DashboardView({ data, contests = [], aiSlot }: DashboardViewProp
       </div>
 
       <StudyHeatmap heatmap={heatmap} />
+
+      <WeeklyComparisonCard
+        thisWeekMinutes={weeklyComparison.thisWeekMinutes}
+        lastWeekMinutes={weeklyComparison.lastWeekMinutes}
+        deltaPercent={weeklyComparison.deltaPercent}
+        personalBestMinutes={weeklyComparison.personalBestMinutes}
+        last4Weeks={weeklyComparison.last4Weeks}
+        isPersonalBest={weeklyComparison.isPersonalBest}
+      />
 
       <StatsChartsLazy stats={statsData} />
 

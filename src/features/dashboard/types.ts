@@ -47,6 +47,14 @@ export interface DashboardData {
     targetMinutes: number;
     studiedTodayMinutes: number;
   };
+  weeklyComparison: {
+    thisWeekMinutes: number;
+    lastWeekMinutes: number;
+    deltaPercent: number;
+    personalBestMinutes: number;
+    last4Weeks: Array<{ weekLabel: string; minutes: number }>;
+    isPersonalBest: boolean;
+  };
 }
 
 export interface WeeklyData {
