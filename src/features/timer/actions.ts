@@ -11,6 +11,10 @@ import {
   getXPForNextLevel,
 } from "@/features/gamification/utils/xpCalculator";
 import {
+  calculateStreak,
+  getStreakMultiplier,
+} from "@/features/gamification/utils/streakCalculator";
+import {
   checkAndUnlockAchievements,
   type UnlockedAchievement,
 } from "@/features/gamification/services/achievementService";
@@ -29,6 +33,9 @@ export interface SaveStudySessionResult {
   leveledUp: boolean;
   xpToNextLevel: number;
   newAchievements: UnlockedAchievement[];
+  streak: number;
+  isNewStreakDay: boolean;
+  streakMultiplier: number;
 }
 
 export async function saveStudySession(
@@ -46,7 +53,20 @@ export async function saveStudySession(
     }
 
     const userId = session.user.id;
-    const xpEarned = calculateXP(parsed.data.minutes);
+
+    // Buscar dados de streak do usuário
+    const userStreak = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { streakDays: true, lastStudyDate: true },
+    });
+
+    const { newStreak, isNewDay } = calculateStreak(
+      userStreak?.lastStudyDate ?? null,
+      userStreak?.streakDays ?? 0,
+    );
+    const multiplier = getStreakMultiplier(newStreak);
+    const baseXP = calculateXP(parsed.data.minutes);
+    const xpEarned = Math.round(baseXP * multiplier);
 
     const [newSession, updatedUser] = await prisma.$transaction([
       prisma.studySession.create({
@@ -60,7 +80,11 @@ export async function saveStudySession(
       }),
       prisma.user.update({
         where: { id: userId },
-        data: { xp: { increment: xpEarned } },
+        data: {
+          xp: { increment: xpEarned },
+          streakDays: newStreak,
+          ...(isNewDay ? { lastStudyDate: new Date() } : {}),
+        },
         select: { xp: true, level: true },
       }),
     ]);
@@ -92,6 +116,9 @@ export async function saveStudySession(
       leveledUp,
       xpToNextLevel,
       newAchievements,
+      streak: newStreak,
+      isNewStreakDay: isNewDay,
+      streakMultiplier: multiplier,
     });
   } catch {
     return err("Erro ao salvar sessão");

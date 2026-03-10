@@ -1,15 +1,23 @@
 "use client";
 
-import { Trophy, Zap, BookOpen, Clock, ArrowUpRight } from "lucide-react";
+import { Trophy, Zap, BookOpen, Clock, ArrowUpRight, Flame } from "lucide-react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { type DashboardViewProps } from "./types";
 import { StudyHeatmap } from "../StudyHeatmap";
 import { StatsChartsLazy } from "../StatsCharts";
+import { getStreakTier } from "@/features/gamification/utils/streakCalculator";
 
 export function DashboardView({ data, contests = [], aiSlot }: DashboardViewProps) {
-  const { user, nextTopic, recentSessions, coveragePercent, heatmap, statsData } = data;
+  const { user, nextTopic, recentSessions, coveragePercent, heatmap, statsData, streak } = data;
+
+  const streakTier = getStreakTier(streak ?? 0);
+  const streakColor =
+    streakTier === "gold" ? "#ffbe0b" :
+    streakTier === "silver" ? "#c084fc" :
+    streakTier === "bronze" ? "#ff9f1c" :
+    "#7f7f9f";
 
   if (!user) {
     return (
@@ -85,6 +93,24 @@ export function DashboardView({ data, contests = [], aiSlot }: DashboardViewProp
           >
             {user.level.toString().padStart(2, "0")}
           </div>
+        </div>
+        <div className="text-center">
+          <div className="font-pixel text-[7px] text-[#7f7f9f]">STREAK</div>
+          <div
+            className="font-pixel text-2xl flex items-center gap-1 justify-center"
+            style={{
+              color: streakColor,
+              textShadow: `0 0 10px ${streakColor}88`,
+            }}
+          >
+            <Flame className="w-4 h-4" style={{ fill: streakColor, color: streakColor }} />
+            {(streak ?? 0).toString().padStart(2, "0")}
+          </div>
+          {streakTier !== "none" && (
+            <div className="font-pixel text-[6px] mt-0.5" style={{ color: streakColor }}>
+              {streakTier === "gold" ? "1.5× XP" : streakTier === "silver" ? "1.25× XP" : "1.1× XP"}
+            </div>
+          )}
         </div>
         <div className="text-right">
           <div className="font-pixel text-[7px] text-[#7f7f9f]">SCORE</div>

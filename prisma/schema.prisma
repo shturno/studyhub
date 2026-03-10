@@ -19,6 +19,8 @@ model User {
   image         String?
   xp        Int      @default(0)
   level     Int      @default(1)
+  streakDays     Int       @default(0)
+  lastStudyDate  DateTime?
   settings  Json     @default("{\"pomodoroDefault\": 25, \"breakDefault\": 5, \"dailyGoalMinutes\": 120}")
   
   createdAt DateTime @default(now())

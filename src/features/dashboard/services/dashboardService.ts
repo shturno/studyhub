@@ -24,7 +24,7 @@ export async function getDashboardData(
   ] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, name: true, xp: true, level: true },
+      select: { id: true, name: true, xp: true, level: true, streakDays: true, lastStudyDate: true },
     }),
 
     contestId
@@ -194,5 +194,6 @@ export async function getDashboardData(
     contestName: contestWithTopics?.name ?? "concurso",
     priorities,
     heatmap,
+    streak: user.streakDays,
   };
 }

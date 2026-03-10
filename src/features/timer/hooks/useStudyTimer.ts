@@ -66,6 +66,18 @@ export function useStudyTimer({
             showLevelUp(result.data.newLevel);
           }
 
+          if (result.data.isNewStreakDay && result.data.streak > 1) {
+            const multiplier = result.data.streakMultiplier;
+            toast(
+              `🔥 STREAK — DIA ${result.data.streak}`,
+              {
+                description: multiplier > 1
+                  ? `Bônus ativo: ${multiplier}× XP`
+                  : "Continue amanhã para ganhar bônus de XP!",
+              },
+            );
+          }
+
           if (result.data.newAchievements.length > 0) {
             showAchievements(result.data.newAchievements);
           }

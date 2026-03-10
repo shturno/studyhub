@@ -40,6 +40,7 @@ export interface DashboardData {
     recommendedHours: number;
   }>;
   heatmap: HeatmapDay[];
+  streak: number;
 }
 
 export interface WeeklyData {
