@@ -285,5 +285,11 @@
     "successDescription": "Super-Ciclo criado com sucesso.",
     "error": "Falha na fusão.",
     "errorDescription": "Tente novamente ou selecione outros concursos."
+  },
+  "DailyMissions": {
+    "title": "MISSÕES DO DIA",
+    "allCompleted": "Todas completas! +{bonusXp} XP bônus",
+    "bonusHint": "Complete as 3 missões para ganhar +{bonusXp} XP bônus",
+    "close": "FECHAR"
   }
 }

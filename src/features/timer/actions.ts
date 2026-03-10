@@ -18,6 +18,10 @@ import {
   checkAndUnlockAchievements,
   type UnlockedAchievement,
 } from "@/features/gamification/services/achievementService";
+import {
+  refreshMissionProgress,
+  checkAllMissionsCompleted,
+} from "@/features/gamification/services/missionService";
 import { scheduleReview } from "@/features/reviews/actions";
 
 export interface SaveStudySessionInput {
@@ -36,6 +40,7 @@ export interface SaveStudySessionResult {
   streak: number;
   isNewStreakDay: boolean;
   streakMultiplier: number;
+  missionBonusXP: number;
 }
 
 export async function saveStudySession(
@@ -104,6 +109,16 @@ export async function saveStudySession(
 
     const newAchievements = await checkAndUnlockAchievements(userId);
 
+    // Refresh daily mission progress and award bonus if all completed
+    await refreshMissionProgress(userId).catch(() => undefined);
+    const missionBonusXP = await checkAllMissionsCompleted(userId).catch(() => 0);
+    if (missionBonusXP > 0) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { xp: { increment: missionBonusXP } },
+      }).catch(() => undefined);
+    }
+
     await scheduleReview(parsed.data.topicId).catch(() => undefined);
 
     revalidatePath("/[locale]/dashboard", "page");
@@ -119,6 +134,7 @@ export async function saveStudySession(
       streak: newStreak,
       isNewStreakDay: isNewDay,
       streakMultiplier: multiplier,
+      missionBonusXP,
     });
   } catch {
     return err("Erro ao salvar sessão");

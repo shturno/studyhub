@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { ok, err, type ActionResult } from "@/lib/result";
 import { SubjectStats, TopicWithStatus } from "./types";
+import { refreshMissionProgress } from "@/features/gamification/services/missionService";
 
 const subjectInclude = {
   subjects: {
@@ -159,6 +160,8 @@ export async function markTopicAsStudied(
 
     revalidatePath("/subjects", "page");
     revalidatePath("/dashboard", "page");
+    // Refresh mission progress (fire-and-forget)
+    refreshMissionProgress(userId).catch(() => undefined);
     return ok(undefined);
   } catch {
     return err("Erro ao marcar tópico");

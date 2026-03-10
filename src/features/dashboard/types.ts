@@ -1,3 +1,7 @@
+import type { DailyMissionSummary } from "@/features/gamification/services/missionService";
+
+export type { DailyMissionSummary };
+
 export interface HeatmapDay {
   date: string;
   count: number;
@@ -55,6 +59,7 @@ export interface DashboardData {
     last4Weeks: Array<{ weekLabel: string; minutes: number }>;
     isPersonalBest: boolean;
   };
+  missions: DailyMissionSummary[];
 }
 
 export interface WeeklyData {

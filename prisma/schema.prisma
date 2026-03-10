@@ -34,6 +34,7 @@ model User {
   achievements   UserAchievement[]
   editorialItems EditorialItem[]
   reviewQueue    ReviewQueue[]
+  dailyMissions  DailyMission[]
   
   @@map("users")
 }
@@ -291,6 +292,27 @@ model EditorialItem {
   @@index([userId])
   @@index([contestId])
   @@map("editorial_items")
+}
+
+model DailyMission {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date         String    // "YYYY-MM-DD"
+  type         String    // mission type key e.g. "STUDY_MINUTES"
+  label        String    // human-readable description persisted at creation time
+  targetValue  Int
+  progress     Int       @default(0)
+  completed    Boolean   @default(false)
+  xpReward     Int
+  completedAt  DateTime?
+
+  createdAt    DateTime  @default(now())
+
+  @@unique([userId, date, type])
+  @@index([userId, date])
+  @@map("daily_missions")
 }
 
 model ContentMapping {

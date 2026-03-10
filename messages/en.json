@@ -285,5 +285,11 @@
     "successDescription": "Super-Cycle created successfully.",
     "error": "Merge failed.",
     "errorDescription": "Try again or select other contests."
+  },
+  "DailyMissions": {
+    "title": "DAILY MISSIONS",
+    "allCompleted": "All done! +{bonusXp} bonus XP",
+    "bonusHint": "Complete all 3 missions to earn +{bonusXp} bonus XP",
+    "close": "CLOSE"
   }
 }

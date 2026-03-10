@@ -3,6 +3,7 @@ import { startOfWeek, endOfWeek, startOfDay, endOfDay, format, subWeeks } from "
 import { calculateLevel, getLevelProgress, getXPForNextLevel } from "@/features/gamification/utils/xpCalculator";
 import { computeWeeklyComparison } from "@/features/dashboard/utils/weeklyComparisonUtils";
 import type { DashboardData, WeeklyData, TrackData } from "@/features/dashboard/types";
+import { getOrCreateTodayMissions, refreshMissionProgress } from "@/features/gamification/services/missionService";
 
 export async function getDashboardData(
   userId: string,
@@ -214,6 +215,10 @@ export async function getDashboardData(
     hours: Math.round(Number(r.minutes) / 60),
   }));
 
+  // Fetch (and create) today's missions, then sync progress from today's sessions
+  await refreshMissionProgress(userId).catch(() => undefined);
+  const missions = await getOrCreateTodayMissions(userId).catch(() => []);
+
   return {
     user: { ...user, name: user.name ?? "", level: effectiveLevel },
     statsData: { weeklyStats: weeklyStatsData, trackDistribution },
@@ -238,5 +243,6 @@ export async function getDashboardData(
       studiedTodayMinutes,
     },
     weeklyComparison,
+    missions,
   };
 }

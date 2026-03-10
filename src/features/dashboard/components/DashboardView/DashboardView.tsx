@@ -10,9 +10,10 @@ import { StatsChartsLazy } from "../StatsCharts";
 import { getStreakTier } from "@/features/gamification/utils/streakCalculator";
 import { DailyGoalCard } from "../DailyGoalCard/DailyGoalCard";
 import { WeeklyComparisonCard } from "../WeeklyComparisonCard/WeeklyComparisonCard";
+import { DailyMissionsModal } from "../DailyMissionsModal/DailyMissionsModal";
 
 export function DashboardView({ data, contests = [], aiSlot }: DashboardViewProps) {
-  const { user, nextTopic, recentSessions, coveragePercent, heatmap, statsData, streak, xpProgress, xpToNextLevel, dailyGoal, weeklyComparison } = data;
+  const { user, nextTopic, recentSessions, coveragePercent, heatmap, statsData, streak, xpProgress, xpToNextLevel, dailyGoal, weeklyComparison, missions } = data;
 
   const streakTier = getStreakTier(streak ?? 0);
   const streakColor =
@@ -324,6 +325,8 @@ export function DashboardView({ data, contests = [], aiSlot }: DashboardViewProp
       <StatsChartsLazy stats={statsData} />
 
       {aiSlot}
+
+      <DailyMissionsModal missions={missions ?? []} />
     </div>
   );
 }
