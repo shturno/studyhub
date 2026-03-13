@@ -1,11 +1,9 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getGenAI } from "@/lib/gemini";
 import {
   type ScheduleRequest,
   type GeneratedSchedule,
 } from "@/features/ai/types";
 import { type StudyAreaPriority } from "@/features/editorials/types";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function generateScheduleChunk(
   contestsInfo: import("@/features/ai/types").ContestScheduleInfo[],
@@ -20,7 +18,7 @@ export async function generateScheduleChunk(
   learningContext?: string,
 ): Promise<GeneratedSchedule> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = getGenAI().getGenerativeModel({ model: "gemini-2.5-flash" });
 
     // Only include topics from contests that haven't had their exam yet
     // at the start of this chunk. This ensures post-exam contests are excluded.

@@ -54,9 +54,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const effectiveExamDate = examDate
-      ? new Date(examDate)
-      : new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000);
+    let effectiveExamDate: Date;
+    if (examDate) {
+      const parsed = new Date(examDate);
+      if (isNaN(parsed.getTime())) {
+        return NextResponse.json({ error: "Invalid examDate format" }, { status: 400 });
+      }
+      effectiveExamDate = parsed;
+    } else {
+      effectiveExamDate = new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000);
+    }
 
     const schedule = await generateScheduleWithGemini({
       contestsInfo: [{ id: contest.id, name: contest.name, examDate: contest.examDate }],
@@ -76,12 +83,9 @@ export async function POST(request: NextRequest) {
         priorities,
       },
     });
-  } catch (error) {
-    console.error("Generate schedule error:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to generate schedule";
+  } catch {
     return NextResponse.json(
-      { error: errorMessage },
+      { error: "Failed to generate schedule" },
       { status: 500 },
     );
   }

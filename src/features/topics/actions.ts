@@ -4,11 +4,9 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { ok, err, type ActionResult } from "@/lib/result";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getGenAI } from "@/lib/gemini";
 import { refreshMissionProgress, checkAllMissionsCompleted } from "@/features/gamification/services/missionService";
 import { recordActivityEvent } from "@/features/gamification/services/activityEventService";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 // ---------------------------------------------------------------------------
 // Question generation types
@@ -32,11 +30,14 @@ export interface GenerateQuestionsResult {
 // Generate questions via Gemini (with cache)
 // ---------------------------------------------------------------------------
 
+const MAX_QUESTIONS = 20;
+
 export async function generateQuestions(
   topicId: string,
   contestId: string | null,
   quantity = 5,
 ): Promise<ActionResult<GenerateQuestionsResult>> {
+  quantity = Math.min(Math.max(1, quantity), MAX_QUESTIONS);
   try {
     const session = await auth();
     if (!session?.user?.id) return err("Não autorizado");
@@ -85,7 +86,7 @@ export async function generateQuestions(
       : "MULTIPLA_ESCOLHA";
 
     const needed = quantity - cached.length;
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = getGenAI().getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = questionType === "CERTO_ERRADO"
       ? `Você é um especialista em elaboração de questões para concursos públicos no estilo CESPE/CEBRASPE.

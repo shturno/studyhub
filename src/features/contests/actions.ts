@@ -33,34 +33,35 @@ export async function createContest(data: {
     const session = await auth();
     if (!session?.user?.id) return { error: "Não autorizado" };
 
-    if (data.isPrimary) {
-      await prisma.contest.updateMany({
-        where: { userId: session.user.id, isPrimary: true },
-        data: { isPrimary: false },
-      });
-    }
-
     const baseSlug = data.name
       .toLowerCase()
       .trim()
-      .replaceAll(/[^a-z0-9]+/g, "-");
+      .replaceAll(/[^a-z0-9]+/g, "-")
+      .slice(0, 50);
     const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
     const uniqueSuffix = Array.from({ length: 6 }, () =>
       chars[Math.floor(Math.random() * chars.length)],
     ).join("");
     const finalSlug = `${baseSlug}-${uniqueSuffix}`;
 
-    await prisma.contest.create({
-      data: {
-        name: data.name,
-        institution: data.institution,
-        role: data.role,
-        examDate: data.examDate,
-
-        isPrimary: data.isPrimary,
-        slug: finalSlug,
-        userId: session.user.id,
-      },
+    await prisma.$transaction(async (tx) => {
+      if (data.isPrimary) {
+        await tx.contest.updateMany({
+          where: { userId: session.user.id, isPrimary: true },
+          data: { isPrimary: false },
+        });
+      }
+      await tx.contest.create({
+        data: {
+          name: data.name,
+          institution: data.institution,
+          role: data.role,
+          examDate: data.examDate,
+          isPrimary: data.isPrimary,
+          slug: finalSlug,
+          userId: session.user.id,
+        },
+      });
     });
 
     revalidatePath("/[locale]/contests", "page");
@@ -113,25 +114,24 @@ export async function updateContest(
     const session = await auth();
     if (!session?.user?.id) return err("Não autorizado");
 
-    if (data.isPrimary) {
-      await prisma.contest.updateMany({
-        where: { userId: session.user.id, isPrimary: true, id: { not: id } },
-        data: { isPrimary: false },
+    await prisma.$transaction(async (tx) => {
+      if (data.isPrimary) {
+        await tx.contest.updateMany({
+          where: { userId: session.user.id, isPrimary: true, id: { not: id } },
+          data: { isPrimary: false },
+        });
+      }
+      await tx.contest.update({
+        where: { id, userId: session.user.id },
+        data: {
+          ...(data.examDate !== undefined ? { examDate: data.examDate } : {}),
+          ...(data.manualPriority !== undefined ? { manualPriority: data.manualPriority } : {}),
+          ...(data.name !== undefined ? { name: data.name } : {}),
+          ...(data.institution !== undefined ? { institution: data.institution } : {}),
+          ...(data.role !== undefined ? { role: data.role } : {}),
+          ...(data.isPrimary !== undefined ? { isPrimary: data.isPrimary } : {}),
+        },
       });
-    }
-
-    await prisma.contest.update({
-      where: { id, userId: session.user.id },
-      data: {
-        ...(data.examDate !== undefined ? { examDate: data.examDate } : {}),
-        ...(data.manualPriority !== undefined
-          ? { manualPriority: data.manualPriority }
-          : {}),
-        ...(data.name !== undefined ? { name: data.name } : {}),
-        ...(data.institution !== undefined ? { institution: data.institution } : {}),
-        ...(data.role !== undefined ? { role: data.role } : {}),
-        ...(data.isPrimary !== undefined ? { isPrimary: data.isPrimary } : {}),
-      },
     });
 
     revalidatePath("/[locale]/contests", "page");

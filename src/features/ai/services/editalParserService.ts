@@ -1,6 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+import { getGenAI } from "@/lib/gemini";
 
 export interface ParsedSubject {
   name: string;
@@ -17,7 +15,7 @@ export async function parsePdfWithGemini(
   role?: string,
 ): Promise<ParsedEdital> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = getGenAI().getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const roleInstruction = role
       ? `IMPORTANT: Extract the syllabus SPECIFICALLY for the role/job: "${role}". If this role has a dedicated syllabus in the edital, extract it. Do not extract generic or other roles' syllabuses.`

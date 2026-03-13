@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getGenAI } from "@/lib/gemini";
 import { format } from "date-fns";
 import { recordActivityEvent } from "./activityEventService";
 
@@ -7,8 +7,6 @@ interface DifficultSubject {
   subjectId: string;
   contestId: string;
 }
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 // ---------------------------------------------------------------------------
 // Types
@@ -42,7 +40,7 @@ async function generateObligationReasoning(opts: {
   examDate: Date | null;
 }): Promise<string> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = getGenAI().getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const daysUntilExam = opts.examDate
       ? Math.max(0, Math.round((opts.examDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))

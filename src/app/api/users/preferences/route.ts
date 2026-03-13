@@ -11,7 +11,8 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json() as { difficultSubjects?: string[] };
-    const difficultSubjects = body.difficultSubjects || [];
+    const raw = body.difficultSubjects || [];
+    const difficultSubjects = Array.isArray(raw) ? raw.slice(0, 20) : [];
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },

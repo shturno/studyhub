@@ -288,12 +288,9 @@ export async function POST(request: NextRequest) {
       editorialId: result.id,
       title: parsedData.title,
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
-      {
-        error: "Failed to parse edital",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
+      { error: "Failed to parse edital" },
       { status: 500 },
     );
   }

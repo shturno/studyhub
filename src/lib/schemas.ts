@@ -21,7 +21,7 @@ export const updateSettingsSchema = z.object({
 
 export const studySessionSchema = z.object({
   topicId: z.string().cuid(),
-  minutes: z.number().min(1, "A sessão deve ter pelo menos 1 minuto"),
+  minutes: z.number().min(1, "A sessão deve ter pelo menos 1 minuto").max(480, "A sessão não pode exceder 8 horas"),
   difficulty: z.number().min(1).max(5).optional(),
   notes: z.string().max(500).optional(),
 });

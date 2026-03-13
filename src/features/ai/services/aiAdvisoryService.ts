@@ -1,8 +1,6 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getGenAI } from "@/lib/gemini";
 import { unstable_cache } from "next/cache";
 import { type StudyAreaPriority } from "@/features/editorials/types";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 async function fetchStudyRecommendations(
   contestName: string,
@@ -10,7 +8,7 @@ async function fetchStudyRecommendations(
   coverage: number,
 ): Promise<string[]> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = getGenAI().getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `Você é um coach de concursos públicos num app estilo videogame retrô.
 Gere exatamente 3 dicas curtas e diretas para quem prepara "${contestName}".
@@ -75,7 +73,7 @@ export async function analyzeCoverageAndSuggest(
   gaps: string[],
 ): Promise<string> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = getGenAI().getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const gapsText = gaps.slice(0, 10).join(", ");
 
