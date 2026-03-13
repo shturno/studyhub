@@ -1,0 +1,509 @@
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("PRISMA_DATABASE_URL")
+  directUrl = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  password      String?
+  image         String?
+  xp        Int      @default(0)
+  level     Int      @default(1)
+  streakDays     Int       @default(0)
+  lastStudyDate  DateTime?
+  settings  Json     @default("{\"pomodoroDefault\": 25, \"breakDefault\": 5, \"dailyGoalMinutes\": 120}")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  contests       Contest[]
+  studyCycles    StudyCycle[]
+  studySessions  StudySession[]
+  plannedSessions PlannedSession[]
+  achievements   UserAchievement[]
+  editorialItems EditorialItem[]
+  reviewQueue    ReviewQueue[]
+  dailyMissions  DailyMission[]
+  dailyObligations DailyObligation[]
+  activityEvents   ActivityEvent[]
+  generatedQuestions GeneratedQuestion[]
+  questionLogs     QuestionLog[]
+  topicLearningStats  TopicLearningStats[]
+  learningProfile     UserLearningProfile?
+  subjectCorrelations SubjectCorrelation[]
+  
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+
+model Contest {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name           String
+  slug           String   @unique
+  institution    String
+  role           String
+  banca          String?  // Ex: CESPE/CEBRASPE, FCC, VUNESP, AOCP
+  examDate       DateTime?
+  isPrimary      Boolean  @default(false)
+  manualPriority Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  subjects        Subject[]
+  editorialItems  EditorialItem[]
+  plannedSessions PlannedSession[]
+  dailyObligations DailyObligation[]
+  generatedQuestions GeneratedQuestion[]
+  
+  @@index([userId])
+  @@map("contests")
+}
+
+model Subject {
+  id          String   @id @default(cuid())
+  contestId   String
+  contest     Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  
+  name        String
+  weight      Int      @default(1)
+  userLevel   Int      @default(1)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  topics      Topic[]
+  subjectCorrelationsA SubjectCorrelation[] @relation("CorrelationSubjectA")
+  subjectCorrelationsB SubjectCorrelation[] @relation("CorrelationSubjectB")
+
+  @@index([contestId])
+  @@map("subjects")
+}
+
+model Topic {
+  id          String   @id @default(cuid())
+  subjectId   String
+  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  
+  name        String
+  description String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  parentId    String?
+  parent      Topic?   @relation("TopicHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children    Topic[]  @relation("TopicHierarchy")
+  studySessions StudySession[]
+  plannedSessions PlannedSession[]
+  reviewQueue   ReviewQueue[]
+  materials     Material[]
+  contentMappings ContentMapping[]
+  topicLearningStats  TopicLearningStats[]
+  dailyObligations DailyObligation[]
+  generatedQuestions GeneratedQuestion[]
+  questionLogs     QuestionLog[]
+
+  @@index([subjectId])
+  @@index([parentId])
+  @@map("topics")
+}
+
+model StudyCycle {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name        String
+  isActive    Boolean  @default(true)
+  config      Json
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([userId])
+  @@map("study_cycles")
+}
+
+model StudySession {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  topicId     String
+  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  
+  minutes     Int
+  xpEarned    Int
+  difficulty  Int?
+  
+  startedAt   DateTime @default(now())
+  completedAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([topicId])
+  @@index([userId, completedAt])
+  @@index([userId, startedAt])
+  @@map("study_sessions")
+}
+
+model ReviewQueue {
+  id          String   @id @default(cuid())
+  topicId     String
+  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  scheduledFor DateTime
+  completed    Boolean  @default(false)
+  completedAt  DateTime?
+
+  // SM-2 fields
+  interval     Int      @default(1)
+  easeFactor   Float    @default(2.5)
+  repetitions  Int      @default(0)
+
+  createdAt    DateTime @default(now())
+
+  @@index([topicId])
+  @@index([userId])
+  @@index([userId, scheduledFor])
+  @@map("review_queue")
+}
+
+model PlannedSession {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  topicId         String
+  topic           Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  contestId       String?
+  contest         Contest? @relation(fields: [contestId], references: [id], onDelete: SetNull)
+  
+  scheduledDate   DateTime
+  durationMinutes Int
+  completed       Boolean  @default(false)
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([userId])
+  @@index([scheduledDate])
+  @@index([contestId])
+  @@map("planned_sessions")
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  
+  slug        String   @unique
+  name        String
+  description String
+  icon        String
+  xpReward    Int      @default(0)
+  users       UserAchievement[]
+  
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  
+  unlockedAt    DateTime @default(now())
+  
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+model Material {
+  id          String   @id @default(cuid())
+  topicId     String
+  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  
+  type        String
+  title       String
+  url         String?
+  content     String?
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([topicId])
+  @@map("materials")
+}
+
+model EditorialItem {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  contestId   String
+  contest     Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+  url         String?
+
+  uploadedAt  DateTime @default(now())
+  contentMappings ContentMapping[]
+
+  @@index([userId])
+  @@index([contestId])
+  @@map("editorial_items")
+}
+
+model DailyMission {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date         String    // "YYYY-MM-DD"
+  type         String    // mission type key e.g. "STUDY_MINUTES"
+  label        String    // human-readable description persisted at creation time
+  targetValue  Int
+  progress     Int       @default(0)
+  completed    Boolean   @default(false)
+  xpReward     Int
+  completedAt  DateTime?
+
+  isCore       Boolean   @default(false) // quando true, é a missão obrigatória do dia
+  createdAt    DateTime  @default(now())
+
+  @@unique([userId, date, type])
+  @@index([userId, date])
+  @@map("daily_missions")
+}
+
+// ─── Daily Obligation ─────────────────────────────────────────────────────────
+
+/// Uma obrigação diária inegociável gerada pela IA com base no maior gap de cobertura.
+/// Gerada 1x/dia. Não cumprida = penalidade de XP aplicada no próximo acesso.
+model DailyObligation {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId        String
+  topic          Topic     @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  contestId      String?
+  contest        Contest?  @relation(fields: [contestId], references: [id], onDelete: SetNull)
+  date           String    // "YYYY-MM-DD"
+  completed      Boolean   @default(false)
+  completedAt    DateTime?
+  xpPenalty      Int       @default(25)
+  penaltyApplied Boolean   @default(false)
+  aiReasoning    String?   // Texto gerado pelo Gemini explicando por que estudar este tópico hoje
+  createdAt      DateTime  @default(now())
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([topicId])
+  @@map("daily_obligations")
+}
+
+// ─── Activity Feed ─────────────────────────────────────────────────────────────
+
+/// Registro de eventos de atividade: ganhos E perdas. Alimenta o feed na dashboard.
+model ActivityEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// "SESSION_COMPLETED" | "STREAK_BROKEN" | "XP_LOST" | "OBLIGATION_MISSED" | "LEVEL_UP" | "ACHIEVEMENT" | "QUESTIONS_LOGGED"
+  type      String
+  /// Dados livres por tipo: { xp, topicName, streakLost, penalty, level, achievementName, total, correct }
+  metadata  Json
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("activity_events")
+}
+
+// ─── Question Practice ────────────────────────────────────────────────────────
+
+/// Questões geradas pelo Gemini; cacheadas para reutilização.
+model GeneratedQuestion {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId     String
+  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  contestId   String?
+  contest     Contest? @relation(fields: [contestId], references: [id], onDelete: SetNull)
+  statement   String
+  /// "CERTO_ERRADO" | "MULTIPLA_ESCOLHA"
+  type        String
+  /// Para MULTIPLA_ESCOLHA: [{key:"A",text:"..."},{key:"B",...}]; para CERTO_ERRADO: null
+  options     Json?
+  answer      String   // "CERTO" | "ERRADO" | "A" | "B" | ...
+  explanation String
+  usedAt      DateTime? // null = disponível para uso
+  createdAt   DateTime @default(now())
+
+  @@index([userId, topicId])
+  @@index([userId, topicId, usedAt])
+  @@map("generated_questions")
+}
+
+/// Registro de sessões de questões respondidas pelo usuário.
+model QuestionLog {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId     String
+  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  contestId   String?
+  total       Int      // total de questões respondidas
+  correct     Int      // acertos
+  xpEarned    Int
+  source      String   @default("GEMINI") // "GEMINI" | "MANUAL"
+  loggedAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([topicId])
+  @@map("question_logs")
+}
+
+model ContentMapping {
+  id              String   @id @default(cuid())
+  editorialItemId String
+  editorialItem   EditorialItem @relation(fields: [editorialItemId], references: [id], onDelete: Cascade)
+
+  topicId         String
+  topic           Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  contentSummary  String?
+  relevance       Int      @default(50)
+
+  createdAt       DateTime @default(now())
+
+  @@index([editorialItemId])
+  @@index([topicId])
+  @@map("content_mappings")
+}
+
+// ─── Adaptive Learning Engine ────────────────────────────────────────────────
+
+/// Per-user, per-topic aggregated learning metrics.
+/// Updated incrementally on every StudySession save.
+model TopicLearningStats {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId         String
+  topic           Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  totalMinutes    Int      @default(0)
+  sessionCount    Int      @default(0)
+  /// Running sum of difficulty scores (divide by sessionCount for avg)
+  difficultySumFloat Float @default(0.0)
+  /// Sessions under ABANDON_THRESHOLD_MINUTES (5 min by default)
+  abandonCount    Int      @default(0)
+  lastStudiedAt   DateTime?
+
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, topicId])
+  @@index([userId])
+  @@index([topicId])
+  @@map("topic_learning_stats")
+}
+
+/// Per-user learning profile: peak hours, session rhythm.
+/// One row per user, upserted after every session.
+model UserLearningProfile {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Distribution of study minutes across 24-hour slots: [0..23]
+  hourlyDistribution  Json     @default("[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]")
+  peakHourOfDay       Int?     // 0-23
+  peakDayOfWeek       Int?     // 0=Sun … 6=Sat
+  /// Distribution of study minutes across 7 days: [0..6]
+  dailyDistribution   Json     @default("[0,0,0,0,0,0,0]")
+  avgSessionMinutes   Float    @default(0.0)
+  /// Exponential-moving-average of topics studied per week
+  topicsPerWeek       Float    @default(0.0)
+  lastComputedAt      DateTime @default(now())
+
+  @@map("user_learning_profiles")
+}
+
+/// Tracks how often two subjects are studied on the same day by the same user.
+/// Used by the AI scheduler to suggest complementary subject pairings.
+model SubjectCorrelation {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  subjectAId   String
+  subjectA     Subject  @relation("CorrelationSubjectA", fields: [subjectAId], references: [id], onDelete: Cascade)
+  subjectBId   String
+  subjectB     Subject  @relation("CorrelationSubjectB", fields: [subjectBId], references: [id], onDelete: Cascade)
+
+  /// Number of days both subjects were studied together
+  coStudyCount Int      @default(1)
+
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, subjectAId, subjectBId])
+  @@index([userId])
+  @@map("subject_correlations")
+}

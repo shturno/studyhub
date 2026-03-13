@@ -1,0 +1,16 @@
+export const NEXT_HINT: Record<string, string> = {
+  welcome: "Crie seu primeiro concurso",
+  first_contest: "Complete sua primeira sessão de estudo",
+  first_session: "Complete 10 sessões de estudo",
+  sessions_10: "Complete 50 sessões de estudo",
+  sessions_50: "Alcance 100 sessões de estudo",
+  sessions_100: "Você dominou as sessões!",
+  hours_10: "Acumule 50 horas de estudo",
+  hours_50: "Acumule 100 horas de estudo",
+  hours_100: "Você atingiu 100 horas — lendário!",
+  streak_3: "Estude por 7 dias consecutivos",
+  streak_7: "Estude por 30 dias consecutivos",
+  streak_30: "Você tem a sequência máxima!",
+  level_5: "Alcance o nível 10",
+  level_10: "Você atingiu o topo da beta!",
+};

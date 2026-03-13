@@ -1,0 +1,302 @@
+{
+  "Landing": {
+    "login": "LOGIN",
+    "play": "PLAY",
+    "title": "STUDY HUB",
+    "subtitle": "PREPARE. LEVEL UP. CONquer.",
+    "insertCoin": "► INSERT COIN TO START ◄",
+    "hallOfChampions": "★ HALL OF CHAMPIONS ★",
+    "newGame": "▶ NEW GAME",
+    "continue": "↺ CONTINUE",
+    "achieveResults": "ACHIEVE THESE RESULTS STUDYING WITH US",
+    "copyright": "© 2026 STUDYHUB CORP · VER 1.0.0 · BUILD 001 · ALL RIGHTS RESERVED"
+  },
+  "ScoreEntries": {
+    "focusHours": "FOCUS HOURS",
+    "questionsSolved": "QUESTIONS SOLVED",
+    "streakDays": "STREAK DAYS",
+    "subjectsMastered": "SUBJECTS MASTERED"
+  },
+  "Features": {
+    "adhdFriendly": {
+      "title": "ADHD-FRIENDLY",
+      "desc": "Short sessions, clear goals, no noise"
+    },
+    "gamified": {
+      "title": "GAMIFIED",
+      "desc": "XP, levels, achievements, and real ranking"
+    },
+    "adaptiveAi": {
+      "title": "ADAPTIVE AI",
+      "desc": "AI-generated study cycles"
+    },
+    "allInOne": {
+      "title": "ALL-IN-ONE",
+      "desc": "Syllabus, subjects, and exams in one place"
+    }
+  },
+  "ContestDetail": {
+    "back": "BACK",
+    "mainFocus": "★ MAIN FOCUS",
+    "examDate": "EXAM DATE",
+    "notDefined": "Not defined",
+    "subjects": "SUBJECTS",
+    "topics": "TOPICS",
+    "editorials": "EDITORIALS",
+    "noEditorialMapped": "NO EDITORIAL MAPPED",
+    "noEditorialMappedDescription": "To generate your Skill Tree and start planning your study cycles, we need to extract the subjects and topics from your editorial. Upload the document and let the Artificial Intelligence map it for you.",
+    "skillTree": "SKILL TREE",
+    "skillTreeDescription": "Your editorial formatted into a skill tree.",
+    "topicsCount": "topics",
+    "serverErrorTitle": "ERROR CAUGHT ON NEXT.JS SERVER (TRY-CATCH)",
+    "serverErrorDescription": "The Node Backend suffered a panic and it was caught. Please send a screenshot of the code below:",
+    "errorLabel": "ERROR:"
+  },
+  "AppSidebar": {
+    "titleStudy": "STUDY",
+    "titleHub": "HUB",
+    "select": "▼ SELECT ▼",
+    "navDashboard": "DASHBOARD",
+    "navPlanner": "PLANNER",
+    "navSubjects": "SUBJECTS",
+    "navContests": "CONTESTS",
+    "navReviews": "REVIEWS",
+    "navAchievements": "ACHIEVEMENTS",
+    "player1": "PLAYER 1",
+    "config": "⚙ CONFIG",
+    "logout": "✕ LOGOUT"
+  },
+  "ThemeToggle": {
+    "toggle": "Toggle theme"
+  },
+  "LoginForm": {
+    "unknownError": "Unknown error",
+    "errorPrefix": "Error:",
+    "invalidCredentials": "Invalid email or password",
+    "loginSuccess": "Login successful!",
+    "emailLabel": "EMAIL",
+    "passwordLabel": "PASSWORD",
+    "hidePassword": "Hide password",
+    "showPassword": "Show password",
+    "loggingIn": "LOGGING IN...",
+    "submit": "► LOGIN"
+  },
+  "RegisterForm": {
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordTooShort": "Password must be at least 6 characters long",
+    "accountCreationError": "Error creating account",
+    "accountCreationSuccess": "Account created! Please login.",
+    "unknownError": "Unknown error",
+    "errorPrefix": "Error:",
+    "nameLabel": "NAME",
+    "namePlaceholder": "Your name",
+    "emailLabel": "EMAIL",
+    "passwordLabel": "PASSWORD",
+    "confirmPasswordLabel": "CONFIRM PASSWORD",
+    "hidePassword": "Hide password",
+    "showPassword": "Show password",
+    "creating": "CREATING...",
+    "submit": "► CREATE ACCOUNT"
+  },
+  "ContestCard": {
+    "removedSuccess": "Contest removed",
+    "unknownError": "Unknown error",
+    "removeErrorPrefix": "Error removing contest:",
+    "mainFocus": "★ MAIN FOCUS",
+    "removeLabel": "Remove contest",
+    "editLabel": "Edit contest",
+    "dateNotSet": "Date not set",
+    "viewButton": "► VIEW"
+  },
+  "ContestList": {
+    "found": "{count, plural, one {# contest found} other {# contests found}}",
+    "fusionLab": "FUSION LABORATORY",
+    "noneFound": "NO CONTESTS FOUND",
+    "addFirst": "Add your first editorial to organize your studies."
+  },
+  "CreateContestDialog": {
+    "error": "Error",
+    "created": "Contest created!",
+    "errorPrefix": "Error:",
+    "createSuccess": "Contest created!",
+    "unexpectedError": "An unexpected error occurred while saving the contest.",
+    "trigger": "NEW CONTEST",
+    "title": "ADD CONTEST",
+    "description": "Register the editorial you are focused on.",
+    "nameLabel": "CONTEST NAME",
+    "namePlaceholder": "Ex: Bank of Brazil 2026",
+    "institutionLabel": "INSTITUTION",
+    "institutionPlaceholder": "Ex: Cesgranrio",
+    "roleLabel": "ROLE",
+    "rolePlaceholder": "Ex: Clerk",
+    "examDateLabel": "EXAM DATE",
+    "mainFocusLabel": "MAIN FOCUS",
+    "mainFocusDescription": "Set as current main goal",
+    "submit": "SAVE CONTEST",
+    "validation": {
+      "nameMin": "Name must be at least 2 characters",
+      "institutionMin": "Institution must be at least 2 characters",
+      "roleMin": "Role must be at least 2 characters"
+    }
+  },
+  "EditContestDialog": {
+    "title": "EDIT CONTEST",
+    "description": "Update the contest details.",
+    "nameLabel": "CONTEST NAME",
+    "institutionLabel": "INSTITUTION",
+    "roleLabel": "ROLE",
+    "examDateLabel": "EXAM DATE",
+    "mainFocusLabel": "MAIN FOCUS",
+    "mainFocusDescription": "Set as current main goal",
+    "submit": "SAVE CHANGES",
+    "editLabel": "Edit contest",
+    "saved": "Contest updated!",
+    "error": "Error updating contest",
+    "unexpectedError": "An unexpected error occurred while saving."
+  },
+  "Common": {
+    "close": "Close"
+  },
+  "Errors": {
+    "unauthorized": "Session expired. Please log in again.",
+    "networkError": "No connection to server. Check your internet.",
+    "unknownError": "Unexpected error. Please try again.",
+    "serverError": "Internal server error.",
+    "fileTooLarge": "File too large. Maximum allowed: 50MB",
+    "validationError": "Please check the provided data"
+  },
+  "EditorialManager": {
+    "fillAllFields": "Fill in role, pages, and select a file",
+    "invalidPageFormat": "Invalid page format (e.g., 1-5, 10, 15-20)",
+    "extractSuccess": "Topics extracted! Now configure your availability.",
+    "parseError": "Error processing the editorial",
+    "fillDailyHours": "Please specify study hours per day",
+    "scheduleGenerated": "Schedule generated! Review before importing.",
+    "scheduleError": "Could not generate schedule",
+    "noSessionsToImport": "No sessions to import",
+    "importSuccess": "{count} sessions imported!",
+    "importPartial": "{success} sessions saved, {failed} failed",
+    "importError": "Error importing schedule"
+  },
+  "SmartScheduleGenerator": {
+    "selectExamDate": "Select the exam date",
+    "scheduleGenerated": "Schedule generated!",
+    "scheduleError": "Could not generate schedule",
+    "noSessions": "Schedule has no sessions. Try again.",
+    "importSuccess": "{count} sessions imported to Planner!",
+    "importPartial": "{success} sessions saved, {failed} failed",
+    "importError": "Error importing schedule",
+    "title": "GENERATE SMART SCHEDULE",
+    "step1Label": "Select contests",
+    "step2Label": "Availability",
+    "step3Label": "Schedule generated",
+    "step1Description": "Choose which contests to include and set the importance of each (stars = manual priority).",
+    "noContests": "No contests registered. Add contests first.",
+    "noExamDate": "No date",
+    "priorityLabel": "Priority",
+    "cancel": "CANCEL",
+    "next": "NEXT",
+    "step2Description": "How many hours can you study on each day of the week?",
+    "weeklyTotal": "Weekly total",
+    "weeklyHours": "{hours}h/week",
+    "back": "BACK",
+    "generateSchedule": "GENERATE SCHEDULE",
+    "generating": "AI is analyzing your syllabuses and creating the schedule...",
+    "scheduleWeeks": "SCHEDULE — {weeks} WEEKS",
+    "totalHoursLabel": "TOTAL HOURS",
+    "contestsLabel": "CONTESTS",
+    "keyMilestones": "KEY MILESTONES",
+    "studyTips": "STUDY TIPS",
+    "regenerate": "REGENERATE",
+    "importing": "IMPORTING...",
+    "importToPlanner": "IMPORT TO PLANNER",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "sunday": "Sunday"
+  },
+  "Timer": {
+    "sessionSaved": "Session completed! +{xp} XP",
+    "saveError": "Error saving session",
+    "saveErrorDescription": "Could not record your study session",
+    "levelUp": "Congratulations! You leveled up to level {level}!",
+    "xpToNextLevel": "{xp} XP until next level",
+    "achievementUnlocked": "Achievement unlocked!"
+  },
+  "Planner": {
+    "sessionScheduled": "Session scheduled!",
+    "sessionScheduledDescription": "Added to your planner",
+    "saveError": "Error saving",
+    "sessionRemoved": "Session removed",
+    "allSessionsCleared": "All sessions cleared",
+    "removeError": "Error removing"
+  },
+  "StudyCycle": {
+    "trackCreated": "Track created!",
+    "trackError": "Error creating track",
+    "lessonCreated": "Lesson created!",
+    "lessonError": "Error creating lesson",
+    "checklistUpdated": "Status updated!",
+    "checklistError": "Error updating status",
+    "exportSuccess": "Export completed!",
+    "exportError": "Export error"
+  },
+  "SessionModal": {
+    "tracksError": "Error loading tracks",
+    "lessonsError": "Error loading lessons",
+    "selectLesson": "Select a lesson and set duration",
+    "sessionCreated": "Session created!",
+    "createError": "Error creating session"
+  },
+  "Materials": {
+    "titleRequired": "Enter a title for the material",
+    "added": "Material added",
+    "addError": "Error adding material",
+    "removed": "Material removed",
+    "removeError": "Error removing material"
+  },
+  "Settings": {
+    "saved": "Settings saved successfully!",
+    "saveError": "Error saving settings"
+  },
+  "Editorials": {
+    "added": "Editorial added successfully!",
+    "addError": "Error adding editorial",
+    "removed": "Editorial removed successfully",
+    "removeError": "Error removing editorial",
+    "topicsRequired": "Select at least one topic",
+    "mappingSuccess": "{count} topics mapped successfully!",
+    "mappingError": "Error mapping content"
+  },
+  "AIAdvisoryCard": {
+    "title": "── AI ADVISOR ──",
+    "poweredBy": "GEMINI AI",
+    "coverageLabel": "SYLLABUS COVERAGE",
+    "fallback1": "Focus on the highest-weighted topics in the syllabus",
+    "fallback2": "Practice with questions from previous exams",
+    "fallback3": "Review topics studied in the last week"
+  },
+  "Fusion": {
+    "minContests": "Laboratory needs at least 2 editorials to merge!",
+    "success": "Cosmic Power Achieved!",
+    "successDescription": "Super-Cycle created successfully.",
+    "error": "Merge failed.",
+    "errorDescription": "Try again or select other contests."
+  },
+  "DailyMissions": {
+    "title": "DAILY MISSIONS",
+    "allCompleted": "All done! +{bonusXp} bonus XP",
+    "bonusHint": "Complete all 3 missions to earn +{bonusXp} bonus XP",
+    "close": "CLOSE"
+  },
+  "Insights": {
+    "tipTitle": "Weekly tip",
+    "lowRhythm": "Your pace is {topicsPerWeek} topics/week. Try to reach at least 3 per week to stay on track with the syllabus.",
+    "hardTopic": "You rate {topicName} ({subjectName}) with an average difficulty of {avgDifficulty}/5. Block your peak focus hours for this subject.",
+    "pairedSubjects": "{subjectA} and {subjectB} appear together on {coStudyCount} study days. Keep pairing them — this combo works well for you.",
+    "peakHour": "You study most at {hour}:00. Schedule your hardest topics around this time."
+  }
+}

@@ -1,0 +1,58 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# Lockfiles alternativos
+package-lock.json
+yarn.lock
+
+# Error logs
+tsc-errors.log
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# AI/IDE tooling
+CLAUDE.md
+.agent/
+
+# docs
+/docs/*
+
+# Testes
+coverage/
+playwright-report/
+test-results/
+.playwright/
+
+# Scripts de debug locais
+check_cycles.ts
+check_db.ts
+wipe_dirty_sessions.ts
+wipe_stray_subjects.ts
