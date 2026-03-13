@@ -8,17 +8,18 @@ import { ArrowLeft, BookOpen } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 interface SubjectsPageProps {
-  searchParams: Promise<{ contestId?: string }>;
+  searchParams: Promise<{ contest?: string }>;
 }
 
 export default async function SubjectsPage({
   searchParams,
 }: SubjectsPageProps) {
-  const { contestId } = await searchParams;
-  const [subjects, contests] = await Promise.all([
-    getUserSubjects(contestId),
-    getContests(),
-  ]);
+  const { contest: contestSlug } = await searchParams;
+  const contests = await getContests();
+  const contestId = contestSlug
+    ? contests.find((c) => c.slug === contestSlug)?.id
+    : undefined;
+  const subjects = await getUserSubjects(contestId);
 
   return (
     <div className="min-h-screen bg-[#080010] text-[#e0e0ff]">
@@ -42,7 +43,7 @@ export default async function SubjectsPage({
           <div className="font-mono text-lg text-[#7f7f9f]">
             Matérias do seu ciclo de estudos atual.
           </div>
-          <ContestSelector contests={contests} activeContestId={contestId} />
+          <ContestSelector contests={contests} activeContestSlug={contestSlug} />
         </div>
       </div>
 
