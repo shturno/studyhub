@@ -31,12 +31,11 @@ describe("activityEventService", () => {
 
       vi.mocked(prisma.activityEvent.create).mockResolvedValueOnce(event as unknown);
 
-      const result = await recordActivityEvent(userId, "SESSION_COMPLETED", {
+      await recordActivityEvent(userId, "SESSION_COMPLETED", {
         xp: 100,
         topicName: "Math",
       });
 
-      expect(result).toEqual(event.id);
       expect(prisma.activityEvent.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           userId,
@@ -56,12 +55,12 @@ describe("activityEventService", () => {
 
       vi.mocked(prisma.activityEvent.create).mockResolvedValueOnce(event as unknown);
 
-      const result = await recordActivityEvent(userId, "STREAK_BROKEN", {
+      await recordActivityEvent(userId, "STREAK_BROKEN", {
         streakLost: 7,
         penalty: 55,
       });
 
-      expect(result).toEqual(event.id);
+      expect(prisma.activityEvent.create).toHaveBeenCalled();
     });
 
     it("persiste evento de obrigação não cumprida", async () => {
@@ -75,12 +74,12 @@ describe("activityEventService", () => {
 
       vi.mocked(prisma.activityEvent.create).mockResolvedValueOnce(event as unknown);
 
-      const result = await recordActivityEvent(userId, "OBLIGATION_MISSED", {
+      await recordActivityEvent(userId, "OBLIGATION_MISSED", {
         topicName: "History",
         penalty: 25,
       });
 
-      expect(result).toEqual(event.id);
+      expect(prisma.activityEvent.create).toHaveBeenCalled();
     });
   });
 

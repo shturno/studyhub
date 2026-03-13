@@ -27,6 +27,17 @@ vi.mock("@/lib/prisma", () => ({
       delete: mockContestDelete,
       findMany: vi.fn().mockResolvedValue([]),
     },
+    $transaction: vi.fn().mockImplementation(async (fn) =>
+      fn({
+        contest: {
+          create: mockContestCreate,
+          update: mockContestUpdate,
+          updateMany: mockContestUpdateMany,
+          delete: mockContestDelete,
+          findMany: vi.fn().mockResolvedValue([]),
+        },
+      }),
+    ),
   },
 }));
 vi.mock("@/features/gamification/services/achievementService", () => ({
@@ -137,7 +148,7 @@ describe("createContest", () => {
       mockAuth.mockResolvedValue(mockSession);
       await createContest({ ...baseContestData, name: "Banco do Brasil 2026" });
       const call = mockContestCreate.mock.calls[0][0];
-      expect(call.data.slug).toMatch(/^banco-do-brasil-2026-\d{4}$/);
+      expect(call.data.slug).toMatch(/^banco-do-brasil-2026-[a-z0-9]{6}$/);
     });
 
     it("saves userId from session", async () => {

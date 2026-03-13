@@ -15,6 +15,7 @@ type MockMission = {
   xpReward: number;
   completedAt: Date | null;
   createdAt: Date;
+  isCore: boolean;
 };
 
 const mockDailyMissions: MockMission[] = [];
@@ -64,6 +65,7 @@ vi.mock("@/lib/prisma", () => ({
             xpReward: d.xpReward as number,
             completedAt: null,
             createdAt: new Date(),
+            isCore: (d.isCore as boolean) ?? false,
           });
         }
         return Promise.resolve({ count: data.length });
@@ -76,11 +78,38 @@ vi.mock("@/lib/prisma", () => ({
           type: data.type as string,
           label: data.label as string,
           targetValue: data.targetValue as number,
-          progress: data.progress as number ?? 0,
-          completed: data.completed as boolean ?? false,
+          progress: (data.progress as number) ?? 0,
+          completed: (data.completed as boolean) ?? false,
           xpReward: data.xpReward as number,
-          completedAt: data.completedAt as Date | null ?? null,
+          completedAt: (data.completedAt as Date | null) ?? null,
           createdAt: new Date(),
+          isCore: (data.isCore as boolean) ?? false,
+        };
+        mockDailyMissions.push(m);
+        return Promise.resolve(m);
+      }),
+      upsert: vi.fn(({ where, create, update }: { where: Record<string, unknown>; create: Record<string, unknown>; update: Record<string, unknown> }) => {
+        const key = where.userId_date_type as { userId: string; date: string; type: string };
+        const existing = mockDailyMissions.find(
+          (m) => m.userId === key.userId && m.date === key.date && m.type === key.type,
+        );
+        if (existing) {
+          Object.assign(existing, update);
+          return Promise.resolve(existing);
+        }
+        const m: MockMission = {
+          id: `mission-${mockDailyMissions.length + 1}`,
+          userId: create.userId as string,
+          date: create.date as string,
+          type: create.type as string,
+          label: create.label as string,
+          targetValue: create.targetValue as number,
+          progress: (create.progress as number) ?? 0,
+          completed: (create.completed as boolean) ?? false,
+          xpReward: create.xpReward as number,
+          completedAt: (create.completedAt as Date | null) ?? null,
+          createdAt: new Date(),
+          isCore: (create.isCore as boolean) ?? false,
         };
         mockDailyMissions.push(m);
         return Promise.resolve(m);
@@ -201,6 +230,7 @@ describe("refreshMissionProgress", () => {
       xpReward: 50,
       completedAt: null,
       createdAt: new Date(),
+      isCore: false,
     });
 
     // Add 35 minutes of study sessions
@@ -230,6 +260,7 @@ describe("refreshMissionProgress", () => {
       xpReward: 100,
       completedAt: null,
       createdAt: new Date(),
+      isCore: false,
     });
 
     mockStudySessions.push({ minutes: 20, topicId: "topic-1" });
@@ -260,6 +291,7 @@ describe("refreshMissionProgress", () => {
       xpReward: 60,
       completedAt: null,
       createdAt: new Date(),
+      isCore: false,
     });
 
     mockStudySessions.push(
@@ -291,6 +323,7 @@ describe("checkAllMissionsCompleted", () => {
       xpReward: 50,
       completedAt: new Date(),
       createdAt: new Date(),
+      isCore: true,
     });
 
     const bonus = await checkAllMissionsCompleted("user-1");
@@ -300,9 +333,9 @@ describe("checkAllMissionsCompleted", () => {
   it("returns 0 when not all missions are completed", async () => {
     const date = new Date().toISOString().slice(0, 10);
     mockDailyMissions.push(
-      { id: "m1", userId: "user-1", date, type: "STUDY_MINUTES", label: "a", targetValue: 30, progress: 30, completed: true, xpReward: 50, completedAt: new Date(), createdAt: new Date() },
-      { id: "m2", userId: "user-1", date, type: "COMPLETE_SESSIONS", label: "b", targetValue: 2, progress: 1, completed: false, xpReward: 50, completedAt: null, createdAt: new Date() },
-      { id: "m3", userId: "user-1", date, type: "STUDY_TOPICS", label: "c", targetValue: 2, progress: 2, completed: true, xpReward: 60, completedAt: new Date(), createdAt: new Date() },
+      { id: "m1", userId: "user-1", date, type: "STUDY_MINUTES", label: "a", targetValue: 30, progress: 30, completed: true, xpReward: 50, completedAt: new Date(), createdAt: new Date(), isCore: true },
+      { id: "m2", userId: "user-1", date, type: "COMPLETE_SESSIONS", label: "b", targetValue: 2, progress: 1, completed: false, xpReward: 50, completedAt: null, createdAt: new Date(), isCore: false },
+      { id: "m3", userId: "user-1", date, type: "STUDY_TOPICS", label: "c", targetValue: 2, progress: 2, completed: true, xpReward: 60, completedAt: new Date(), createdAt: new Date(), isCore: false },
     );
 
     const bonus = await checkAllMissionsCompleted("user-1");
@@ -312,9 +345,9 @@ describe("checkAllMissionsCompleted", () => {
   it("returns 100 bonus XP when all 3 missions are completed", async () => {
     const date = new Date().toISOString().slice(0, 10);
     mockDailyMissions.push(
-      { id: "m1", userId: "user-1", date, type: "STUDY_MINUTES", label: "a", targetValue: 30, progress: 30, completed: true, xpReward: 50, completedAt: new Date(), createdAt: new Date() },
-      { id: "m2", userId: "user-1", date, type: "COMPLETE_SESSIONS", label: "b", targetValue: 2, progress: 2, completed: true, xpReward: 50, completedAt: new Date(), createdAt: new Date() },
-      { id: "m3", userId: "user-1", date, type: "STUDY_TOPICS", label: "c", targetValue: 2, progress: 2, completed: true, xpReward: 60, completedAt: new Date(), createdAt: new Date() },
+      { id: "m1", userId: "user-1", date, type: "STUDY_MINUTES", label: "a", targetValue: 30, progress: 30, completed: true, xpReward: 50, completedAt: new Date(), createdAt: new Date(), isCore: true },
+      { id: "m2", userId: "user-1", date, type: "COMPLETE_SESSIONS", label: "b", targetValue: 2, progress: 2, completed: true, xpReward: 50, completedAt: new Date(), createdAt: new Date(), isCore: false },
+      { id: "m3", userId: "user-1", date, type: "STUDY_TOPICS", label: "c", targetValue: 2, progress: 2, completed: true, xpReward: 60, completedAt: new Date(), createdAt: new Date(), isCore: false },
     );
 
     const bonus = await checkAllMissionsCompleted("user-1");
