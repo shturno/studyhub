@@ -73,7 +73,7 @@ export function StudyNowCard({ nextTopic }: StudyNowCardProps) {
       <Button
         size="lg"
         className="w-full text-base h-12"
-        onClick={() => router.push(`/study/${nextTopic.id}`)}
+        onClick={() => router.push(`/study/${encodeURIComponent(nextTopic.name)}`)}
       >
         <Play className="h-5 w-5 mr-2" />
         INICIAR ESTUDO

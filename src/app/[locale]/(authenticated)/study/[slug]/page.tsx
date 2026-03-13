@@ -8,7 +8,7 @@ import Link from "next/link";
 
 interface StudyPageProps {
   readonly params: Promise<{
-    topicId: string;
+    slug: string;
   }>;
 }
 
@@ -19,8 +19,12 @@ export default async function StudyPage(props: StudyPageProps) {
   }
 
   const params = await props.params;
-  const topic = await prisma.topic.findUnique({
-    where: { id: params.topicId },
+  const topicName = decodeURIComponent(params.slug);
+  const topic = await prisma.topic.findFirst({
+    where: {
+      name: topicName,
+      subject: { contest: { userId: session.user.id } },
+    },
     include: {
       subject: {
         include: {
@@ -30,7 +34,7 @@ export default async function StudyPage(props: StudyPageProps) {
     },
   });
 
-  if (!topic || topic.subject.contest.userId !== session.user.id) {
+  if (!topic) {
     notFound();
   }
 

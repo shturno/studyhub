@@ -41,7 +41,7 @@ export function SubjectCard({ subject }: SubjectCardProps) {
         background: "#04000a",
         boxShadow: "4px 4px 0px rgba(0,255,65,0.1)",
       }}
-      onClick={() => !isEditing && router.push(`/subjects/${subject.id}`)}
+      onClick={() => !isEditing && router.push(`/subjects/${encodeURIComponent(subject.name)}`)}
     >
       <div className="flex justify-between items-center mb-3">
         <div

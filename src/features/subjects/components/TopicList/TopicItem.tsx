@@ -167,7 +167,7 @@ export function TopicItem({ node, level }: TopicItemProps) {
             </DialogContent>
           </Dialog>
 
-          <Link href={`/study/${node.id}`}>
+          <Link href={`/study/${encodeURIComponent(node.name)}`}>
             <Button size="sm">
               <Play className="w-3.5 h-3.5 mr-1.5" />
               ESTUDAR

@@ -131,6 +131,59 @@ export async function getSubjectDetails(
   }
 }
 
+export async function getSubjectDetailsByName(
+  subjectName: string,
+): Promise<
+  ActionResult<{ subjectName: string; topics: TopicWithStatus[] } | null>
+> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return err("Não autorizado");
+
+    const subject = await prisma.subject.findFirst({
+      where: {
+        name: subjectName,
+        contest: { userId: session.user.id },
+      },
+      include: {
+        topics: {
+          include: {
+            studySessions: {
+              select: { minutes: true, xpEarned: true, completedAt: true },
+              orderBy: { completedAt: "desc" },
+            },
+          },
+        },
+      },
+    });
+
+    if (!subject) return ok(null);
+
+    const topics: TopicWithStatus[] = subject.topics.map((topic) => {
+      const hasStudied = topic.studySessions.length > 0;
+      const totalMinutes = topic.studySessions.reduce((acc, s) => acc + s.minutes, 0);
+      const isMastered = totalMinutes > 60;
+
+      let status: "pending" | "studied" | "mastered" = "pending";
+      if (isMastered) status = "mastered";
+      else if (hasStudied) status = "studied";
+
+      return {
+        id: topic.id,
+        name: topic.name,
+        status,
+        lastStudiedAt: topic.studySessions[0]?.completedAt,
+        xpEarned: topic.studySessions.reduce((acc, s) => acc + s.xpEarned, 0),
+        parentId: topic.parentId,
+      };
+    });
+
+    return ok({ subjectName: subject.name, topics });
+  } catch {
+    return err("Erro ao carregar detalhes da matéria");
+  }
+}
+
 export async function markTopicAsStudied(
   topicId: string,
 ): Promise<ActionResult<void>> {

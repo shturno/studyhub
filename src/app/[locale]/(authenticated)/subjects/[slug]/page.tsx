@@ -1,13 +1,13 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getSubjectDetails } from "@/features/subjects/actions";
+import { getSubjectDetailsByName } from "@/features/subjects/actions";
 import { TopicList } from "@/features/subjects/components/TopicList";
 import { Progress } from "@/components/ui/progress";
 
 interface SubjectDetailsPageProps {
   readonly params: Promise<{
-    id: string;
+    slug: string;
   }>;
 }
 
@@ -17,7 +17,8 @@ export default async function SubjectDetailsPage(
   props: SubjectDetailsPageProps,
 ) {
   const params = await props.params;
-  const data = await getSubjectDetails(params.id);
+  const name = decodeURIComponent(params.slug);
+  const data = await getSubjectDetailsByName(name);
 
   if (!data.success || !data.data) {
     notFound();
