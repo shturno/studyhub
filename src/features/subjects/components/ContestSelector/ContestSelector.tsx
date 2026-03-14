@@ -5,7 +5,7 @@ import type { ContestSelectorProps } from "./types";
 
 export function ContestSelector({
   contests,
-  activeContestId,
+  activeContestSlug,
 }: ContestSelectorProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -13,10 +13,10 @@ export function ContestSelector({
   if (contests.length <= 1) return null;
 
   const selected =
-    activeContestId ?? contests.find((c) => c.isPrimary)?.id ?? contests[0]?.id;
+    activeContestSlug ?? contests.find((c) => c.isPrimary)?.slug ?? contests[0]?.slug;
 
-  function handleChange(id: string) {
-    const url = `${pathname}?contestId=${id}`;
+  function handleChange(slug: string) {
+    const url = `${pathname}?contest=${slug}`;
     router.push(url);
   }
 
@@ -38,7 +38,7 @@ export function ContestSelector({
         }}
       >
         {contests.map((c) => (
-          <option key={c.id} value={c.id} className="bg-[#04000a]">
+          <option key={c.id} value={c.slug} className="bg-[#04000a]">
             {c.name}
             {c.isPrimary ? " ★" : ""}
           </option>

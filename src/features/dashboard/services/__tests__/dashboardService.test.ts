@@ -28,7 +28,7 @@ vi.mock("@/lib/prisma", () => ({
       findUnique: mockContestFindUnique,
     },
     studySession: { findMany: mockSessionFindMany, aggregate: vi.fn().mockResolvedValue({ _sum: { minutes: 0, xpEarned: 0 }, _count: { id: 0 } }) },
-    plannedSession: { findFirst: mockPlannedSessionFindFirst },
+    plannedSession: { findFirst: mockPlannedSessionFindFirst, findMany: vi.fn().mockResolvedValue([]) },
     $queryRaw: vi.fn().mockResolvedValue([]),
   },
 }));

@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 interface DashboardPageProps {
   searchParams: Promise<{
-    contestId?: string;
+    contest?: string;
   }>;
 }
 
@@ -23,17 +23,17 @@ export default async function DashboardPage(props: DashboardPageProps) {
     redirect("/login");
   }
 
-  const { contestId } = await searchParams;
-  const [dashboardData, contests] = await Promise.all([
-    getDashboardData(session.user.id, contestId),
-    getContests(),
-  ]);
+  const { contest: contestSlug } = await searchParams;
+  const contests = await getContests();
+  const contestId = contestSlug
+    ? contests.find((c) => c.slug === contestSlug)?.id
+    : undefined;
+  const dashboardData = await getDashboardData(session.user.id, contestId);
 
   return (
     <DashboardView
       data={dashboardData}
       contests={contests}
-      activeContestId={contestId}
       aiSlot={
         <Suspense fallback={<AIAdvisorySkeleton />}>
           <AIAdvisoryServer

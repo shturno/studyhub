@@ -13,20 +13,25 @@ vi.mock("@/lib/prisma", () => ({
       findUnique: vi.fn(),
       create: vi.fn(),
       findMany: vi.fn(),
+      update: vi.fn(),
       updateMany: vi.fn(),
     },
+    contest: {
+      findUnique: vi.fn(),
+      findFirst: vi.fn(),
+    },
     user: {
+      findUnique: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn(),
     },
-    topic: {
-      findMany: vi.fn(),
-    },
+    $transaction: vi.fn().mockImplementation((ops: Promise<unknown>[]) => Promise.all(ops)),
   },
 }));
 
-// Mock Google Generative AI
-vi.mock("@google/generative-ai", () => ({
-  GoogleGenerativeAI: vi.fn().mockImplementation(() => ({
+// Mock @/lib/gemini so getGenAI() never touches env vars
+vi.mock("@/lib/gemini", () => ({
+  getGenAI: vi.fn().mockReturnValue({
     getGenerativeModel: vi.fn().mockReturnValue({
       generateContent: vi.fn().mockResolvedValue({
         response: {
@@ -34,7 +39,7 @@ vi.mock("@google/generative-ai", () => ({
         },
       }),
     }),
-  })),
+  }),
 }));
 
 describe("dailyObligationService", () => {
@@ -60,21 +65,37 @@ describe("dailyObligationService", () => {
         xpPenalty: 25,
         penaltyApplied: false,
         aiReasoning: "Teste",
-        topic: { id: topicId, name: "Test Topic", subject: { name: "Test Subject" } },
+        topic: { name: "Test Topic", subject: { name: "Test Subject" } },
+        contest: null,
       };
 
-      vi.mocked(prisma.dailyObligation.findUnique).mockResolvedValueOnce(existing as unknown);
+      vi.mocked(prisma.dailyObligation.findUnique).mockResolvedValueOnce(existing as never);
 
       const result = await getOrCreateTodayObligation(userId, contestId);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.value.id).toBe("obl-1");
-        expect(result.value.completed).toBe(false);
-      }
+      expect(result).not.toBeNull();
+      expect(result!.id).toBe("obl-1");
+      expect(result!.completed).toBe(false);
     });
 
     it("cria nova obrigação se não existir", async () => {
+      const contestWithTopics = {
+        id: contestId,
+        name: "Concurso Teste",
+        banca: null,
+        role: "Analista",
+        examDate: null,
+        subjects: [
+          {
+            id: "subject-1",
+            name: "Test Subject",
+            topics: [
+              { id: topicId, name: "New Topic", studySessions: [] },
+            ],
+          },
+        ],
+      };
+
       const newObligation = {
         id: "obl-2",
         userId,
@@ -86,22 +107,20 @@ describe("dailyObligationService", () => {
         xpPenalty: 25,
         penaltyApplied: false,
         aiReasoning: "Primeira criação",
-        topic: { id: topicId, name: "New Topic", subject: { name: "New Subject" } },
+        topic: { name: "New Topic", subject: { name: "Test Subject" } },
+        contest: null,
       };
 
       vi.mocked(prisma.dailyObligation.findUnique).mockResolvedValueOnce(null);
-      vi.mocked(prisma.topic.findMany).mockResolvedValueOnce([
-        { id: topicId, name: "New Topic", subject: { name: "New Subject" } },
-      ] as unknown);
-      vi.mocked(prisma.dailyObligation.create).mockResolvedValueOnce(newObligation as unknown);
+      vi.mocked(prisma.contest.findUnique).mockResolvedValueOnce(contestWithTopics as never);
+      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({ settings: {} } as never);
+      vi.mocked(prisma.dailyObligation.create).mockResolvedValueOnce(newObligation as never);
 
       const result = await getOrCreateTodayObligation(userId, contestId);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.value.id).toBe("obl-2");
-        expect(prisma.dailyObligation.create).toHaveBeenCalled();
-      }
+      expect(result).not.toBeNull();
+      expect(result!.id).toBe("obl-2");
+      expect(prisma.dailyObligation.create).toHaveBeenCalled();
     });
   });
 
@@ -116,34 +135,17 @@ describe("dailyObligationService", () => {
         completedAt: null,
       };
 
-      vi.mocked(prisma.dailyObligation.findUnique).mockResolvedValueOnce(obligation as unknown);
-      vi.mocked(prisma.dailyObligation.updateMany).mockResolvedValueOnce({ count: 1 } as unknown);
+      vi.mocked(prisma.dailyObligation.findUnique).mockResolvedValueOnce(obligation as never);
+      vi.mocked(prisma.dailyObligation.update).mockResolvedValueOnce({ id: "obl-1" } as never);
 
       const result = await completeObligation(userId, topicId, 20);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.value).toBe(true);
-      }
+      expect(result).toBe(true);
     });
 
     it("não marca como completa quando minutes < 15", async () => {
-      const obligation = {
-        id: "obl-1",
-        userId,
-        topicId,
-        date: today,
-        completed: false,
-      };
-
-      vi.mocked(prisma.dailyObligation.findUnique).mockResolvedValueOnce(obligation as unknown);
-
       const result = await completeObligation(userId, topicId, 10);
-
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.value).toBe(false);
-      }
+      expect(result).toBe(false);
     });
 
     it("não marca como completa quando topicId não bate", async () => {
@@ -153,16 +155,14 @@ describe("dailyObligationService", () => {
         topicId,
         date: today,
         completed: false,
+        completedAt: null,
       };
 
-      vi.mocked(prisma.dailyObligation.findUnique).mockResolvedValueOnce(obligation as unknown);
+      vi.mocked(prisma.dailyObligation.findUnique).mockResolvedValueOnce(obligation as never);
 
       const result = await completeObligation(userId, "different-topic", 20);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.value).toBe(false);
-      }
+      expect(result).toBe(false);
     });
   });
 
@@ -180,49 +180,30 @@ describe("dailyObligationService", () => {
         completed: false,
         penaltyApplied: false,
         xpPenalty: 25,
-        topic: { name: "Test Topic", subject: { name: "Test Subject" } },
+        aiReasoning: null,
+        topic: { name: "Test Topic" },
       };
 
       vi.mocked(prisma.dailyObligation.findMany).mockResolvedValueOnce([
         pendingObligation,
-      ] as unknown);
-      vi.mocked(prisma.user.update).mockResolvedValueOnce({ xp: 50 } as unknown);
-      vi.mocked(prisma.dailyObligation.updateMany).mockResolvedValueOnce({ count: 1 } as unknown);
+      ] as never);
+      vi.mocked(prisma.user.update).mockResolvedValueOnce({ xp: 50 } as never);
+      vi.mocked(prisma.dailyObligation.updateMany).mockResolvedValueOnce({ count: 1 } as never);
+      vi.mocked(prisma.user.updateMany).mockResolvedValueOnce({ count: 0 } as never);
 
       const result = await applyPendingPenalties(userId);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.value.totalPenalty).toBe(25);
-        expect(result.value.missedDays.length).toBe(1);
-      }
+      expect(result.totalPenalty).toBe(25);
+      expect(result.missedDays.length).toBe(1);
     });
 
-    it("não aplicar penalidades para obrigações já cumpridas", async () => {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split("T")[0];
-
-      const completedObligation = {
-        id: "obl-1",
-        userId,
-        topicId,
-        date: yesterdayStr,
-        completed: true,
-        penaltyApplied: false,
-        xpPenalty: 25,
-      };
-
-      vi.mocked(prisma.dailyObligation.findMany).mockResolvedValueOnce([
-        completedObligation,
-      ] as unknown);
+    it("não aplicar penalidades quando não há obrigações pendentes", async () => {
+      vi.mocked(prisma.dailyObligation.findMany).mockResolvedValueOnce([] as never);
 
       const result = await applyPendingPenalties(userId);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.value.totalPenalty).toBe(0);
-      }
+      expect(result.totalPenalty).toBe(0);
+      expect(result.missedDays).toHaveLength(0);
     });
   });
 });

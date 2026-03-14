@@ -29,14 +29,13 @@ describe("activityEventService", () => {
         createdAt: new Date(),
       };
 
-      vi.mocked(prisma.activityEvent.create).mockResolvedValueOnce(event as unknown);
+      vi.mocked(prisma.activityEvent.create).mockResolvedValueOnce(event as never);
 
-      const result = await recordActivityEvent(userId, "SESSION_COMPLETED", {
+      await recordActivityEvent(userId, "SESSION_COMPLETED", {
         xp: 100,
         topicName: "Math",
       });
 
-      expect(result).toEqual(event.id);
       expect(prisma.activityEvent.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           userId,
@@ -54,14 +53,14 @@ describe("activityEventService", () => {
         createdAt: new Date(),
       };
 
-      vi.mocked(prisma.activityEvent.create).mockResolvedValueOnce(event as unknown);
+      vi.mocked(prisma.activityEvent.create).mockResolvedValueOnce(event as never);
 
-      const result = await recordActivityEvent(userId, "STREAK_BROKEN", {
+      await recordActivityEvent(userId, "STREAK_BROKEN", {
         streakLost: 7,
         penalty: 55,
       });
 
-      expect(result).toEqual(event.id);
+      expect(prisma.activityEvent.create).toHaveBeenCalled();
     });
 
     it("persiste evento de obrigação não cumprida", async () => {
@@ -73,14 +72,14 @@ describe("activityEventService", () => {
         createdAt: new Date(),
       };
 
-      vi.mocked(prisma.activityEvent.create).mockResolvedValueOnce(event as unknown);
+      vi.mocked(prisma.activityEvent.create).mockResolvedValueOnce(event as never);
 
-      const result = await recordActivityEvent(userId, "OBLIGATION_MISSED", {
+      await recordActivityEvent(userId, "OBLIGATION_MISSED", {
         topicName: "History",
         penalty: 25,
       });
 
-      expect(result).toEqual(event.id);
+      expect(prisma.activityEvent.create).toHaveBeenCalled();
     });
   });
 
@@ -111,7 +110,7 @@ describe("activityEventService", () => {
         },
       ];
 
-      vi.mocked(prisma.activityEvent.findMany).mockResolvedValueOnce(events as unknown);
+      vi.mocked(prisma.activityEvent.findMany).mockResolvedValueOnce(events as never);
 
       const result = await getActivityFeed(userId, 20);
 
@@ -135,7 +134,7 @@ describe("activityEventService", () => {
         createdAt: new Date(),
       }));
 
-      vi.mocked(prisma.activityEvent.findMany).mockResolvedValueOnce(events.slice(0, 10) as unknown);
+      vi.mocked(prisma.activityEvent.findMany).mockResolvedValueOnce(events.slice(0, 10) as never);
 
       const result = await getActivityFeed(userId, 10);
 

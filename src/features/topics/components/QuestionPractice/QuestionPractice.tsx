@@ -14,7 +14,6 @@ export function QuestionPractice({
   const { state, currentQuestion, isAnswered, handleAnswer, handleNext, handleClose } =
     useQuestionPractice({
       topicId,
-      topicName,
       contestId,
       onClose,
     });

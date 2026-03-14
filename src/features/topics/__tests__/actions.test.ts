@@ -42,8 +42,8 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-vi.mock("@google/generative-ai", () => ({
-  GoogleGenerativeAI: vi.fn().mockImplementation(() => ({
+vi.mock("@/lib/gemini", () => ({
+  getGenAI: vi.fn().mockReturnValue({
     getGenerativeModel: vi.fn().mockReturnValue({
       generateContent: vi.fn().mockResolvedValue({
         response: {
@@ -61,7 +61,7 @@ vi.mock("@google/generative-ai", () => ({
         },
       }),
     }),
-  })),
+  }),
 }));
 
 vi.mock("@/features/gamification/services/missionService", () => ({
@@ -175,32 +175,33 @@ describe("generateQuestions", () => {
   it("returns err when unauthenticated", async () => {
     mockAuth.mockResolvedValue(null);
     const result = await generateQuestions(TOPIC_ID, "contest-1");
-    expect(result.ok).toBe(false);
+    expect(result.success).toBe(false);
   });
 
   it("retorna questões do cache quando disponíveis", async () => {
     mockAuth.mockResolvedValue(mockSession);
-    const cachedQuestions = [
-      {
-        id: "q-1",
-        statement: "Test question",
-        type: "CERTO_ERRADO",
-        options: null,
-        answer: "CERTO",
-        explanation: "Test explanation",
-        userId: USER_ID,
-        topicId: TOPIC_ID,
-        usedAt: null,
-      },
-    ];
+    // generateQuestions default quantity=5, so need >=5 cached to trigger cache hit
+    const cachedQuestions = Array.from({ length: 5 }, (_, i) => ({
+      id: `q-${i + 1}`,
+      statement: `Test question ${i + 1}`,
+      type: "CERTO_ERRADO",
+      options: null,
+      answer: "CERTO",
+      explanation: "Test explanation",
+      userId: USER_ID,
+      topicId: TOPIC_ID,
+      usedAt: null,
+    }));
+    // ownership check comes before cache check
+    mockFindUnique.mockResolvedValueOnce(ownerRecord);
     mockFindMany.mockResolvedValueOnce(cachedQuestions);
 
     const result = await generateQuestions(TOPIC_ID, "contest-1");
 
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.value.fromCache).toBe(true);
-      expect(result.value.questions).toHaveLength(1);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.fromCache).toBe(true);
+      expect(result.data.questions).toHaveLength(5);
     }
   });
 });
@@ -214,7 +215,7 @@ describe("logQuestionSession", () => {
       correct: 1,
       total: 1,
     });
-    expect(result.ok).toBe(false);
+    expect(result.success).toBe(false);
   });
 
   it("calcula XP corretamente (correct * 3)", async () => {
@@ -228,9 +229,9 @@ describe("logQuestionSession", () => {
       total: 3,
     });
 
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.value.xpEarned).toBe(6); // 2 * 3
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.xpEarned).toBe(6); // 2 * 3
     }
   });
 

@@ -148,7 +148,9 @@ export function SettingsForm({
 
   const difficultSubjectsChanged =
     selectedDifficultSubjects.size !== initialDifficultSubjects.length ||
-    Array.from(selectedDifficultSubjects).some((id) => !initialDifficultSubjects.includes(id));
+    Array.from(selectedDifficultSubjects).some(
+      (id) => !initialDifficultSubjects.some((item) => `${item.contestId}:${item.subjectId}` === id),
+    );
 
   return (
     <div className="space-y-6">

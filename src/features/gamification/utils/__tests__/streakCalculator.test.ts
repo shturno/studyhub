@@ -17,19 +17,19 @@ const NOW = new Date("2026-03-09T12:00:00Z");
 describe("calculateStreak", () => {
   it("primeiro estudo: streak = 1, isNewDay = true", () => {
     const result = calculateStreak(null, 0, NOW);
-    expect(result).toEqual({ newStreak: 1, isNewDay: true });
+    expect(result).toMatchObject({ newStreak: 1, isNewDay: true });
   });
 
   it("segunda sessão no mesmo dia: streak mantido, isNewDay = false", () => {
     const today = new Date("2026-03-09T08:00:00Z");
     const result = calculateStreak(today, 5, NOW);
-    expect(result).toEqual({ newStreak: 5, isNewDay: false });
+    expect(result).toMatchObject({ newStreak: 5, isNewDay: false });
   });
 
   it("dia seguinte: incrementa streak, isNewDay = true", () => {
     const yesterday = daysAgo(1, NOW);
     const result = calculateStreak(yesterday, 4, NOW);
-    expect(result).toEqual({ newStreak: 5, isNewDay: true });
+    expect(result).toMatchObject({ newStreak: 5, isNewDay: true });
   });
 
   it("gap de 2 dias: reseta para 1, isNewDay = true, com xpPenalty", () => {
