@@ -69,7 +69,7 @@ describe("dailyObligationService", () => {
         contest: null,
       };
 
-      vi.mocked(prisma.dailyObligation.findUnique).mockResolvedValueOnce(existing as unknown);
+      vi.mocked(prisma.dailyObligation.findUnique).mockResolvedValueOnce(existing as never);
 
       const result = await getOrCreateTodayObligation(userId, contestId);
 
@@ -112,9 +112,9 @@ describe("dailyObligationService", () => {
       };
 
       vi.mocked(prisma.dailyObligation.findUnique).mockResolvedValueOnce(null);
-      vi.mocked(prisma.contest.findUnique).mockResolvedValueOnce(contestWithTopics as unknown);
-      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({ settings: {} } as unknown);
-      vi.mocked(prisma.dailyObligation.create).mockResolvedValueOnce(newObligation as unknown);
+      vi.mocked(prisma.contest.findUnique).mockResolvedValueOnce(contestWithTopics as never);
+      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({ settings: {} } as never);
+      vi.mocked(prisma.dailyObligation.create).mockResolvedValueOnce(newObligation as never);
 
       const result = await getOrCreateTodayObligation(userId, contestId);
 
@@ -135,8 +135,8 @@ describe("dailyObligationService", () => {
         completedAt: null,
       };
 
-      vi.mocked(prisma.dailyObligation.findUnique).mockResolvedValueOnce(obligation as unknown);
-      vi.mocked(prisma.dailyObligation.update).mockResolvedValueOnce({ id: "obl-1" } as unknown);
+      vi.mocked(prisma.dailyObligation.findUnique).mockResolvedValueOnce(obligation as never);
+      vi.mocked(prisma.dailyObligation.update).mockResolvedValueOnce({ id: "obl-1" } as never);
 
       const result = await completeObligation(userId, topicId, 20);
 
@@ -158,7 +158,7 @@ describe("dailyObligationService", () => {
         completedAt: null,
       };
 
-      vi.mocked(prisma.dailyObligation.findUnique).mockResolvedValueOnce(obligation as unknown);
+      vi.mocked(prisma.dailyObligation.findUnique).mockResolvedValueOnce(obligation as never);
 
       const result = await completeObligation(userId, "different-topic", 20);
 
@@ -186,10 +186,10 @@ describe("dailyObligationService", () => {
 
       vi.mocked(prisma.dailyObligation.findMany).mockResolvedValueOnce([
         pendingObligation,
-      ] as unknown);
-      vi.mocked(prisma.user.update).mockResolvedValueOnce({ xp: 50 } as unknown);
-      vi.mocked(prisma.dailyObligation.updateMany).mockResolvedValueOnce({ count: 1 } as unknown);
-      vi.mocked(prisma.user.updateMany).mockResolvedValueOnce({ count: 0 } as unknown);
+      ] as never);
+      vi.mocked(prisma.user.update).mockResolvedValueOnce({ xp: 50 } as never);
+      vi.mocked(prisma.dailyObligation.updateMany).mockResolvedValueOnce({ count: 1 } as never);
+      vi.mocked(prisma.user.updateMany).mockResolvedValueOnce({ count: 0 } as never);
 
       const result = await applyPendingPenalties(userId);
 
@@ -198,7 +198,7 @@ describe("dailyObligationService", () => {
     });
 
     it("não aplicar penalidades quando não há obrigações pendentes", async () => {
-      vi.mocked(prisma.dailyObligation.findMany).mockResolvedValueOnce([] as unknown);
+      vi.mocked(prisma.dailyObligation.findMany).mockResolvedValueOnce([] as never);
 
       const result = await applyPendingPenalties(userId);
 

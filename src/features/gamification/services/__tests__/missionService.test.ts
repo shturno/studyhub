@@ -1,4 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { format } from "date-fns";
+
+/** Same date logic as the service's todayString() — local timezone, not UTC */
+function todayLocal(): string {
+  return format(new Date(), "yyyy-MM-dd");
+}
 
 // ---------------------------------------------------------------------------
 // Mock Prisma
@@ -221,7 +227,7 @@ describe("refreshMissionProgress", () => {
     mockDailyMissions.push({
       id: "mission-1",
       userId: "user-1",
-      date: new Date().toISOString().slice(0, 10),
+      date: todayLocal(),
       type: "STUDY_MINUTES",
       label: "Estude 30 minutos hoje",
       targetValue: 30,
@@ -251,7 +257,7 @@ describe("refreshMissionProgress", () => {
     mockDailyMissions.push({
       id: "mission-1",
       userId: "user-1",
-      date: new Date().toISOString().slice(0, 10),
+      date: todayLocal(),
       type: "STUDY_MINUTES",
       label: "Estude 60 minutos hoje",
       targetValue: 60,
@@ -282,7 +288,7 @@ describe("refreshMissionProgress", () => {
     mockDailyMissions.push({
       id: "mission-1",
       userId: "user-1",
-      date: new Date().toISOString().slice(0, 10),
+      date: todayLocal(),
       type: "STUDY_TOPICS",
       label: "Estude 2 tópicos diferentes",
       targetValue: 2,
@@ -314,7 +320,7 @@ describe("checkAllMissionsCompleted", () => {
     mockDailyMissions.push({
       id: "mission-1",
       userId: "user-1",
-      date: new Date().toISOString().slice(0, 10),
+      date: todayLocal(),
       type: "STUDY_MINUTES",
       label: "test",
       targetValue: 30,
@@ -331,7 +337,7 @@ describe("checkAllMissionsCompleted", () => {
   });
 
   it("returns 0 when not all missions are completed", async () => {
-    const date = new Date().toISOString().slice(0, 10);
+    const date = todayLocal();
     mockDailyMissions.push(
       { id: "m1", userId: "user-1", date, type: "STUDY_MINUTES", label: "a", targetValue: 30, progress: 30, completed: true, xpReward: 50, completedAt: new Date(), createdAt: new Date(), isCore: true },
       { id: "m2", userId: "user-1", date, type: "COMPLETE_SESSIONS", label: "b", targetValue: 2, progress: 1, completed: false, xpReward: 50, completedAt: null, createdAt: new Date(), isCore: false },
@@ -343,7 +349,7 @@ describe("checkAllMissionsCompleted", () => {
   });
 
   it("returns 100 bonus XP when all 3 missions are completed", async () => {
-    const date = new Date().toISOString().slice(0, 10);
+    const date = todayLocal();
     mockDailyMissions.push(
       { id: "m1", userId: "user-1", date, type: "STUDY_MINUTES", label: "a", targetValue: 30, progress: 30, completed: true, xpReward: 50, completedAt: new Date(), createdAt: new Date(), isCore: true },
       { id: "m2", userId: "user-1", date, type: "COMPLETE_SESSIONS", label: "b", targetValue: 2, progress: 2, completed: true, xpReward: 50, completedAt: new Date(), createdAt: new Date(), isCore: false },

@@ -29,7 +29,7 @@ describe("activityEventService", () => {
         createdAt: new Date(),
       };
 
-      vi.mocked(prisma.activityEvent.create).mockResolvedValueOnce(event as unknown);
+      vi.mocked(prisma.activityEvent.create).mockResolvedValueOnce(event as never);
 
       await recordActivityEvent(userId, "SESSION_COMPLETED", {
         xp: 100,
@@ -53,7 +53,7 @@ describe("activityEventService", () => {
         createdAt: new Date(),
       };
 
-      vi.mocked(prisma.activityEvent.create).mockResolvedValueOnce(event as unknown);
+      vi.mocked(prisma.activityEvent.create).mockResolvedValueOnce(event as never);
 
       await recordActivityEvent(userId, "STREAK_BROKEN", {
         streakLost: 7,
@@ -72,7 +72,7 @@ describe("activityEventService", () => {
         createdAt: new Date(),
       };
 
-      vi.mocked(prisma.activityEvent.create).mockResolvedValueOnce(event as unknown);
+      vi.mocked(prisma.activityEvent.create).mockResolvedValueOnce(event as never);
 
       await recordActivityEvent(userId, "OBLIGATION_MISSED", {
         topicName: "History",
@@ -110,7 +110,7 @@ describe("activityEventService", () => {
         },
       ];
 
-      vi.mocked(prisma.activityEvent.findMany).mockResolvedValueOnce(events as unknown);
+      vi.mocked(prisma.activityEvent.findMany).mockResolvedValueOnce(events as never);
 
       const result = await getActivityFeed(userId, 20);
 
@@ -134,7 +134,7 @@ describe("activityEventService", () => {
         createdAt: new Date(),
       }));
 
-      vi.mocked(prisma.activityEvent.findMany).mockResolvedValueOnce(events.slice(0, 10) as unknown);
+      vi.mocked(prisma.activityEvent.findMany).mockResolvedValueOnce(events.slice(0, 10) as never);
 
       const result = await getActivityFeed(userId, 10);
 
